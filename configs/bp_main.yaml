@@ -1,0 +1,5 @@
+extends: common_mnist.yaml
+
+training:
+  learning_rule: bp
+
