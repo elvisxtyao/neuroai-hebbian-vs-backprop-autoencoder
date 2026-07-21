@@ -1,24 +1,34 @@
-# NeuroAI: Hebbian Learning vs Backpropagation in a 3-Layer Autoencoder
+# NeuroAI BP–Hebbian Shared Skeleton
 
-Private collaboration repository for a controlled comparison of backpropagation
-and biologically plausible Hebbian learning in a three-layer convolutional
-autoencoder on MNIST.
+Shared Phase 0 framework for comparing backpropagation and explicit local Hebbian learning in a 3-layer convolutional autoencoder on MNIST.
 
-This initial commit contains the frozen `phase0-v1` data pipeline, shared model,
-BP autoencoder trainer, and frozen linear-probe trainer. Hebbian-specific code
-and experiment results are intentionally not part of this initial handoff.
+The frozen settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md). The research plan is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 
-## Included scope
+## Current seed-0 baseline
 
-- Deterministic MNIST 50k/10k/10k train-validation-test protocol
-- Shared three-layer convolutional encoder and decoder
-- Backpropagation autoencoder training with MSE and Adam
-- Frozen single-layer linear probe
-- Reproducible initialization, configuration validation, and run recording
+Both runs use the same deterministic MNIST split, autoencoder architecture,
+initial model state and frozen linear-probe protocol.
 
-The binding experiment settings are documented in `PHASE0_STANDARD_V1.md`.
+| Test metric | Backpropagation | Hebbian encoder |
+|---|---:|---:|
+| Reconstruction MSE | 0.003289 | 0.019896 |
+| Linear-probe accuracy | 91.81% | 89.00% |
+| Linear-probe macro-F1 | 91.67% | 88.82% |
+
+The Hebbian encoder learns useful linearly separable features, but the current
+seed-0 run also shows winner concentration at depth: the final active-neuron
+ratios are 100%, 46.88% and 20.31% for `enc1`, `enc2` and `enc3`. These are
+single-seed development results rather than final multi-seed conclusions.
+
+The Hebbian rule trains the encoder only. Its reconstruction decoder and
+classification probe are trained with backpropagation after the encoder is
+frozen. See [HEBBIAN_IMPLEMENTATION_REPORT.md](HEBBIAN_IMPLEMENTATION_REPORT.md)
+for formulas, diagnostics, checksums, limitations and the complete result
+record.
 
 ## Setup
+
+Python 3.11 is supported.
 
 ```powershell
 python -m venv .venv
@@ -26,20 +36,58 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-## Train the BP autoencoder
+## Validate the shared skeleton
+
+```powershell
+python -m pytest
+python -m scripts.smoke_test --config configs/bp_main.yaml
+```
+
+The smoke test uses synthetic inputs and does not download MNIST.
+
+## Generate the fixed MNIST split
+
+```powershell
+python -m data.mnist --config configs/common_mnist.yaml --create-split
+```
+
+## Train and evaluate the BP baseline
 
 ```powershell
 python -m training.train_representation --config configs/bp_main.yaml
+python -m evaluation.evaluate_reconstruction --config configs/bp_main.yaml --run-dir results/<run-id>
+python -m training.train_linear_probe --config configs/bp_main.yaml --run-dir results/<run-id>
 ```
 
-The command creates a run directory under `results/`. Use that directory for
-the frozen linear probe:
+## Train and evaluate the Hebbian encoder
+
+The encoder uses explicit local competitive Oja updates, top-k WTA,
+per-filter L2 normalization and greedy `enc1 -> enc2 -> enc3` training. The
+trained encoder is frozen before the shared decoder and linear probe are
+trained with backpropagation.
 
 ```powershell
-python -m training.train_linear_probe `
-  --config configs/bp_main.yaml `
-  --run-dir results/<bp-run-id>
+python -m training.train_representation --config configs/hebbian_main.yaml
+python -m evaluation.evaluate_reconstruction --config configs/hebbian_main.yaml --run-dir results/<run-id>
+python -m training.train_linear_probe --config configs/hebbian_main.yaml --run-dir results/<run-id>
+python -m evaluation.plot_run_metrics --hebbian-run results/<hebbian-run-id> --bp-run results/<bp-run-id>
 ```
 
-Raw MNIST files, checkpoints, results, virtual environments, and caches are
-excluded from version control.
+The completed seed-0 implementation and result record is in
+[HEBBIAN_IMPLEMENTATION_REPORT.md](HEBBIAN_IMPLEMENTATION_REPORT.md).
+
+## Project layout
+
+```text
+configs/          shared and rule-specific YAML
+data/             deterministic split and MNIST loaders
+evaluation/       representation extraction and clean metrics
+learning_rules/   BP trainer and explicit Hebbian WTA/Oja trainer
+models/           shared encoder, decoder and linear probe
+results/          generated runs (not source code)
+schemas/          config loading and validation
+scripts/          synthetic smoke test
+tests/            shape, freeze, split and reproducibility checks
+training/         common training entry points
+utils/            seed, hash and result helpers
+```
