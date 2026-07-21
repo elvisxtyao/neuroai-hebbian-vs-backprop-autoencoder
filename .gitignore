@@ -2,8 +2,10 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+.agents/
+ae/
 data/raw/
 results/
 *.pt
 *.pth
-
+*.zip
