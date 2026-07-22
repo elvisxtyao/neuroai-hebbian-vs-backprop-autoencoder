@@ -51,6 +51,8 @@ hebbian:
   update: oja
   filter_l2_normalize: true
   normalization_epsilon: 1.0e-8
+  collapse_min_active_ratio: 0.25
+  collapse_max_winner_share: 0.50
 
 probe:
   type: linear
@@ -77,4 +79,3 @@ noise:
 
 results:
   root: results
-

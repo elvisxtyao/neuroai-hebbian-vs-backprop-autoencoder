@@ -3,11 +3,14 @@
 > 项目：3-layer convolutional autoencoder 中 Backpropagation 与 Hebbian learning 的比较
 > 本文档范围：Hebbian 模型的实现、训练、评估、机制分析，以及与 BP 组员的接口对齐
 > 当前状态：`Phase 2 seed-0 baseline completed; mechanism sweeps pending`
-> 最后更新：2026-07-20
+> 最后更新：2026-07-21
+
+> 文档角色：本文件保存研究设计、公式、WBS ID 和验收条件。实时完成状态只在
+> `PROJECT_STATUS.md` 维护；本文件中的长 WBS checkbox 不再作为唯一状态源。
 
 当前交付已完成显式 convolutional WTA/Oja、逐 filter 权重归一化、三层 greedy
 训练、冻结 decoder、共享 frozen linear probe、逐层诊断和 seed-0 BP 对照。正式输出与
-未完成边界见 `HEBBIAN_IMPLEMENTATION_REPORT.md`。多 seed、noise、representation
+未完成边界见 `PROJECT_STATUS.md`。多 seed、noise、representation
 geometry、architecture sweep 和 BP-reference cosine/bias/SNR 仍按后续 phase 执行。
 
 ---
@@ -455,7 +458,8 @@ python -m evaluation.evaluate_noise --run-dir <bp_run_dir>
 
 - [x] 发布“3-layer”定义与逐层 shape；
 - [x] 冻结 decoder 训练协议与论文措辞；
-- [ ] 登记教程路径、版本/hash，并建立“保留思想—必须重写—禁止进入主实验”迁移表；
+- [x] 建立教程/参考 notebook 的 provenance 与“保留思想—必须重写—禁止进入主实验”迁移表；
+- [ ] 补充原始 Hebbian 教程的真实路径/URL、版本、hash 和许可信息；
 - [x] 冻结共享 `ConvEncoder`/`Decoder` forward API，BP/Hebbian 只切换 trainer/update rule；
 - [x] 生成并保存 `mnist_split_v1.npz`，校验 50k/10k/10k 样本无重叠；
 - [x] 冻结 normalization、paired seeds、主架构与初始化；
@@ -474,22 +478,23 @@ python -m evaluation.evaluate_noise --run-dir <bp_run_dir>
 ### Phase 1 — Hebbian layer 最小实现与测试
 
 - [ ] 实现 `HebbianLinear` 作为公式和测试原型；
-- [ ] 实现 `HebbianConv2d`；
-- [ ] 将教程 custom autograd 原型迁移为 `compute_local_update()`/`apply_local_update()`；
-- [ ] 实现 WTA/soft competition；
-- [ ] 实现 Oja stabilization 或显式 kernel normalization；
-- [ ] 确保 Hebbian 权重不被 autograd/optimizer 意外更新；
-- [ ] 记录每层 pre/post activity、candidate update norm、weight norm、winner frequency；
-- [ ] 验证“只计算候选更新”不会改变 layer state；
-- [ ] 验证主训练路径不读取 label，也不存在 target clamping。
+- [x] 实现 convolutional Hebbian local update；
+- [x] 将教程 custom autograd 思想迁移为 `compute_local_update()`/`apply_local_update()`；
+- [x] 实现 per-sample/per-location channel top-k WTA；
+- [x] 实现 Oja stabilization 与逐 filter L2 normalization；
+- [x] 确保 Hebbian encoder 权重不被 autograd/optimizer 意外更新；
+- [x] 记录 post activity、candidate update norm、weight norm、sparsity 与 winner frequency；
+- [ ] 增加 preactivation distribution 的正式记录；
+- [x] 验证“只计算候选更新”不会改变 layer state；
+- [x] 验证主训练路径不读取 label，也不存在 target clamping。
 
 **测试：**
 
 - [ ] shape 与普通 Conv2d 一致；
-- [ ] 固定输入时更新方向与手算结果一致；
+- [x] 固定输入时更新方向与手算结果一致；
 - [ ] `hebbian_lr=0` 时权重不变；
-- [ ] `compute_local_update()` 后、`apply_local_update()` 前权重不变；
-- [ ] classifier backward 不改变 frozen encoder；
+- [x] `compute_local_update()` 后、`apply_local_update()` 前权重不变；
+- [x] classifier backward 不改变 frozen encoder；
 - [ ] 相同 forward state 可同时生成 Hebbian candidate update 与 BP reference；
 - [ ] 100–500 steps 后无 NaN/Inf，weight norm 有界；
 - [ ] 固定 seed 可复现；
@@ -499,12 +504,15 @@ python -m evaluation.evaluate_noise --run-dir <bp_run_dir>
 
 ### Phase 2 — 3 层 Hebbian encoder 与 MNIST smoke test
 
-- [ ] 构建 3 层卷积 encoder；
-- [ ] 完成 greedy layer-wise training；
-- [ ] 冻结 encoder 并验证 checksum 不再变化；
-- [ ] 训练统一 linear probe；
-- [ ] 训练/绑定 decoder 并输出 reconstruction；
-- [ ] 保存 checkpoint 与 representation。
+- [x] 构建 3 层卷积 encoder；
+- [x] 完成 greedy layer-wise training；
+- [x] 冻结 encoder 并验证 checksum 不再变化；
+- [x] 训练统一 linear probe；
+- [x] 训练/绑定 decoder 并输出 reconstruction；
+- [x] 运行 untrained AE 与 random-frozen-encoder/decoder-only reconstruction control；
+- [x] 衡量 decoder 对随机 encoder 的补偿程度，并与 BP/Hebbian 重建比较；
+- [x] 保存 layer-end encoder、autoencoder 与 probe checkpoints；
+- [ ] 保存固定分析 subset 的 h1/h2/z representations。
 
 **表示塌缩门禁：**
 
@@ -691,16 +699,16 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [ ] noisy training；
 - [ ] 局部 decoder learning rule。
 
-### 5.1 详细任务分解（WBS，状态记录以此为准）
+### 5.1 详细任务分解（WBS 与 Task ID 设计）
 
-上面的 Phase checklist 是阶段验收摘要；下面带 Task ID 的 checkbox 是日常执行和状态记录的唯一来源。只有对应 WBS 全部完成后，才能勾选阶段摘要。原则上每个任务应在 30 分钟至半天内完成，并产生一个可观察的文件、测试、日志或决策记录。
+上面的 Phase checklist 是阶段验收摘要；下面保留 Task ID 作为实施和证据映射。实时状态统一在 `PROJECT_STATUS.md` 维护，避免本文件数百个 checkbox 与运行报告产生冲突。任务完成时仍应产生一个可观察的文件、测试、日志或决策记录。
 
 #### P0 — 标准、数据与接口
 
-- [ ] `P0-DOC-01` 创建 `docs/tutorial_migration.md`；
+- [x] `P0-DOC-01` 创建 `docs/tutorial_migration.md`；
 - [ ] `P0-DOC-02` 记录教程路径、来源、版本、hash 和访问日期；
-- [ ] `P0-DOC-03` 建立教程内容到正式模块的逐项映射表；
-- [ ] `P0-DOC-04` 标记教程中禁止进入主实验的 custom autograd 与 target clamping；
+- [x] `P0-DOC-03` 建立教程内容到正式模块的逐项映射表；
+- [x] `P0-DOC-04` 标记教程中禁止进入主实验的 custom autograd 与 target clamping；
 - [ ] `P0-DATA-01` 创建 MNIST split 生成脚本；
 - [ ] `P0-DATA-02` 使用 `split_seed=0` 生成 stratified 50k/10k train/val indices；
 - [ ] `P0-DATA-03` 保存 `mnist_split_v1.npz` 和标签校验和；
@@ -709,13 +717,13 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [ ] `P0-CFG-01` 创建公共 YAML 默认配置；
 - [ ] `P0-CFG-02` 实现 config schema 和必填字段检查；
 - [ ] `P0-CFG-03` 实现未知字段直接报错；
-- [ ] `P0-CFG-04` 保存包含默认值的 resolved config；
-- [ ] `P0-CFG-05` 在 metadata 中写入 code version、split hash 和 parameter count；
+- [x] `P0-CFG-04` 保存包含默认值的 resolved config；
+- [x] `P0-CFG-05` 在 metadata 中写入 code version、split hash 和 parameter count；
 - [ ] `P0-API-01` 定义 `encode/decode/reconstruct` 方法签名；
 - [ ] `P0-API-02` 定义 `h1/h2/z` 的固定返回 key；
 - [ ] `P0-API-03` 定义 trainer 与 learning-rule interface；
-- [ ] `P0-API-04` 定义 checkpoint save/load contract；
-- [ ] `P0-API-05` 定义 representation/update result schema；
+- [x] `P0-API-04` 定义 checkpoint save/load contract；
+- [x] `P0-API-05` 定义 representation/update result schema；
 - [ ] `P0-TEST-01` 测试 BP/Hebbian 初始 `state_dict` hash 相同；
 - [ ] `P0-TEST-02` 测试切换 learning rule 不改变模型 parameter names/shapes；
 - [ ] `P0-TEST-03` 测试 representation trainer 不接收 label；
@@ -725,30 +733,30 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 #### P1 — Hebbian learning rule 与单层实现
 
 - [ ] `P1-BASE-01` 定义 `LocalLearningRule` 抽象接口；
-- [ ] `P1-BASE-02` 区分 `compute_local_update()` 和 `apply_local_update()`；
+- [x] `P1-BASE-02` 区分 `compute_local_update()` 和 `apply_local_update()`；
 - [ ] `P1-LIN-01` 实现 `HebbianLinear` forward；
 - [ ] `P1-LIN-02` 实现 Linear pre/post activity cache；
 - [ ] `P1-LIN-03` 实现 Linear Oja candidate update；
-- [ ] `P1-WTA-01` 实现 channel-wise top-k mask；
-- [ ] `P1-WTA-02` 处理 `k=max(1,ceil(fraction×channels))` 边界；
-- [ ] `P1-WTA-03` 记录 winner count、frequency 和 entropy；
-- [ ] `P1-CONV-01` 使用 unfold 或等价方法提取 convolution patches；
-- [ ] `P1-CONV-02` 实现 Conv2d Oja candidate update；
-- [ ] `P1-CONV-03` 按 batch 与 spatial positions 正确求均值；
-- [ ] `P1-CONV-04` 实现 per-output-filter L2 normalization；
-- [ ] `P1-CONV-05` 在 `torch.no_grad()` 下应用 update；
-- [ ] `P1-CONV-06` 确保 Hebbian encoder parameters 不进入 BP optimizer；
-- [ ] `P1-LOG-01` 定义 layer update diagnostics 数据结构；
-- [ ] `P1-LOG-02` 记录 update norm、weight norm 和 activation statistics；
+- [x] `P1-WTA-01` 实现 channel-wise top-k mask；
+- [x] `P1-WTA-02` 处理 `k=max(1,ceil(fraction×channels))` 边界；
+- [x] `P1-WTA-03` 记录 winner count、frequency 和 entropy；
+- [x] `P1-CONV-01` 使用 unfold 或等价方法提取 convolution patches；
+- [x] `P1-CONV-02` 实现 Conv2d Oja candidate update；
+- [x] `P1-CONV-03` 按 batch 与 spatial positions 正确求均值；
+- [x] `P1-CONV-04` 实现 per-output-filter L2 normalization；
+- [x] `P1-CONV-05` 在 `torch.no_grad()` 下应用 update；
+- [x] `P1-CONV-06` 确保 Hebbian encoder parameters 不进入 BP optimizer；
+- [x] `P1-LOG-01` 定义 layer update diagnostics 数据结构；
+- [x] `P1-LOG-02` 记录 update norm、weight norm 和 activation statistics；
 - [ ] `P1-TEST-01` 用小矩阵手算验证 Linear update；
-- [ ] `P1-TEST-02` 用小卷积输入手算验证 Conv update；
-- [ ] `P1-TEST-03` 测试 `hebbian_lr=0` 权重不变；
-- [ ] `P1-TEST-04` 测试 compute 阶段不改变权重；
-- [ ] `P1-TEST-05` 测试 apply 阶段只改变目标层；
-- [ ] `P1-TEST-06` 测试每个 filter 更新后 norm≈1；
-- [ ] `P1-TEST-07` 测试固定 seed 得到相同 update；
-- [ ] `P1-TEST-08` 测试 500 steps 内无 NaN/Inf；
-- [ ] `P1-TEST-09` 测试 label 不影响 Hebbian candidate update。
+- [x] `P1-TEST-02` 用小卷积输入手算验证 Conv update；
+- [x] `P1-TEST-03` 测试 `hebbian_lr=0` 权重不变；
+- [x] `P1-TEST-04` 测试 compute 阶段不改变权重；
+- [x] `P1-TEST-05` 测试 apply 阶段只改变目标层；
+- [x] `P1-TEST-06` 测试每个 filter 更新后 norm≈1；
+- [x] `P1-TEST-07` 测试固定 seed 得到相同 update；
+- [x] `P1-TEST-08` 测试 500 steps 内无 NaN/Inf；
+- [x] `P1-TEST-09` 测试 label 不影响 Hebbian candidate update。
 
 #### P2 — 3 层模型、训练器与 smoke test
 
@@ -758,29 +766,31 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [ ] `P2-MODEL-04` 实现三个 decoder layers 并恢复 `1×28×28`；
 - [ ] `P2-MODEL-05` 实现 paired deterministic initialization；
 - [ ] `P2-MODEL-06` 实现参数量与 shape summary；
-- [ ] `P2-TRAIN-01` 实现 Conv1 local training stage；
+- [x] `P2-TRAIN-01` 实现 Conv1 local training stage；
 - [ ] `P2-TRAIN-02` 实现 Conv1 freeze 和 checksum 验证；
-- [ ] `P2-TRAIN-03` 实现 Conv2 local training stage；
+- [x] `P2-TRAIN-03` 实现 Conv2 local training stage；
 - [ ] `P2-TRAIN-04` 实现 Conv2 freeze 和 checksum 验证；
-- [ ] `P2-TRAIN-05` 实现 Conv3 local training stage；
-- [ ] `P2-TRAIN-06` 保存 `conv1_end/conv2_end/conv3_end` checkpoints；
-- [ ] `P2-TRAIN-07` 实现 epoch/step/samples-seen 计数；
+- [x] `P2-TRAIN-05` 实现 Conv3 local training stage；
+- [x] `P2-TRAIN-06` 保存 `conv1_end/conv2_end/conv3_end` checkpoints；
+- [x] `P2-TRAIN-07` 实现 epoch/step/samples-seen 计数；
 - [ ] `P2-PROBE-01` 提取 train/val/test latent features；
 - [ ] `P2-PROBE-02` 仅用 train features 拟合 mean/std；
 - [ ] `P2-PROBE-03` 实现 frozen single-layer linear probe；
 - [ ] `P2-PROBE-04` 根据 validation accuracy 保存 probe checkpoint；
 - [ ] `P2-PROBE-05` 验证 probe 前后 encoder checksum 不变；
-- [ ] `P2-DEC-01` 从 paired initialization 创建 Hebbian decoder；
-- [ ] `P2-DEC-02` detach/freeze encoder 后训练 decoder；
-- [ ] `P2-DEC-03` 保存 reconstruction grid 和 validation MSE；
-- [ ] `P2-SMOKE-01` 在小数据子集跑通全流程；
-- [ ] `P2-SMOKE-02` 在完整 MNIST 上运行 seed 0、L=64；
-- [ ] `P2-SMOKE-03` 重新加载 checkpoint 并复现相同 test metrics；
-- [ ] `P2-GATE-01` 计算 active-neuron ratio；
-- [ ] `P2-GATE-02` 计算 winner entropy；
+- [x] `P2-DEC-01` 从 paired initialization 创建 Hebbian decoder；
+- [x] `P2-DEC-02` detach/freeze encoder 后训练 decoder；
+- [x] `P2-DEC-03` 保存 reconstruction grid 和 validation MSE；
+- [x] `P2-DEC-04` 冻结 paired random encoder，仅训练同构 BP decoder；
+- [x] `P2-DEC-05` 比较 untrained、decoder-only、Hebbian 与 BP reconstruction；
+- [x] `P2-SMOKE-01` 在小数据子集跑通全流程；
+- [x] `P2-SMOKE-02` 在完整 MNIST 上运行 seed 0、L=64；
+- [x] `P2-SMOKE-03` 重新加载 checkpoint 并复现相同 test metrics；
+- [x] `P2-GATE-01` 计算 active-neuron ratio；
+- [x] `P2-GATE-02` 计算 winner entropy；
 - [ ] `P2-GATE-03` 计算 activation variance 和 effective rank；
 - [ ] `P2-GATE-04` 与 random encoder probe 和 10% chance baseline 比较；
-- [ ] `P2-GATE-05` 对 collapse gate 给出 pass/fail 和原因。
+- [x] `P2-GATE-05` 对 collapse gate 给出 pass/fail 和原因。
 
 #### P3 — Validation-only 超参数选择
 
@@ -1172,16 +1182,15 @@ snapshot_hash, target_clamping, optimizer_state_included
 
 ## 14. 下一步（按顺序执行）
 
-1. 完成 `P0-DOC-01—04`，登记教程来源并冻结迁移边界；
-2. 使用 CP-001/CP-002 完成 `P0-CFG-*`、`P0-API-*` 和 `P0-DATA-*`；
-3. 完成 `P0-TEAM-01—02`，取得队友的 `phase0-v1` 回复；
-4. 使用 CP-003 完成 `P2-MODEL-01—06` 和模型 shape tests；
-5. 使用 CP-004/CP-005 完成 `P1-*` Hebbian rule 与数值测试；
-6. 使用 CP-006 完成 `P2-TRAIN-*` greedy trainer 与 stage checkpoints；
-7. 使用 CP-007 完成 `P2-PROBE-*`、`P2-DEC-*` 和 seed-0 smoke test；
-8. 通过 `P2-GATE-01—05` 后执行 `P3-*` validation-only tuning；
-9. 冻结最终 configs，依次执行 `P4-*` 至 `P8-*`；
-10. 每次 coding prompt 使用后立即更新第 15.2 和 15.6 节，不在项目末尾补记。
+1. 补充缺失的原始 Hebbian tutorial 来源、版本、hash 与许可信息；
+2. 将 `docs/phase0_team_confirmation.md` 发送给 BP 队友并记录真实回复；
+3. 补齐 `lr=0`、500-step stability、multi-step reproducibility、BP-reference compatibility 和 collapse-detector tests；
+4. 实现 random encoder control、扩展 metrics schema 与固定 representation/update manifests；
+5. 仅使用 tuning seed 42 完成 validation-only search，冻结正式 BP/Hebbian configs；
+6. 在 frozen snapshots 上实现并验证 Q4 alignment、norm ratio、scale-matched bias 与 SNR；
+7. 完成 Q1 五 paired seeds，再复用 checkpoints 执行 Q2/Q3；
+8. 最后执行 latent-dimension 和 architecture-asymmetry matrices；
+9. 每次 task 状态变化立即更新 `PROJECT_STATUS.md` 和对应证据，不在项目末尾补记。
 
 ---
 

@@ -15,7 +15,10 @@ from .base import RepresentationTrainer, images_from_batch
 @dataclass(frozen=True)
 class HebbianBatchDiagnostics:
     update_norm: float
+    preactivation_mean: float
+    preactivation_std: float
     activation_mean: float
+    activation_variance: float
     activation_sparsity: float
     winner_counts: torch.Tensor
 
@@ -26,11 +29,36 @@ class HebbianEpochDiagnostics:
     update_norm: float
     weight_norm_mean: float
     weight_norm_std: float
+    preactivation_mean: float
+    preactivation_std: float
     activation_mean: float
+    activation_variance: float
     activation_sparsity: float
     active_neuron_ratio: float
     winner_entropy: float
+    max_winner_share: float
+    collapse_detected: bool
     num_samples: int
+
+
+def assess_competition(
+    winner_counts: torch.Tensor,
+    *,
+    min_active_ratio: float,
+    max_winner_share: float,
+) -> tuple[float, float, bool]:
+    """Return active ratio, maximum winner share and a collapse flag."""
+
+    if winner_counts.ndim != 1:
+        raise ValueError("winner_counts must be one-dimensional")
+    if not 0 <= min_active_ratio <= 1 or not 0 <= max_winner_share <= 1:
+        raise ValueError("collapse thresholds must be in [0,1]")
+    counts = winner_counts.to(torch.float64)
+    active_ratio = float((counts > 0).float().mean().item())
+    total = counts.sum()
+    largest_share = 0.0 if total <= 0 else float((counts.max() / total).item())
+    collapsed = active_ratio < min_active_ratio or largest_share > max_winner_share
+    return active_ratio, largest_share, collapsed
 
 
 class CompetitiveOjaConv2d:
@@ -43,8 +71,8 @@ class CompetitiveOjaConv2d:
         winner_fraction: float,
         normalization_epsilon: float = 1e-8,
     ) -> None:
-        if learning_rate <= 0:
-            raise ValueError("learning_rate must be positive")
+        if learning_rate < 0:
+            raise ValueError("learning_rate must be non-negative")
         if not 0 < winner_fraction <= 1:
             raise ValueError("winner_fraction must be in (0,1]")
         self.learning_rate = learning_rate
@@ -105,7 +133,10 @@ class CompetitiveOjaConv2d:
         winner_counts = positive_winners.sum(dim=(0, 2, 3)).detach().cpu()
         diagnostics = HebbianBatchDiagnostics(
             update_norm=float(delta_weight.norm().item()),
+            preactivation_mean=float(pre_activity.mean().item()),
+            preactivation_std=float(pre_activity.std(unbiased=False).item()),
             activation_mean=float(post_activity.mean().item()),
+            activation_variance=float(post_activity.var(unbiased=False).item()),
             activation_sparsity=float((post_activity <= 0).float().mean().item()),
             winner_counts=winner_counts,
         )
@@ -121,6 +152,8 @@ class CompetitiveOjaConv2d:
     def apply_local_update(self, layer: nn.Conv2d, delta_weight: torch.Tensor) -> None:
         if delta_weight.shape != layer.weight.shape:
             raise ValueError("delta_weight and layer.weight shapes must match")
+        if self.learning_rate == 0:
+            return
         layer.weight.add_(delta_weight, alpha=self.learning_rate)
         self.normalize_weights(layer)
 
@@ -195,7 +228,10 @@ class HebbianTrainer(RepresentationTrainer):
         self.model.encoder.eval()
         total_samples = 0
         weighted_update_norm = 0.0
+        weighted_preactivation_mean = 0.0
+        weighted_preactivation_std = 0.0
         weighted_activation_mean = 0.0
+        weighted_activation_variance = 0.0
         weighted_activation_sparsity = 0.0
         winner_counts = torch.zeros(layer.out_channels, dtype=torch.float64)
         for batch in loader:
@@ -204,7 +240,10 @@ class HebbianTrainer(RepresentationTrainer):
             batch_size = images.shape[0]
             total_samples += batch_size
             weighted_update_norm += diagnostics.update_norm * batch_size
+            weighted_preactivation_mean += diagnostics.preactivation_mean * batch_size
+            weighted_preactivation_std += diagnostics.preactivation_std * batch_size
             weighted_activation_mean += diagnostics.activation_mean * batch_size
+            weighted_activation_variance += diagnostics.activation_variance * batch_size
             weighted_activation_sparsity += diagnostics.activation_sparsity * batch_size
             winner_counts += diagnostics.winner_counts.to(torch.float64)
 
@@ -218,16 +257,29 @@ class HebbianTrainer(RepresentationTrainer):
             winner_entropy = float(entropy.item())
         else:
             winner_entropy = 0.0
-        active_neuron_ratio = float((winner_counts > 0).float().mean().item())
+        active_neuron_ratio, max_winner_share, collapse_detected = assess_competition(
+            winner_counts,
+            min_active_ratio=float(
+                self.config["hebbian"].get("collapse_min_active_ratio", 0.25)
+            ),
+            max_winner_share=float(
+                self.config["hebbian"].get("collapse_max_winner_share", 0.50)
+            ),
+        )
         return HebbianEpochDiagnostics(
             layer=layer_name,
             update_norm=weighted_update_norm / total_samples,
             weight_norm_mean=float(weight_norms.mean().item()),
             weight_norm_std=float(weight_norms.std(unbiased=False).item()),
+            preactivation_mean=weighted_preactivation_mean / total_samples,
+            preactivation_std=weighted_preactivation_std / total_samples,
             activation_mean=weighted_activation_mean / total_samples,
+            activation_variance=weighted_activation_variance / total_samples,
             activation_sparsity=weighted_activation_sparsity / total_samples,
             active_neuron_ratio=active_neuron_ratio,
             winner_entropy=winner_entropy,
+            max_winner_share=max_winner_share,
+            collapse_detected=collapse_detected,
             num_samples=total_samples,
         )
 

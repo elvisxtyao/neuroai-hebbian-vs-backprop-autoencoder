@@ -9,3 +9,7 @@ results/
 *.pt
 *.pth
 *.zip
+
+# Local-only experiment and completion reports
+*_REPORT.md
+docs/*_report.md
