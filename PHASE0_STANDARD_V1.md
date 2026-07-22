@@ -1,5 +1,9 @@
 # Phase 0-v1 公共实验标准
 
+> 文档角色：本文件是冻结的规范性协议，不记录实时进度。当前完成情况、阻塞项和
+> 下一步统一见 `PROJECT_STATUS.md`。任何实质性协议变更应发布新版本，而不是在此
+> 混入单次运行状态。
+
 这份标准用于 BP 与 Hebbian 两条实现。主实验必须复用相同的数据、模型 forward、初始化、linear probe 和评估入口；唯一核心差异是 encoder 的学习规则。
 
 ## 1. 最基础 settings
@@ -66,4 +70,3 @@ extract_representations(model, loader, layers=("h1", "h2", "z"))
 - 提交说明写明 `phase0-v1 compliant`，或逐条列出偏离。
 
 任何改变数据划分、模型 shape、loss、训练预算、probe 或噪声 realization 的修改，都必须升级标准版本并重新运行双方受影响的实验。
-

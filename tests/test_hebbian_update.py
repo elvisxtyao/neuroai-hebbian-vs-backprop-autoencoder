@@ -2,7 +2,11 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from learning_rules.hebbian import CompetitiveOjaConv2d, HebbianTrainer
+from learning_rules.hebbian import (
+    CompetitiveOjaConv2d,
+    HebbianTrainer,
+    assess_competition,
+)
 from models import ConvAutoencoder
 from schemas import load_config
 from utils.reproducibility import state_dict_checksum
@@ -36,6 +40,65 @@ def test_apply_local_update_normalizes_each_filter():
     rule.apply_local_update(layer, delta)
     norms = layer.weight.flatten(start_dim=1).norm(dim=1)
     torch.testing.assert_close(norms, torch.ones_like(norms), atol=1e-6, rtol=1e-6)
+
+
+def test_zero_learning_rate_leaves_weights_bitwise_unchanged():
+    layer = nn.Conv2d(2, 3, kernel_size=3, bias=False)
+    before = layer.weight.detach().clone()
+    rule = CompetitiveOjaConv2d(learning_rate=0.0, winner_fraction=0.5)
+
+    rule.apply_local_update(layer, torch.randn_like(layer.weight))
+
+    assert torch.equal(layer.weight, before)
+
+
+def test_500_local_updates_remain_finite_and_normalized():
+    generator = torch.Generator().manual_seed(123)
+    layer = nn.Conv2d(1, 4, kernel_size=1, bias=False)
+    rule = CompetitiveOjaConv2d(learning_rate=0.001, winner_fraction=0.5)
+    for _ in range(500):
+        inputs = torch.rand(2, 1, 2, 2, generator=generator)
+        pre = layer(inputs)
+        delta, _ = rule.compute_local_update(layer, pre, inputs=inputs)
+        rule.apply_local_update(layer, delta)
+
+    assert torch.isfinite(layer.weight).all()
+    norms = layer.weight.flatten(start_dim=1).norm(dim=1)
+    torch.testing.assert_close(norms, torch.ones_like(norms), atol=1e-6, rtol=1e-6)
+
+
+def test_multistep_local_updates_are_reproducible():
+    first = nn.Conv2d(1, 4, kernel_size=1, bias=False)
+    second = nn.Conv2d(1, 4, kernel_size=1, bias=False)
+    second.load_state_dict(first.state_dict())
+    first_rule = CompetitiveOjaConv2d(learning_rate=0.001, winner_fraction=0.5)
+    second_rule = CompetitiveOjaConv2d(learning_rate=0.001, winner_fraction=0.5)
+    generator = torch.Generator().manual_seed(456)
+    batches = [torch.rand(2, 1, 2, 2, generator=generator) for _ in range(20)]
+
+    for inputs in batches:
+        for layer, rule in ((first, first_rule), (second, second_rule)):
+            pre = layer(inputs)
+            delta, _ = rule.compute_local_update(layer, pre, inputs=inputs)
+            rule.apply_local_update(layer, delta)
+
+    assert torch.equal(first.weight, second.weight)
+
+
+def test_competition_collapse_detector_covers_balanced_and_collapsed_cases():
+    balanced = assess_competition(
+        torch.tensor([10, 10, 10, 10]),
+        min_active_ratio=0.5,
+        max_winner_share=0.6,
+    )
+    collapsed = assess_competition(
+        torch.tensor([100, 0, 0, 0]),
+        min_active_ratio=0.5,
+        max_winner_share=0.6,
+    )
+
+    assert balanced == (1.0, 0.25, False)
+    assert collapsed == (0.25, 1.0, True)
 
 
 def test_greedy_epoch_changes_only_active_layer():

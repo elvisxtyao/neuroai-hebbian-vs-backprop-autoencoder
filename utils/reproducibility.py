@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import random
+import subprocess
 from collections.abc import Mapping
 
 import numpy as np
@@ -37,3 +38,29 @@ def state_dict_checksum(state: Mapping[str, torch.Tensor] | torch.nn.Module) -> 
         digest.update(tensor.numpy().tobytes())
     return digest.hexdigest()
 
+
+def git_provenance(workdir: str | None = None) -> dict[str, str | bool | None]:
+    """Return the current commit and dirty flag without requiring Git."""
+
+    def run(*args: str) -> str | None:
+        try:
+            completed = subprocess.run(
+                ["git", *args],
+                cwd=workdir,
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        except (FileNotFoundError, subprocess.SubprocessError):
+            return None
+        return completed.stdout.strip()
+
+    commit = run("rev-parse", "HEAD")
+    status = run("status", "--porcelain") if commit is not None else None
+    branch = run("branch", "--show-current") if commit is not None else None
+    return {
+        "git_commit": commit,
+        "git_branch": branch,
+        "git_worktree_dirty": None if status is None else bool(status),
+    }

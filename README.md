@@ -4,6 +4,18 @@ Shared Phase 0 framework for comparing backpropagation and explicit local Hebbia
 
 The frozen settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md). The research plan is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 
+## Documentation map
+
+- [PROJECT_STATUS.md](PROJECT_STATUS.md): current completion state, blockers, and next actions; this is the live status source.
+- [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md): frozen BP/Hebbian comparison contract.
+- [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): research questions, formulas, WBS, and acceptance criteria.
+- [docs/tutorial_migration.md](docs/tutorial_migration.md): source provenance and notebook-to-module migration boundary.
+- [docs/phase0_team_confirmation.md](docs/phase0_team_confirmation.md): pending BP teammate compliance evidence.
+
+Run directories, checkpoints, generated figures, and run-specific reports are
+local-only artifacts excluded by `.gitignore`. Reproducible protocols and
+current conclusions remain in tracked source, plan, and status files.
+
 ## Current seed-0 baseline
 
 Both runs use the same deterministic MNIST split, autoencoder architecture,
@@ -22,9 +34,8 @@ single-seed development results rather than final multi-seed conclusions.
 
 The Hebbian rule trains the encoder only. Its reconstruction decoder and
 classification probe are trained with backpropagation after the encoder is
-frozen. See [HEBBIAN_IMPLEMENTATION_REPORT.md](HEBBIAN_IMPLEMENTATION_REPORT.md)
-for formulas, diagnostics, checksums, limitations and the complete result
-record.
+frozen. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for current conclusions,
+limitations, and remaining gates.
 
 ## Setup
 
@@ -73,8 +84,39 @@ python -m training.train_linear_probe --config configs/hebbian_main.yaml --run-d
 python -m evaluation.plot_run_metrics --hebbian-run results/<hebbian-run-id> --bp-run results/<bp-run-id>
 ```
 
-The completed seed-0 implementation and result record is in
-[HEBBIAN_IMPLEMENTATION_REPORT.md](HEBBIAN_IMPLEMENTATION_REPORT.md).
+## Pause and resume a run
+
+Training commits one immutable checkpoint per completed epoch. BP joint
+training, each Hebbian encoder layer, and the frozen decoder can all resume
+without repeating completed epochs. The following option is mainly useful for
+preemption tests or scheduled jobs:
+
+```powershell
+python -m training.train_representation --config configs/hebbian_main.yaml --stop-after-global-epoch 5
+python -m training.train_representation --resume-run-dir results/<run-id>
+```
+
+Each run contains `metadata.json`, `run_status.json`, `metrics.csv`,
+`resume_checkpoint.pt`, immutable files under `checkpoints/`, and the resolved
+configuration. Resume rejects a changed configuration. See
+`utils/checkpointing.py`, `utils/results.py`, and `tests/test_training_resume.py`
+for the exact transaction and test coverage.
+
+## Random-encoder decoder-only reconstruction control
+
+This control keeps the paired encoder at its initial random weights and trains
+only the shared BP decoder. It tests how much reconstruction quality can be
+created by the decoder without encoder learning.
+
+```powershell
+python -m training.train_random_encoder_decoder `
+  --config configs/bp_main.yaml `
+  --bp-run results/<bp-run-id> `
+  --hebbian-run results/<hebbian-run-id>
+```
+
+The seed-0 result and interpretation are summarized in
+[PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 ## Project layout
 

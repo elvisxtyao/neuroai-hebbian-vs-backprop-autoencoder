@@ -111,4 +111,11 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("data and training batch sizes must match")
     if config["probe"]["type"] != "linear" or not config["probe"]["freeze_encoder"]:
         raise ConfigError("phase0-v1 requires a frozen single-layer linear probe")
-
+    if config["hebbian"]["lr"] < 0:
+        raise ConfigError("hebbian.lr must be non-negative")
+    if not 0 < config["hebbian"]["winner_fraction"] <= 1:
+        raise ConfigError("hebbian.winner_fraction must be in (0,1]")
+    for key in ("collapse_min_active_ratio", "collapse_max_winner_share"):
+        value = config["hebbian"].get(key)
+        if value is None or not 0 <= value <= 1:
+            raise ConfigError(f"hebbian.{key} must be in [0,1]")
