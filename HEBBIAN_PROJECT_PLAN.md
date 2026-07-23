@@ -1018,6 +1018,9 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-17 | BP/Hebbian 共用 ConvAutoencoder，只切换 trainer/update rule | 隔离 learning rule 变量 | 维护两套模型 | 减少结构漂移 |
 | 2026-07-17 | Hebbian 使用显式 local update，不使用 custom autograd backward | 便于控制更新时点并记录候选更新 | 在 backward 中替换梯度 | Q4 分析更可验证 |
 | 2026-07-17 | 主实验移除 target clamping | 防止标签信息进入 encoder | 保留教程的 clamping | 保持无监督表示比较 |
+| 2026-07-23 | 发布 Phase 0 v1.1 addendum；BP Adam learning rate 冻结为 `0.003` | validation-only tuning 已选定该值；避免重跑 BP tuning，并补齐正式复现治理 | 沿用父协议 `0.001`；重新 tuning BP | 正式运行改用 `configs/formal/` 和 canonical source ref |
+| 2026-07-23 | 在 Q1/Q4 多 seed 前先执行 representation health gate | `active_neuron_ratio` 接近 `winner_fraction` 时，旧 collapse threshold 可能把预期 top-k 稀疏性误判为病理 collapse | 直接继续 Q1 seeds；仅依据单一 active-ratio 阈值判定 | Stage 1 必须同时检查 winner concentration、dead units、entropy、variance 与 effective rank |
+| 2026-07-23 | Formal probe 在 validation checkpoint 冻结后才首次读取 test | 防止 representation extraction 提前接触 test | 训练 probe 前一次性缓存 train/validation/test | 所有正式 test 只作最终一次评估；tuning 完全不构造 test features |
 
 ---
 

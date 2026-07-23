@@ -35,15 +35,17 @@ class IndexedDataset(Dataset):
         return image, label, sample_id
 
 
-def ensure_split_manifest(config: dict[str, Any], *, download: bool = True) -> Path:
+def ensure_split_manifest(
+    config: dict[str, Any],
+    *,
+    download: bool = True,
+    verify_test: bool = True,
+) -> Path:
     data_config = config["data"]
     manifest_path = Path(data_config["split_manifest"])
     transform = transforms.ToTensor()
     training = datasets.MNIST(
         root=data_config["root"], train=True, download=download, transform=transform
-    )
-    test = datasets.MNIST(
-        root=data_config["root"], train=False, download=download, transform=transform
     )
     labels = np.asarray(training.targets, dtype=np.int64)
     checksum = labels_checksum(labels)
@@ -61,10 +63,20 @@ def ensure_split_manifest(config: dict[str, Any], *, download: bool = True) -> P
         )
         if saved_checksum != checksum:
             raise RuntimeError("MNIST labels differ from the saved split manifest")
-        if int(manifest["test_size"].item()) != len(test):
-            raise RuntimeError("MNIST test size differs from the split manifest")
+        if verify_test:
+            test = datasets.MNIST(
+                root=data_config["root"],
+                train=False,
+                download=download,
+                transform=transform,
+            )
+            if int(manifest["test_size"].item()) != len(test):
+                raise RuntimeError("MNIST test size differs from the split manifest")
         return manifest_path
 
+    test = datasets.MNIST(
+        root=data_config["root"], train=False, download=download, transform=transform
+    )
     train_indices, validation_indices = create_stratified_split(
         labels,
         validation_size=data_config["validation_size"],
@@ -84,23 +96,35 @@ def ensure_split_manifest(config: dict[str, Any], *, download: bool = True) -> P
 
 
 def build_mnist_dataloaders(
-    config: dict[str, Any], *, seed: int, download: bool = True
+    config: dict[str, Any],
+    *,
+    seed: int,
+    download: bool = True,
+    include_test: bool = True,
 ) -> dict[str, DataLoader]:
     data_config = config["data"]
-    manifest_path = ensure_split_manifest(config, download=download)
+    manifest_path = ensure_split_manifest(
+        config,
+        download=download,
+        verify_test=include_test,
+    )
     manifest = np.load(manifest_path, allow_pickle=False)
     transform = transforms.ToTensor()
     training = datasets.MNIST(
         root=data_config["root"], train=True, download=download, transform=transform
     )
-    test = datasets.MNIST(
-        root=data_config["root"], train=False, download=download, transform=transform
-    )
     datasets_by_split = {
         "train": IndexedDataset(training, manifest["train_indices"]),
         "validation": IndexedDataset(training, manifest["validation_indices"]),
-        "test": IndexedDataset(test, manifest["test_indices"]),
     }
+    if include_test:
+        test = datasets.MNIST(
+            root=data_config["root"],
+            train=False,
+            download=download,
+            transform=transform,
+        )
+        datasets_by_split["test"] = IndexedDataset(test, manifest["test_indices"])
     generator = torch.Generator().manual_seed(seed)
     loaders: dict[str, DataLoader] = {}
     for split, dataset in datasets_by_split.items():
@@ -129,4 +153,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

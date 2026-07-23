@@ -82,7 +82,11 @@ def train_linear_probe_config(
     encoder_hash_before = state_dict_checksum(model.encoder)
 
     if loaders is None:
-        loaders = build_mnist_dataloaders(config, seed=seed)
+        loaders = build_mnist_dataloaders(
+            config,
+            seed=seed,
+            include_test=False,
+        )
     # The test set is deliberately excluded while the probe is fitted and its
     # checkpoint is selected. Formal test features are extracted only after
     # the validation-selected checkpoint has been restored below.
@@ -167,6 +171,12 @@ def train_linear_probe_config(
     probe.load_state_dict(best_state)
 
     if not validation_only:
+        if "test" not in loaders:
+            loaders["test"] = build_mnist_dataloaders(
+                config,
+                seed=seed,
+                include_test=True,
+            )["test"]
         test_representations = extract_representations(
             model,
             loaders["test"],

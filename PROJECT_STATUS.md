@@ -4,8 +4,9 @@ Last updated: 2026-07-23
 
 This file is the single source of truth for current execution status. It tracks
 what is complete, what is only exploratory, what is blocked, and what should be
-done next. Research definitions remain in `HEBBIAN_PROJECT_PLAN.md`; frozen
-comparison rules remain in `PHASE0_STANDARD_V1.md`.
+done next. Research definitions remain in `HEBBIAN_PROJECT_PLAN.md`; parent
+comparison rules remain in `PHASE0_STANDARD_V1.md`, with formal-run overrides
+in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 
 ## 1. Status vocabulary
 
@@ -24,6 +25,7 @@ comparison rules remain in `PHASE0_STANDARD_V1.md`.
 |---|---|---|
 | `PROJECT_STATUS.md` | Live operational status and next actions | Update whenever a task changes state |
 | `PHASE0_STANDARD_V1.md` | Frozen normative comparison contract | Do not add progress notes; version any material protocol change |
+| `PHASE0_STANDARD_V1_1_ADDENDUM.md` | Frozen formal-run override and reproducibility gate | Takes precedence over v1 where explicitly stated |
 | `HEBBIAN_PROJECT_PLAN.md` | Research design, formulas, WBS IDs, and acceptance criteria | Update design decisions; use this file for requirements, not live status |
 | `docs/tutorial_migration.md` | Source provenance and migration boundary | Update when a source notebook/tutorial is added or replaced |
 | `docs/phase0_team_confirmation.md` | BP-team compliance evidence/template | Replace pending fields with dated teammate evidence |
@@ -40,9 +42,9 @@ so the repository does not contain broken links to private run records.
 
 | Phase | Status | Evidence | Open gate |
 |---|---|---|---|
-| Phase 0: standard, data, shared interfaces | Partial | Shared model/data/probe, fixed split, runtime validation, expanded run schema, 33 tests | Original Hebbian tutorial provenance and BP teammate confirmation |
-| Phase 1: explicit Hebbian rule | Partial | Conv2d WTA/Oja, L2 normalization, `lr=0`, 500-step stability, reproducible trajectory, collapse detector | BP-reference compatibility |
-| Phase 2: seed-0 end-to-end engineering loop | Partial | Encoder, frozen decoder/probe, exact resume, reconstruction, random-encoder decoder-only control, paired BP–Hebbian diagnostics | Random-encoder linear probe/effective rank absent; enc3 active-neuron gate failed |
+| Stage 0: formal governance and reproducible snapshot | Complete | Phase 0 v1.1 addendum, formal configs/schema, environment and split identity, deferred test access, immutable full pytest log (37 passed), canonical Git ref | None; external tutorial/team records remain archival follow-ups |
+| Phase 1: explicit Hebbian rule | Partial | Conv2d WTA/Oja, L2 normalization, `lr=0`, 500-step stability, reproducible trajectory, legacy collapse detector | Representation-health definition and BP-reference compatibility |
+| Phase 2: seed-0 end-to-end engineering loop | Partial | Encoder, frozen decoder/probe, exact resume, reconstruction, random-encoder decoder-only control, paired BP–Hebbian diagnostics | Stage 1 health gate; historical collapse interpretation is unresolved |
 | Phase 3: validation-only tuning | Complete | Seed 42; 8 Hebbian + 8 BP unique trials; zero test rows; selected config hashes | Hebbian enc3 collapse remains a downstream mechanism warning |
 | Phase 4 / Q1: clean performance | Partial | Paired seeds 0–1; BP, Hebbian, and random controls; test metrics, reconstruction, AULC, timing, preliminary paired CI | Resume partial Hebbian seed 2 and finish paired seeds 2–4 |
 | Phase 5 / Q2: representations | Planned | Extraction helper exists | Fixed 2,000-sample manifest and quantitative layerwise analysis |
@@ -66,6 +68,13 @@ so the repository does not contain broken links to private run records.
 - The official entry points are validated YAML plus Python module CLIs.
 - Decoder/probe language is explicit: only the encoder is Hebbian-trained;
   decoder and probe use backpropagation after encoder freezing.
+- Phase 0 v1.1 freezes BP Adam `lr=0.003`, formal seeds `[0,1,2,3,4]`,
+  tuning seed `42`, formal/preliminary artifact isolation, initialization
+  pairing, and validation-before-test access.
+- Formal configs are validated by the same schema and carry the protocol block
+  into resolved configs and run metadata.
+- The canonical formal source ref is `phase0-v1.1-formal`; environment and
+  full-suite test evidence are tracked under `environment/` and `verification/`.
 
 ### Pending external evidence
 
@@ -78,6 +87,8 @@ so the repository does not contain broken links to private run records.
 These two items are tracked in `docs/tutorial_migration.md` and
 `docs/phase0_team_confirmation.md`. They must remain pending until real evidence
 is supplied; they must not be self-certified by the Hebbian implementation.
+They do not authorize protocol drift and are not blockers for the local
+canonical source freeze.
 
 ## 5. Phase 1 implementation status
 
@@ -96,8 +107,10 @@ is supplied; they must not be self-certified by the Hebbian implementation.
 - `learning_rate=0` is an exact no-op, including no normalization side effect.
 - A 500-update stress test remains finite with unit filter norms.
 - A fixed-seed multi-step update trajectory is bitwise reproducible.
-- Active-filter and maximum-winner-share thresholds produce an automatic
-  `collapse_detected` field in every Hebbian epoch record.
+- Active-filter and maximum-winner-share thresholds produce a legacy
+  `collapse_detected` field in every Hebbian epoch record. Its scientific
+  interpretation is not accepted until Stage 1 validates it against expected
+  top-k sparsity and additional representation-health metrics.
 
 ### Open engineering debt
 
@@ -155,16 +168,20 @@ cannot demonstrate that the Hebbian encoder learned a better latent
 representation. The random-encoder linear-probe control is still required for
 classification and representation claims.
 
-The run remains exploratory because the representation-collapse gate did not
-pass:
+The run remains exploratory because the representation-health gate has not
+been run. The historical threshold produced the following diagnostic:
 
 | Layer | Final active-neuron ratio | Final winner entropy | Gate interpretation |
 |---|---:|---:|---|
-| enc1 | 1.0000 | 0.7466 | No active-filter collapse detected |
-| enc2 | 0.4688 | 0.5711 | Warning: participation falls during training |
-| enc3 | 0.2031 | 0.6167 | Failure: activity is near the 20% WTA floor |
+| enc1 | 1.0000 | 0.7466 | Legacy detector did not flag active-filter collapse |
+| enc2 | 0.4688 | 0.5711 | Participation falls; needs Stage 1 context |
+| enc3 | 0.2031 | 0.6167 | Unresolved; active ratio alone is not a valid collapse verdict |
 
-Effective rank was not saved in the historical seed-0 run. A paired
+Another current checkpoint reports `active_neuron_ratio=0.109375`, close to
+the configured `winner_fraction=0.10`; this is exactly the condition under
+which expected WTA sparsity may be confused with pathological winner
+concentration. Stage 1 must reconcile checkpoints on one fixed validation
+subset. Effective rank was not saved in the historical seed-0 run. A paired
 random-encoder **linear-probe** control is now included in the formal Q1
 pipeline; the two completed seeds average 82.765% test accuracy. The older
 89.00% Hebbian result remains development evidence and is not mixed with the
@@ -186,27 +203,44 @@ new frozen-configuration Q1 runs.
 - Existing seed-0 test results are development evidence and must not be used to
   select future hyperparameters.
 - Formal tuning uses only `tuning_seed=42` and validation metrics.
-- Test results are evaluated only after the selected config is frozen.
+- Phase 0 v1.1 overrides the parent BP default: Adam learning rate is `0.003`;
+  BP learning-rate tuning is not repeated.
+- Test representations and metrics are evaluated only after every
+  validation-only choice is frozen and the best validation checkpoint restored.
 - BP and Hebbian must continue to share forward architecture and evaluation
   code within each experiment variant.
 - The main model must be described as a Hebbian-trained encoder with a
   BP-trained decoder and linear probe, not a fully Hebbian autoencoder.
 - Any material change to data, shapes, loss, training budget, probe, or noise
   realization requires a documented standard-version change and paired reruns.
+- Existing dirty/historical runs remain preliminary and cannot be copied into
+  the formal artifact tree.
+- No further Q1 seeds, Q4 run, dimension sweep, or architecture sweep may start
+  before the Stage 1 health gate and Stage 2 Q4 tooling gate pass.
 
 ## 9. Immediate next actions
 
-1. Obtain the original Hebbian tutorial source and complete its provenance row
-   in `docs/tutorial_migration.md`.
-2. Send `docs/phase0_team_confirmation.md` to the BP teammate and attach their
-   dated response or listed deviations.
-3. Implement the matched-state BP-reference candidate required by Q4.
-4. Resume Phase 4 from Hebbian seed 2 enc1 epoch 7 and complete paired seeds
-   2–4 with the frozen L=64 selected configs.
-5. Implement the fixed-subset effective-rank metric for Phase 5.
+1. **Stage 1 — representation health gate:** create one deterministic,
+   class-balanced 2,000-image validation manifest and evaluate expected versus
+   observed sparsity, winner frequency/concentration, dead-unit ratio, entropy,
+   activation variance, and effective rank on seed-42/current Q1 checkpoints.
+   Output an explicit PASS/FAIL without reading test.
+2. **Stage 1B — conditional Hebbian repair:** run only if Stage 1 FAILS. Use
+   train/validation evidence and preregistered candidates; freeze a new config
+   and hash only after it passes the same health gate.
+3. **Stage 2 / Q4 tooling gate:** on the health-approved seed-42 snapshots and
+   50 fixed batches, implement raw BP direction, raw/effective Hebbian delta,
+   cosine, norm ratio, alpha-star, scale-matched bias, and per-rule SNR. Require
+   synthetic tests, fixed sample IDs, no optimizer step, unchanged hashes, and
+   complete seed-42 output.
+4. **Stage 3 / Q1 formal runs:** only after Stages 1–2 pass, generate paired
+   BP/Hebbian/random seeds 0–4 from the canonical ref and formal configs.
+5. Continue in dependency order: Q4 five-seed analysis; Q1 final statistics;
+   Q2 representations; Q3 deterministic noise; Q5 dimension; Q5/Q6 asymmetry;
+   final paper and reproducibility package.
 
-No five-seed, dimension, or architecture matrix should start before actions
-1–5 are complete or explicitly waived in a dated decision record.
+Tutorial provenance and teammate confirmation remain useful coordination items,
+but they do not replace or reorder the scientific gates above.
 
 ## 10. Status change log
 
@@ -221,3 +255,4 @@ No five-seed, dimension, or architecture matrix should start before actions
 | 2026-07-22 | Run-specific reports and generated outputs changed to local-only Git policy | `.gitignore`, this status file |
 | 2026-07-23 | Step 3 validation-only tuning completed and shared-L64 configs frozen | `docs/validation_tuning.md`, tuning runner, manifests, selected configs |
 | 2026-07-23 | Step 4 paused after paired seeds 0–1; preliminary Q1 table, random controls, AULC/timing plots, paired CI, and safe seed-boundary resume added | `docs/q1_clean_performance.md`, `training/run_q1_clean.py`, `tests/test_q1_clean.py` |
+| 2026-07-23 | Stage 0 formal governance frozen: Phase 0 v1.1, BP `lr=0.003`, formal configs/schema, environment/split identity, deferred test access, full tests, and canonical source ref | `PHASE0_STANDARD_V1_1_ADDENDUM.md`, `configs/formal/`, `environment/`, `verification/phase0_v1_1/pytest_full.log` |

@@ -2,12 +2,20 @@
 
 Shared Phase 0 framework for comparing backpropagation and explicit local Hebbian learning in a 3-layer convolutional autoencoder on MNIST.
 
-The frozen settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md). The research plan is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
+The parent settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md).
+Formal experiments use the versioned
+[Phase 0 v1.1 addendum](PHASE0_STANDARD_V1_1_ADDENDUM.md), which freezes the
+BP learning rate at `0.003` and adds reproducibility gates. The research plan
+is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 
 ## Documentation map
 
 - [PROJECT_STATUS.md](PROJECT_STATUS.md): current completion state, blockers, and next actions; this is the live status source.
 - [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md): frozen BP/Hebbian comparison contract.
+- [PHASE0_STANDARD_V1_1_ADDENDUM.md](PHASE0_STANDARD_V1_1_ADDENDUM.md):
+  formal experiment override, source snapshot, test policy, and artifact naming.
+- [environment/phase0_v1_1_environment.md](environment/phase0_v1_1_environment.md):
+  exact CPU runtime, deterministic flags, split hash, dependencies, and test evidence.
 - [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): research questions, formulas, WBS, and acceptance criteria.
 - [docs/tutorial_migration.md](docs/tutorial_migration.md): source provenance and notebook-to-module migration boundary.
 - [docs/phase0_team_confirmation.md](docs/phase0_team_confirmation.md): pending BP teammate compliance evidence.
@@ -18,6 +26,10 @@ The frozen settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md). The r
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
 current conclusions remain in tracked source, plan, and status files.
+
+Formal runs must use `configs/formal/`, live below
+`results/formal/phase0_v1_1/`, and start from the immutable Git ref
+`phase0-v1.1-formal`. Existing `results/` runs remain preliminary.
 
 ## Current seed-0 baseline
 
@@ -58,6 +70,9 @@ python -m scripts.smoke_test --config configs/bp_main.yaml
 ```
 
 The smoke test uses synthetic inputs and does not download MNIST.
+
+The immutable Stage 0 full-suite record is
+`verification/phase0_v1_1/pytest_full.log`.
 
 ## Generate the fixed MNIST split
 

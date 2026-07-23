@@ -532,6 +532,7 @@ def _new_run_metadata(
         "model_type": "convolutional_autoencoder",
         "architecture_id": config["model"]["architecture"],
         "seed": int(config["training"]["seed"]),
+        "protocol": config.get("protocol", {}),
         "device": str(device),
         "python": platform.python_version(),
         "torch": torch.__version__,
@@ -560,7 +561,7 @@ def train_config(
     set_global_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if loaders is None:
-        loaders = build_mnist_dataloaders(config, seed=seed)
+        loaders = build_mnist_dataloaders(config, seed=seed, include_test=False)
     model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed)
     trainer = build_trainer(model, config, device)
 

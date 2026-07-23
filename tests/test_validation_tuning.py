@@ -95,11 +95,28 @@ def test_formal_probe_defers_test_until_after_validation_selection(
         validation_complete["value"] = True
         return metrics
 
+    loader_builds = []
+
+    def build_after_validation(config, *, seed, include_test):
+        loader_builds.append((include_test, validation_complete["value"]))
+        if include_test:
+            return loaders
+        return {
+            "train": loaders["train"],
+            "validation": loaders["validation"],
+        }
+
     monkeypatch.setattr(probe_training, "_evaluate_probe", record_validation)
-    train_linear_probe_config(config, run_dir, validation_only=False, loaders=loaders)
+    monkeypatch.setattr(
+        probe_training,
+        "build_mnist_dataloaders",
+        build_after_validation,
+    )
+    train_linear_probe_config(config, run_dir, validation_only=False)
 
     with (run_dir / "metrics.csv").open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
+    assert loader_builds == [(False, False), (True, True)]
     assert any(
         row["stage"] == "linear_probe_final" and row["split"] == "test"
         for row in rows

@@ -239,6 +239,7 @@ class Q1Runner:
                     "architecture_id": config["model"]["architecture"],
                     "latent_dim": config["model"]["latent_dim"],
                     "seed": seed,
+                    "protocol": config.get("protocol", {}),
                     "device": "cpu",
                     "initial_state_hash": state_dict_checksum(model),
                     **git_provenance(str(Path.cwd())),
