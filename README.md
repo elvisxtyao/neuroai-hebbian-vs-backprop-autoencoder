@@ -25,6 +25,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/representation_health_gate.md](docs/representation_health_gate.md):
   completed validation-only Stage 1 gate, corrected collapse definition, and
   evidence for the required Stage 1B repair.
+- [docs/stage1b_hebbian_repair.md](docs/stage1b_hebbian_repair.md):
+  frozen validation-only repair outcome; all eight preregistered candidates
+  failed and no replacement Hebbian config was selected.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -90,7 +93,10 @@ python -m evaluation.run_representation_health `
 
 The selected Hebbian seed-42 checkpoint failed the gate: its `z` representation
 uses the same seven winners on all 2,000 validation images and has effective
-rank `1.0186`. See the Stage 1 report before running subsequent experiments.
+rank `1.0186`. Stage 1B then evaluated eight preregistered validation-only
+repair candidates; none passed both the unchanged health gate and the
+validation-accuracy floor. Stage 1B is frozen with no selected replacement.
+The next gate is the no-training Stage 1C effective-rank metric audit.
 
 ## Generate the fixed MNIST split
 
