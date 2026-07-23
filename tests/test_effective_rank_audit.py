@@ -101,3 +101,13 @@ def test_epsilon_audit_detects_non_dominant_and_dominant_cases():
         formula_epsilons=[100.0],
     )
     assert not valid_with_huge_epsilon
+
+
+def test_constant_l2_directions_have_numerical_zero_centered_variance():
+    scales = torch.arange(1, 9, dtype=torch.float64).unsqueeze(1)
+    direction = torch.tensor([[3.0, 4.0, 0.0]], dtype=torch.float64)
+    normalized = l2_normalize_samples(scales * direction)
+    result = spectrum_metrics(normalized)
+
+    assert result.trace < 1e-12
+    assert result.squared_trace < 1e-12

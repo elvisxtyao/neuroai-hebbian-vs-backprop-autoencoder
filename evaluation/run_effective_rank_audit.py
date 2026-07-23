@@ -162,7 +162,7 @@ def _evaluate_frozen_probe(
 def run_audit(config_path: str | Path) -> Path:
     config_path = _resolve(config_path)
     config = _load_yaml(config_path)
-    if config.get("version") != "effective-rank-audit-v1":
+    if config.get("version") != "effective-rank-audit-v1.1":
         raise ValueError("Unsupported Stage 1C config version")
     provenance = git_provenance(str(ROOT))
     if provenance["git_worktree_dirty"]:
@@ -292,6 +292,7 @@ def run_audit(config_path: str | Path) -> Path:
     class_covariance_rows: list[dict[str, Any]] = []
     epsilon_rows: list[dict[str, Any]] = []
     epsilon_checks: dict[str, bool] = {}
+    epsilon_dominance: dict[str, bool] = {}
     spectra: dict[str, Any] = {}
     for representation_id, layer, transform, matrix, matrix_labels, axis in matrices:
         print(
@@ -323,6 +324,16 @@ def run_audit(config_path: str | Path) -> Path:
                 "numerical_rank_tolerance": result.numerical_rank_tolerance,
                 "covariance_trace": result.trace,
                 "covariance_squared_trace": result.squared_trace,
+                "stage1_epsilon_dominates": (
+                    result.trace <= float(config["stage1_variance_epsilon"])
+                    or result.squared_trace
+                    <= float(config["stage1_variance_epsilon"])
+                ),
+                "rank_defined_at_stage1_epsilon": (
+                    result.trace > float(config["stage1_variance_epsilon"])
+                    and result.squared_trace
+                    > float(config["stage1_variance_epsilon"])
+                ),
             }
         )
         for index, value in enumerate(result.eigenvalues.tolist(), start=1):
@@ -359,6 +370,9 @@ def run_audit(config_path: str | Path) -> Path:
                 ],
             )
             epsilon_checks[representation_id] = stable
+            epsilon_dominance[representation_id] = any(
+                bool(row["epsilon_dominates"]) for row in sensitivity
+            )
             for row in sensitivity:
                 epsilon_rows.append({"representation_id": representation_id, **row})
         spectra[representation_id] = result
@@ -427,7 +441,19 @@ def run_audit(config_path: str | Path) -> Path:
         "dataset_level_centering_explicit": all(
             row["dataset_centered_for_covariance"] for row in rank_rows
         ),
-        "epsilon_not_dominant": all(epsilon_checks.values()),
+        "epsilon_audit_complete": set(epsilon_checks) == set(z_variants),
+        "primary_pre_post_epsilon_not_dominant": (
+            epsilon_checks["z_pre_wta"]
+            and epsilon_checks["z_post_wta"]
+            and not epsilon_dominance["z_pre_wta"]
+            and not epsilon_dominance["z_post_wta"]
+        ),
+        "l2_zero_variance_is_explicit": (
+            spectra["z_post_wta_l2"].trace
+            <= float(config["stage1_variance_epsilon"])
+            or spectra["z_post_wta_l2"].squared_trace
+            <= float(config["stage1_variance_epsilon"])
+        ),
         "subset_has_2000_unique_ids": sample_ids.size
         == 2000
         == np.unique(sample_ids).size,
@@ -469,6 +495,18 @@ def run_audit(config_path: str | Path) -> Path:
             "stable_rank": z_post_result.stable_rank,
             "rank_ratio": z_post_result.rank_ratio,
             "winner_count_per_sample": int(winner_mask.sum(dim=1)[0].item()),
+        },
+        "epsilon_interpretation": {
+            "primary_pre_wta_dominated": epsilon_dominance["z_pre_wta"],
+            "primary_post_wta_dominated": epsilon_dominance["z_post_wta"],
+            "l2_variant_dominated": epsilon_dominance["z_post_wta_l2"],
+            "l2_centered_covariance_trace": spectra["z_post_wta_l2"].trace,
+            "note": (
+                "The L2-normalized post-WTA vectors are effectively identical. "
+                "After dataset centering their variance is numerical zero, so "
+                "their effective rank is undefined at the Stage 1 epsilon. "
+                "This does not control the pre/post-WTA mechanism decision."
+            ),
         },
         "qa": qa,
         "linear_probe": {
@@ -549,7 +587,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="configs/experiments/effective_rank_audit_v1.yaml",
+        default="configs/experiments/effective_rank_audit_v1_1.yaml",
     )
     args = parser.parse_args()
     output = run_audit(args.config)
