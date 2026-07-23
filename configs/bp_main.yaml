@@ -3,3 +3,6 @@ extends: common_mnist.yaml
 training:
   learning_rule: bp
 
+backprop:
+  lr: 0.003
+  weight_decay: 0.0

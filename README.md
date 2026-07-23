@@ -11,6 +11,9 @@ The frozen settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md). The r
 - [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): research questions, formulas, WBS, and acceptance criteria.
 - [docs/tutorial_migration.md](docs/tutorial_migration.md): source provenance and notebook-to-module migration boundary.
 - [docs/phase0_team_confirmation.md](docs/phase0_team_confirmation.md): pending BP teammate compliance evidence.
+- [docs/validation_tuning.md](docs/validation_tuning.md): formal seed-42 validation-only search and frozen configs.
+- [docs/q1_clean_performance.md](docs/q1_clean_performance.md): paused
+  two-seed Q1 run, preliminary results, and recovery instructions.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -117,6 +120,39 @@ python -m training.train_random_encoder_decoder `
 
 The seed-0 result and interpretation are summarized in
 [PROJECT_STATUS.md](PROJECT_STATUS.md).
+
+## Validation-only tuning
+
+The formal tuning manifest uses seed 42, balanced eight-unique-trial budgets,
+and never evaluates a test metric. The runner is safe to restart.
+
+```powershell
+python -m training.run_validation_tuning `
+  --manifest configs/tuning/validation_tuning_v1.yaml `
+  --output-dir results/tuning/validation_tuning_v1
+```
+
+Selected L=64 main-comparison configs are in `configs/selected/`. See
+[docs/validation_tuning.md](docs/validation_tuning.md).
+
+## Q1 clean-performance run
+
+The resumable Q1 runner executes paired BP, Hebbian, and random-encoder
+controls, then writes raw rows, paired differences, bootstrap summaries, and
+learning-curve figures. It can stop safely after a complete seed:
+
+```powershell
+python -m training.run_q1_clean `
+  --manifest configs/experiments/q1_clean_v1.yaml `
+  --output-dir results/q1_clean_v1 `
+  --stop-after-seed 1
+```
+
+The current run is paused after seeds 0–1. Its preliminary mean test accuracy
+is 91.595% for BP, 90.220% for Hebbian, and 82.765% for the random encoder.
+See [docs/q1_clean_performance.md](docs/q1_clean_performance.md) before citing
+these values; five paired seeds are still required for the final Q1 claim.
+Resume the full matrix by omitting `--stop-after-seed`.
 
 ## Project layout
 

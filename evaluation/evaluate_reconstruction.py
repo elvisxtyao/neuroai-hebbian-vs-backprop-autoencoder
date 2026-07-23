@@ -11,13 +11,19 @@ from torchvision.utils import save_image
 
 from data.mnist import build_mnist_dataloaders
 from models import ConvAutoencoder
-from schemas import load_config
+from schemas import load_config, validate_config
 from utils.results import append_metric
 
 
 @torch.no_grad()
-def evaluate(config_path: str | Path, run_dir: str | Path, *, num_images: int = 10) -> Path:
-    config = load_config(config_path)
+def evaluate_config(
+    config: dict,
+    run_dir: str | Path,
+    *,
+    num_images: int = 10,
+    loaders=None,
+) -> Path:
+    validate_config(config)
     run_dir = Path(run_dir)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ConvAutoencoder(config["model"]["latent_dim"])
@@ -25,9 +31,11 @@ def evaluate(config_path: str | Path, run_dir: str | Path, *, num_images: int = 
         torch.load(run_dir / "model_best.pt", map_location="cpu", weights_only=True)
     )
     model.to(device).eval()
-    loader = build_mnist_dataloaders(
-        config, seed=int(config["training"]["seed"]), download=False
-    )["test"]
+    if loaders is None:
+        loaders = build_mnist_dataloaders(
+            config, seed=int(config["training"]["seed"]), download=False
+        )
+    loader = loaders["test"]
     criterion = nn.MSELoss(reduction="sum")
     squared_error = 0.0
     num_pixels = 0
@@ -44,6 +52,8 @@ def evaluate(config_path: str | Path, run_dir: str | Path, *, num_images: int = 
                 grid_items.extend([original, reconstructed])
 
     test_mse = squared_error / num_pixels
+    output_path = run_dir / "reconstructions_original_then_reconstructed.png"
+    save_image(torch.stack(grid_items), output_path, nrow=2, padding=2, pad_value=1.0)
     append_metric(
         run_dir,
         {
@@ -54,11 +64,15 @@ def evaluate(config_path: str | Path, run_dir: str | Path, *, num_images: int = 
             "num_samples": len(loader.dataset),
         },
     )
-    output_path = run_dir / "reconstructions_original_then_reconstructed.png"
-    save_image(torch.stack(grid_items), output_path, nrow=2, padding=2, pad_value=1.0)
     print(f"test_mse={test_mse:.8f}")
     print(output_path.resolve())
     return output_path
+
+
+def evaluate(
+    config_path: str | Path, run_dir: str | Path, *, num_images: int = 10
+) -> Path:
+    return evaluate_config(load_config(config_path), run_dir, num_images=num_images)
 
 
 def main() -> None:

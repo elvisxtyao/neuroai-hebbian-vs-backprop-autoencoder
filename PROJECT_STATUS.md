@@ -1,6 +1,6 @@
 # NeuroAI BP–Hebbian Project Status
 
-Last updated: 2026-07-22
+Last updated: 2026-07-23
 
 This file is the single source of truth for current execution status. It tracks
 what is complete, what is only exploratory, what is blocked, and what should be
@@ -27,6 +27,8 @@ comparison rules remain in `PHASE0_STANDARD_V1.md`.
 | `HEBBIAN_PROJECT_PLAN.md` | Research design, formulas, WBS IDs, and acceptance criteria | Update design decisions; use this file for requirements, not live status |
 | `docs/tutorial_migration.md` | Source provenance and migration boundary | Update when a source notebook/tutorial is added or replaced |
 | `docs/phase0_team_confirmation.md` | BP-team compliance evidence/template | Replace pending fields with dated teammate evidence |
+| `docs/validation_tuning.md` | Formal validation-only tuning table, decisions, hashes, and limitations | Preserve seed-42 results; do not add test metrics |
+| `docs/q1_clean_performance.md` | Preliminary paired clean-performance results and exact recovery point | Keep the n=2 limitation until seeds 2–4 complete |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -38,11 +40,11 @@ so the repository does not contain broken links to private run records.
 
 | Phase | Status | Evidence | Open gate |
 |---|---|---|---|
-| Phase 0: standard, data, shared interfaces | Partial | Shared model/data/probe, fixed split, runtime validation, expanded run schema, 27 tests | Original Hebbian tutorial provenance and BP teammate confirmation |
+| Phase 0: standard, data, shared interfaces | Partial | Shared model/data/probe, fixed split, runtime validation, expanded run schema, 33 tests | Original Hebbian tutorial provenance and BP teammate confirmation |
 | Phase 1: explicit Hebbian rule | Partial | Conv2d WTA/Oja, L2 normalization, `lr=0`, 500-step stability, reproducible trajectory, collapse detector | BP-reference compatibility |
 | Phase 2: seed-0 end-to-end engineering loop | Partial | Encoder, frozen decoder/probe, exact resume, reconstruction, random-encoder decoder-only control, paired BP–Hebbian diagnostics | Random-encoder linear probe/effective rank absent; enc3 active-neuron gate failed |
-| Phase 3: validation-only tuning | Planned | Search space specified | Tuning runner and sealed-test selection report |
-| Phase 4 / Q1: clean performance | Exploratory | One BP/Hebbian seed-0 comparison | Five paired seeds, random control, CI, AULC, samples seen, wall-clock |
+| Phase 3: validation-only tuning | Complete | Seed 42; 8 Hebbian + 8 BP unique trials; zero test rows; selected config hashes | Hebbian enc3 collapse remains a downstream mechanism warning |
+| Phase 4 / Q1: clean performance | Partial | Paired seeds 0–1; BP, Hebbian, and random controls; test metrics, reconstruction, AULC, timing, preliminary paired CI | Resume partial Hebbian seed 2 and finish paired seeds 2–4 |
 | Phase 5 / Q2: representations | Planned | Extraction helper exists | Fixed 2,000-sample manifest and quantitative layerwise analysis |
 | Phase 6 / Q3: robustness | Planned | Noise severities specified in config | Deterministic noise generator and paired evaluation |
 | Phase 7 / Q4: update mechanisms | Planned | Hebbian candidate update exists | Frozen BP reference, alignment, bias, variance, and SNR |
@@ -162,16 +164,17 @@ pass:
 | enc2 | 0.4688 | 0.5711 | Warning: participation falls during training |
 | enc3 | 0.2031 | 0.6167 | Failure: activity is near the 20% WTA floor |
 
-Effective rank was not saved, and the random-encoder **linear-probe** control
-has not been run. Therefore the current 89.00% Hebbian test accuracy is not yet
-a confirmatory answer to Q1. The completed decoder-only control answers a
-reconstruction confound, not the classification baseline.
+Effective rank was not saved in the historical seed-0 run. A paired
+random-encoder **linear-probe** control is now included in the formal Q1
+pipeline; the two completed seeds average 82.765% test accuracy. The older
+89.00% Hebbian result remains development evidence and is not mixed with the
+new frozen-configuration Q1 runs.
 
 ## 7. Research-question status
 
 | Question | Current answer | Required before claiming an answer |
 |---|---|---|
-| Q1: classification performance | Seed-0 suggests BP is 2.81 percentage points higher | Validation-only tuning, random control, five paired seeds, paired CI |
+| Q1: classification performance | Preliminary n=2: BP 91.595%, Hebbian 90.220%, random encoder 82.765%; paired Hebbian−BP gap −1.375 pp | Resume and complete paired seeds 2–4 before confirmatory claim |
 | Q2: latent representations | Only sparsity/active ratio/winner entropy are available | h1/h2/z fixed-subset geometry and quantitative metrics |
 | Q3: robustness | No result | Deterministic paired clean-to-noisy evaluation |
 | Q4: weight updates | Only Hebbian candidate norms are logged | Matched-state BP reference, alignment, norm ratio, bias, variance, SNR |
@@ -198,8 +201,9 @@ reconstruction confound, not the classification baseline.
 2. Send `docs/phase0_team_confirmation.md` to the BP teammate and attach their
    dated response or listed deviations.
 3. Implement the matched-state BP-reference candidate required by Q4.
-4. Implement the random-encoder linear-probe control and effective-rank metric.
-5. Run validation-only tuning with seed 42 and publish selected frozen configs.
+4. Resume Phase 4 from Hebbian seed 2 enc1 epoch 7 and complete paired seeds
+   2–4 with the frozen L=64 selected configs.
+5. Implement the fixed-subset effective-rank metric for Phase 5.
 
 No five-seed, dimension, or architecture matrix should start before actions
 1–5 are complete or explicitly waived in a dated decision record.
@@ -215,3 +219,5 @@ No five-seed, dimension, or architecture matrix should start before actions
 | 2026-07-22 | Step 2.2 random frozen encoder + trained decoder baseline completed and recovered from epoch 7 | `training/train_random_encoder_decoder.py`, `tests/test_random_encoder_decoder.py` |
 | 2026-07-22 | Common-metric BP–Hebbian training diagnostic plot implemented | `evaluation/plot_run_metrics.py` |
 | 2026-07-22 | Run-specific reports and generated outputs changed to local-only Git policy | `.gitignore`, this status file |
+| 2026-07-23 | Step 3 validation-only tuning completed and shared-L64 configs frozen | `docs/validation_tuning.md`, tuning runner, manifests, selected configs |
+| 2026-07-23 | Step 4 paused after paired seeds 0–1; preliminary Q1 table, random controls, AULC/timing plots, paired CI, and safe seed-boundary resume added | `docs/q1_clean_performance.md`, `training/run_q1_clean.py`, `tests/test_q1_clean.py` |

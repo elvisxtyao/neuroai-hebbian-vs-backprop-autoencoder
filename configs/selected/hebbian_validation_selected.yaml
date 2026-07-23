@@ -1,0 +1,105 @@
+version: phase0-v1
+data:
+  dataset: MNIST
+  root: data/raw
+  split_manifest: data/splits/mnist_split_v1.npz
+  split_seed: 0
+  train_size: 50000
+  validation_size: 10000
+  test_size: 10000
+  input_range:
+  - 0.0
+  - 1.0
+  normalization: none
+  batch_size: 128
+  num_workers: 0
+  pin_memory: false
+  drop_last: false
+model:
+  architecture: conv3_ae_v1
+  encoder_channels:
+  - 16
+  - 32
+  latent_dim: 64
+  latent_dims_sweep:
+  - 16
+  - 32
+  - 64
+  - 128
+  activation: relu
+  output_activation: sigmoid
+  encoder_bias: false
+  decoder_bias: true
+  normalization: none
+  dropout: 0.0
+  target_clamping: false
+training:
+  learning_rule: hebbian
+  seed: 42
+  paired_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  tuning_seed: 42
+  batch_size: 128
+  bp_epochs: 10
+  hebbian_epochs_per_layer: 10
+  decoder_epochs: 10
+  reconstruction_loss: mse_pixel_mean
+backprop:
+  optimizer: adam
+  lr: 0.001
+  betas:
+  - 0.9
+  - 0.999
+  weight_decay: 0.0
+hebbian:
+  lr: 0.0005
+  winner_fraction: 0.1
+  update: oja
+  filter_l2_normalize: true
+  normalization_epsilon: 1.0e-08
+  collapse_min_active_ratio: 0.25
+  collapse_max_winner_share: 0.5
+probe:
+  type: linear
+  freeze_encoder: true
+  standardize_features: true
+  standardization_epsilon: 1.0e-06
+  epochs: 30
+  optimizer: sgd
+  lr: 0.1
+  momentum: 0.9
+  weight_decay: 0.0001
+representation:
+  subset_size: 2000
+  samples_per_class: 200
+  subset_seed: 17
+  layers:
+  - h1
+  - h2
+  - z
+noise:
+  seed: 2026
+  gaussian_sigma:
+  - 0.0
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  salt_pepper_ratio:
+  - 0.0
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+  pixel_mask_ratio:
+  - 0.0
+  - 0.1
+  - 0.2
+  - 0.3
+  - 0.4
+results:
+  root: results

@@ -2,7 +2,7 @@
 
 > 项目：3-layer convolutional autoencoder 中 Backpropagation 与 Hebbian learning 的比较
 > 本文档范围：Hebbian 模型的实现、训练、评估、机制分析，以及与 BP 组员的接口对齐
-> 当前状态：`Phase 2 seed-0 baseline completed; mechanism sweeps pending`
+> 当前状态：`Phase 4 paused after paired seeds 0–1; seeds 2–4 pending`
 > 最后更新：2026-07-21
 
 > 文档角色：本文件保存研究设计、公式、WBS ID 和验收条件。实时完成状态只在
@@ -549,10 +549,14 @@ latent_dims: [16, 32, 64, 128]
 ### Phase 4 — Q1：clean classification performance
 
 - [ ] 对预注册架构运行至少 5 个 paired seeds；
-- [ ] 保存 encoder 与 probe 的逐 epoch/step 指标；
-- [ ] 报告 accuracy、macro-F1、CE、AULC、samples-to-threshold、wall-clock；
-- [ ] 分开报告 encoder learning 与 probe learning；
-- [ ] 计算 paired difference 与 bootstrap 95% CI。
+- [x] 保存 encoder 与 probe 的逐 epoch/step 指标；
+- [x] 报告 accuracy、macro-F1、CE、AULC、samples-to-threshold、wall-clock；
+- [x] 分开报告 encoder learning 与 probe learning；
+- [x] 计算 paired difference 与 bootstrap 95% CI。
+
+截至 2026-07-23，以上分析管线已在 paired seeds 0–1 上完成并验证，
+报告见 `docs/q1_clean_performance.md`。当前区间仅用于检查统计管线；
+完成 seeds 2–4 前不得作为五种子确认性结论。
 
 学习速度定义：
 
@@ -794,40 +798,40 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 #### P3 — Validation-only 超参数选择
 
-- [ ] `P3-CFG-01` 创建 tuning seed 42 的 Hebbian LR configs；
-- [ ] `P3-RUN-01` 依次运行 4 个 Hebbian LR trials；
-- [ ] `P3-SEL-01` 用 validation linear-probe accuracy 选择 LR；
-- [ ] `P3-CFG-02` 基于最佳 LR 创建 3 个 winner-fraction configs；
-- [ ] `P3-RUN-02` 依次运行 winner-fraction trials；
-- [ ] `P3-SEL-02` 选择 Hebbian 最终 validation config；
-- [ ] `P3-CFG-03` 创建 BP LR 与 weight-decay trial configs；
-- [ ] `P3-CHECK-01` 核对 BP/Hebbian trial 数均不超过 8；
-- [ ] `P3-CHECK-02` 检查所有 tuning outputs 不含 test metrics；
-- [ ] `P3-LOG-01` 保存完整 trial table，包括失败 trials；
-- [ ] `P3-FREEZE-01` 生成最终 `hebbian_main.yaml`；
-- [ ] `P3-FREEZE-02` 接收并校验最终 `bp_main.yaml`；
-- [ ] `P3-FREEZE-03` 保存两份 resolved config hash；
-- [ ] `P3-FREEZE-04` 在决策日志中记录选择理由。
+- [x] `P3-CFG-01` 创建 tuning seed 42 的 Hebbian LR configs；
+- [x] `P3-RUN-01` 依次运行 4 个 Hebbian LR trials；
+- [x] `P3-SEL-01` 用 validation linear-probe accuracy 选择 LR；
+- [x] `P3-CFG-02` 基于最佳 LR 创建 3 个 winner-fraction configs；
+- [x] `P3-RUN-02` 依次运行 winner-fraction trials；
+- [x] `P3-SEL-02` 选择 Hebbian 最终 validation config；
+- [x] `P3-CFG-03` 创建 BP LR 与 weight-decay trial configs；
+- [x] `P3-CHECK-01` 核对 BP/Hebbian trial 数均不超过 8；
+- [x] `P3-CHECK-02` 检查所有 tuning outputs 不含 test metrics；
+- [x] `P3-LOG-01` 保存完整 trial table，包括失败 trials；
+- [x] `P3-FREEZE-01` 生成最终 `hebbian_main.yaml`；
+- [x] `P3-FREEZE-02` 接收并校验最终 `bp_main.yaml`；
+- [x] `P3-FREEZE-03` 保存两份 resolved config hash；
+- [x] `P3-FREEZE-04` 在决策日志中记录选择理由。
 
 #### P4 — Q1 clean performance
 
-- [ ] `P4-MATRIX-01` 生成 Hebbian seeds 0–4 run manifest；
-- [ ] `P4-MATRIX-02` 生成 BP seeds 0–4 run manifest；
-- [ ] `P4-RUN-01` 完成 Hebbian seed 0–4 representation training；
-- [ ] `P4-RUN-02` 完成 BP seed 0–4 autoencoder training；
-- [ ] `P4-RUN-03` 完成两种模型全部 frozen probes；
-- [ ] `P4-RUN-04` 完成两种模型全部 reconstruction evaluation；
-- [ ] `P4-QA-01` 检查每个 run 的 config、hash、checkpoint 和日志齐全；
-- [ ] `P4-QA-02` 检查 paired seeds 使用相同初始 state 与 batch order；
-- [ ] `P4-METRIC-01` 汇总 accuracy、macro-F1 和 classification CE；
-- [ ] `P4-METRIC-02` 汇总 reconstruction MSE；
-- [ ] `P4-METRIC-03` 汇总 encoder/probe dataset passes 与 wall-clock；
-- [ ] `P4-METRIC-04` 计算 epoch/samples-seen/wall-clock AULC；
-- [ ] `P4-STAT-01` 输出每 seed paired differences；
-- [ ] `P4-STAT-02` 计算 mean±SD 和 paired bootstrap 95% CI；
-- [ ] `P4-FIG-01` 绘制 learning curves；
-- [ ] `P4-TABLE-01` 生成 clean performance 主表；
-- [ ] `P4-NOTE-01` 写出 Q1 的结果摘要与限制。
+- [x] `P4-MATRIX-01` 生成 Hebbian seeds 0–4 run manifest；
+- [x] `P4-MATRIX-02` 生成 BP seeds 0–4 run manifest；
+- [ ] `P4-RUN-01` 完成 Hebbian seed 0–4 representation training（0–1 完成；2 部分完成）；
+- [ ] `P4-RUN-02` 完成 BP seed 0–4 autoencoder training（0–2 完成）；
+- [ ] `P4-RUN-03` 完成两种模型全部 frozen probes（完整配对 0–1）；
+- [ ] `P4-RUN-04` 完成两种模型全部 reconstruction evaluation（完整配对 0–1）；
+- [ ] `P4-QA-01` 检查每个 run 的 config、hash、checkpoint 和日志齐全（0–1 通过）；
+- [ ] `P4-QA-02` 检查 paired seeds 使用相同初始 state 与 batch order（0–1 通过）；
+- [x] `P4-METRIC-01` 汇总 accuracy、macro-F1 和 classification CE；
+- [x] `P4-METRIC-02` 汇总 reconstruction MSE；
+- [x] `P4-METRIC-03` 汇总 encoder/probe dataset passes 与 wall-clock；
+- [x] `P4-METRIC-04` 计算 epoch/samples-seen/wall-clock AULC；
+- [x] `P4-STAT-01` 输出已完成 seed 的 paired differences；
+- [x] `P4-STAT-02` 计算 mean±SD 和 paired bootstrap 95% CI（当前 n=2 preliminary）；
+- [x] `P4-FIG-01` 绘制 epoch/samples-seen/wall-clock learning curves；
+- [x] `P4-TABLE-01` 生成 clean performance 阶段性主表；
+- [x] `P4-NOTE-01` 写出 Q1 的阶段性结果摘要与限制。
 
 #### P5 — Q2 layerwise representation
 

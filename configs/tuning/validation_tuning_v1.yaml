@@ -1,0 +1,30 @@
+version: validation-tuning-v1
+base_config: ../common_mnist.yaml
+tuning_seed: 42
+selection_metric: validation_linear_probe_accuracy
+tie_breakers: [lower_validation_ce, lexical_trial_id]
+max_unique_trials_per_rule: 8
+
+hebbian:
+  fixed_latent_dim: 64
+  fixed_winner_fraction_for_lr: 0.20
+  learning_rates: [0.0001, 0.0005, 0.001, 0.005]
+  winner_fractions: [0.05, 0.10, 0.20]
+  stabilization:
+    update: oja
+    filter_l2_normalize: true
+  coarse_latent_dims: [16, 64, 128]
+  note: >-
+    L=32 is deferred to the full Q5 dimension matrix so the sequential tuning
+    search remains within the preregistered eight-unique-trial budget.
+
+backprop:
+  learning_rates: [0.0003, 0.001, 0.003, 0.01]
+  weight_decays: [0.0, 0.0001]
+
+protocol:
+  read_test_split: false
+  hebbian_encoder_only_during_selection: true
+  probe_epochs: 30
+  encoder_epochs_per_layer: 10
+  bp_epochs: 10
