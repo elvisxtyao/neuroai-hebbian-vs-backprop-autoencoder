@@ -746,15 +746,23 @@ rank=`1.0000`；低秩在 WTA 前已经存在，WTA 进一步压缩但不是初�
 
 Hebbian 与 BP 的 SNR 分别计算。均值和方差的统计单位是“同一 frozen checkpoint 上的不同 mini-batch candidate updates”，不是连续训练 step；否则权重状态变化会与 batch variance 混合。主结果报告线性 SNR，可选地另报 `10 log10(SNR)`，但图表必须标明单位。
 
-- [ ] 固定 checkpoint，不能在采样 batch 之间持续更新权重；
-- [ ] 固定并保存 mini-batch IDs，BP/Hebbian 使用完全相同的数据；
-- [ ] 关闭 target clamping，BP reference 只依赖 reconstruction loss；
-- [ ] 记录 `rule/layer/checkpoint/batch_ids/update_norm/cosine` 及 SNR 所需充分统计量；
-- [ ] 对合成更新向量编写测试：同向 cosine=1、反向=-1、正交=0、零方差时 SNR 行为可控；
-- [ ] 在 `conv1_end/conv2_end/conv3_end` checkpoints 重复；
-- [ ] 画 epoch–alignment、epoch–norm、epoch–bias、epoch–SNR；
+- [x] 固定 checkpoint，不能在采样 batch 之间持续更新权重；
+- [x] 固定并保存 mini-batch IDs，BP/Hebbian 使用完全相同的数据；
+- [x] 关闭 target clamping，BP reference 只依赖 reconstruction loss；
+- [x] 记录 `rule/layer/checkpoint/batch_ids/update_norm/cosine` 及 SNR 所需充分统计量；
+- [x] 对合成更新向量编写测试：同向 cosine=1、反向=-1、正交=0、零方差时 SNR 行为可控；
+- [x] 在 `conv1_end/conv2_end/conv3_end` checkpoints 重复；
+- [x] 画 snapshot/layer–alignment、norm、bias、SNR panels；
 - [ ] 分析这些指标与 accuracy、separability、robustness 的相关性；
-- [ ] 明确 correlation 不代表 causation。
+- [x] 明确 correlation 不代表 causation。
+
+截至 2026-07-23，Stage 2 / Q4 seed-42 tooling gate 已通过。该运行在
+Stage 1C 授权的 failure-case snapshots 上使用 50 个固定 batches，完成
+raw BP direction、raw/effective Hebbian delta、alignment、norm ratio、
+`alpha*`、scale-matched bias 和跨 batch SNR；分析 optimizer step 为 0，
+source/analysis checksums 前后一致，test access 为 0。该 PASS 仅验证工具和
+单个失败案例，不覆盖跨 seed 统计或 `P7-CORR-01`，完整记录见
+`docs/q4_update_mechanism_seed42.md`。
 
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
@@ -1019,31 +1027,31 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 #### P7 — Q4 update mechanism
 
-- [ ] `P7-SNAP-01` 加载并验证 `conv1_end` frozen snapshot；
-- [ ] `P7-SNAP-02` 加载并验证 `conv2_end` frozen snapshot；
-- [ ] `P7-SNAP-03` 加载并验证 `conv3_end` frozen snapshot；
-- [ ] `P7-BATCH-01` 生成并保存 50 个固定 update-analysis batch IDs；
-- [ ] `P7-DEC-01` 为每个 snapshot 从 paired initialization 训练 reference decoder；
-- [ ] `P7-REF-01` 实现 reconstruction raw negative gradient；
-- [ ] `P7-REF-02` 明确排除 optimizer state、momentum 和 weight decay；
-- [ ] `P7-HEBB-01` 在不应用更新时生成 Hebbian candidate；
-- [ ] `P7-REC-01` 定义 update record dtype、shape 和 metadata；
-- [ ] `P7-REC-02` 保存 layer/snapshot/batch/rule/update norm；
-- [ ] `P7-REC-03` 保存 snapshot hash 并验证分析前后不变；
-- [ ] `P7-TEST-01` 测试同向 cosine=1；
-- [ ] `P7-TEST-02` 测试反向 cosine=-1；
-- [ ] `P7-TEST-03` 测试正交 cosine=0；
-- [ ] `P7-TEST-04` 测试零向量与 epsilon 行为；
-- [ ] `P7-TEST-05` 测试 constant updates 的 SNR 边界；
-- [ ] `P7-METRIC-01` 计算 batch-level alignment；
-- [ ] `P7-METRIC-02` 计算 norm ratio；
-- [ ] `P7-METRIC-03` 计算 mean updates 与最优缩放 `alpha*`；
-- [ ] `P7-METRIC-04` 计算 scale-matched relative bias；
-- [ ] `P7-METRIC-05` 分别计算 Hebbian/BP SNR；
-- [ ] `P7-METRIC-06` 按 layer 与 snapshot 汇总不确定性；
-- [ ] `P7-FIG-01` 绘制 alignment/norm/bias/SNR panels；
+- [x] `P7-SNAP-01` 加载并验证 `conv1_end` frozen snapshot；
+- [x] `P7-SNAP-02` 加载并验证 `conv2_end` frozen snapshot；
+- [x] `P7-SNAP-03` 加载并验证 `conv3_end` frozen snapshot；
+- [x] `P7-BATCH-01` 生成并保存 50 个固定 update-analysis batch IDs；
+- [x] `P7-DEC-01` 为每个 snapshot 从 paired initialization 训练 reference decoder；
+- [x] `P7-REF-01` 实现 reconstruction raw negative gradient；
+- [x] `P7-REF-02` 明确排除 optimizer state、momentum 和 weight decay；
+- [x] `P7-HEBB-01` 在不应用更新时生成 Hebbian candidate；
+- [x] `P7-REC-01` 定义 update record dtype、shape 和 metadata；
+- [x] `P7-REC-02` 保存 layer/snapshot/batch/rule/update norm；
+- [x] `P7-REC-03` 保存 snapshot hash 并验证分析前后不变；
+- [x] `P7-TEST-01` 测试同向 cosine=1；
+- [x] `P7-TEST-02` 测试反向 cosine=-1；
+- [x] `P7-TEST-03` 测试正交 cosine=0；
+- [x] `P7-TEST-04` 测试零向量与 epsilon 行为；
+- [x] `P7-TEST-05` 测试 constant updates 的 SNR 边界；
+- [x] `P7-METRIC-01` 计算 batch-level alignment；
+- [x] `P7-METRIC-02` 计算 norm ratio；
+- [x] `P7-METRIC-03` 计算 mean updates 与最优缩放 `alpha*`；
+- [x] `P7-METRIC-04` 计算 scale-matched relative bias；
+- [x] `P7-METRIC-05` 分别计算 Hebbian/BP SNR；
+- [x] `P7-METRIC-06` 按 layer 与 snapshot 汇总不确定性；
+- [x] `P7-FIG-01` 绘制 alignment/norm/bias/SNR panels；
 - [ ] `P7-CORR-01` 与 accuracy/separability/robustness 做探索性相关分析；
-- [ ] `P7-NOTE-01` 写出 Q4 结果并避免因果措辞。
+- [x] `P7-NOTE-01` 写出 seed-42 failure-case Q4 结果并避免因果措辞。
 
 #### P8 — Q5/Q6 dimension 与 asymmetry
 
@@ -1165,6 +1173,7 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-23 | Stage 1B 冻结为 `COMPLETED — NO CANDIDATE PASSED` | 两轮八个预注册 validation-only candidates 均未同时通过 unchanged health gate 和 accuracy floor；test access 为 0 | 继续增加 v3/v4；从失败候选中强行选择一个 | 不生成 replacement formal config；保留完整负结果并停止 repair tuning |
 | 2026-07-23 | 在 Q4 前增加 Stage 1C effective-rank metric audit | Stage 1B 显示 winner coverage 可提高但 rank 仍低，需要区分 WTA 压缩、filter 重复和 metric/axis 问题 | 重新训练或继续调参；未经审计直接解释 rank≈1 | 复用既有 checkpoint 和 2,000-image validation subset，仅审计 pre/post-WTA、centering、axes、spectra、epsilon 和 class covariance |
 | 2026-07-23 | Stage 1C 完成，metric validity=PASS，机制分类为 `PRE_AND_POST_WTA_NEAR_ONE` | pre-WTA PR=1.0186、post-WTA PR=1.0000；主结果不受 epsilon 主导；frozen probe 在同 subset accuracy=0.9040 | 将低 rank 归因于 WTA；将低 PR 直接等同于没有分类信息 | Stage 1/1B 的 raw-covariance anisotropy 结论保留但缩窄解释；现有 seed-42 checkpoint 仅作为 Q4 failure-case snapshot |
+| 2026-07-23 | Stage 2 / Q4 seed-42 tooling gate 完成并通过 | 三个 frozen layer-boundary snapshots、50 个固定 batches、raw BP 与 raw/effective Hebbian updates、完整 metrics/tensors、62 tests、零分析 optimizer step、零 test access、checksum 不变 | 把单失败案例当作正式多 seed Q4；把 decoder 训练 step 混同为分析 optimizer step | Q4 工具可复用；seed-42 仅提供 failure-case mechanism evidence，正式跨 seed Q4 与相关分析仍未完成 |
 
 ---
 

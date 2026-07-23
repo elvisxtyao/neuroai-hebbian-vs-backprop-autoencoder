@@ -31,6 +31,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/stage1c_effective_rank_audit.md](docs/stage1c_effective_rank_audit.md):
   completed no-training audit of rank axes, centering, spectra, epsilon
   sensitivity, pre/post-WTA mechanism and frozen-probe interpretation.
+- [docs/q4_update_mechanism_seed42.md](docs/q4_update_mechanism_seed42.md):
+  completed seed-42 frozen-snapshot Q4 tooling gate, update definitions,
+  integrity evidence, results, and single-failure-case limitations.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -110,6 +113,23 @@ Reproduce the final validation-only, no-training Stage 1C audit:
 python -m evaluation.run_effective_rank_audit `
   --config configs/experiments/effective_rank_audit_v1_1.yaml
 ```
+
+## Stage 2 / Q4 update-mechanism tooling
+
+The seed-42 tooling gate compares raw reconstruction negative gradients with
+raw and effective Hebbian deltas at the three greedy layer-boundary snapshots.
+It uses 50 fixed training batches, performs zero analysis optimizer steps, and
+accesses no test samples. The source checkpoint is a Stage 1 health-gate
+failure case, so this validates the tool and supplies preliminary mechanism
+evidence rather than a formal multi-seed Q4 answer.
+
+```powershell
+python -m evaluation.run_q4_tooling `
+  --config configs/experiments/q4_tooling_seed42_v1.yaml
+```
+
+The immutable test record is
+`verification/phase0_v1_1/q4_tooling_pytest.log` (`62 passed in 16.70s`).
 
 ## Generate the fixed MNIST split
 
