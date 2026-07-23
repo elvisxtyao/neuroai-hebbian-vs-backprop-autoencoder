@@ -28,6 +28,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/stage1b_hebbian_repair.md](docs/stage1b_hebbian_repair.md):
   frozen validation-only repair outcome; all eight preregistered candidates
   failed and no replacement Hebbian config was selected.
+- [docs/stage1c_effective_rank_audit.md](docs/stage1c_effective_rank_audit.md):
+  completed no-training audit of rank axes, centering, spectra, epsilon
+  sensitivity, pre/post-WTA mechanism and frozen-probe interpretation.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -96,7 +99,17 @@ uses the same seven winners on all 2,000 validation images and has effective
 rank `1.0186`. Stage 1B then evaluated eight preregistered validation-only
 repair candidates; none passed both the unchanged health gate and the
 validation-accuracy floor. Stage 1B is frozen with no selected replacement.
-The next gate is the no-training Stage 1C effective-rank metric audit.
+Stage 1C then verified the rank implementation and found `z` participation
+rank `1.0186` before WTA and `1.0000` after analysis-only WTA. The same-subset
+frozen probe accuracy is `90.4%`, so low raw-covariance rank is evidence of
+strong anisotropy/redundancy, not by itself absence of class information.
+
+Reproduce the final validation-only, no-training Stage 1C audit:
+
+```powershell
+python -m evaluation.run_effective_rank_audit `
+  --config configs/experiments/effective_rank_audit_v1_1.yaml
+```
 
 ## Generate the fixed MNIST split
 

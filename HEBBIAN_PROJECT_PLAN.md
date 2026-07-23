@@ -672,15 +672,15 @@ centered covariance 的指标必须先做 dataset-level feature centering。
 
 **特别 QA：**
 
-- [ ] sample axis 和 feature axis 与保存 metadata 完全一致；
-- [ ] convolutional flattening 的两种 view 分开计算、分开命名；
-- [ ] covariance 的维度是 feature × feature；
-- [ ] dataset-level centering 在 covariance/SVD 前显式执行并记录；
-- [ ] epsilon/数值阈值改变时主要结论稳定；
-- [ ] subset 有 2,000 个唯一 sample IDs，且每类恰好 200 张；
-- [ ] checkpoint 与 frozen probe 的分析前后 hash 不变；
-- [ ] `test_samples_accessed=0`；
-- [ ] 所有 spectrum、rank table、probe metric 和 audit report 齐全。
+- [x] sample axis 和 feature axis 与保存 metadata 完全一致；
+- [x] convolutional flattening 的两种 view 分开计算、分开命名；
+- [x] covariance 的维度是 feature × feature；
+- [x] dataset-level centering 在 covariance/SVD 前显式执行并记录；
+- [x] epsilon/数值阈值改变时主要结论稳定；
+- [x] subset 有 2,000 个唯一 sample IDs，且每类恰好 200 张；
+- [x] checkpoint 与 frozen probe 的分析前后 hash 不变；
+- [x] `test_samples_accessed=0`；
+- [x] 所有 spectrum、rank table、probe metric 和 audit report 齐全。
 
 **解释规则：**
 
@@ -697,6 +697,13 @@ centered covariance 的指标必须先做 dataset-level feature centering。
 并在 `PROJECT_STATUS.md` 中记录 metric-validity decision。完成后才能决定
 以哪个既有 frozen snapshot 进入 Q4 tooling gate；不得静默选用新的
 Hebbian 配置。
+
+截至 2026-07-23，Stage 1C 已完成且 metric validity 为 PASS。
+`z_pre_wta` participation rank=`1.0186`，analysis-only `z_post_wta`
+rank=`1.0000`；低秩在 WTA 前已经存在，WTA 进一步压缩但不是初始成因。
+同一 subset 的 frozen standardized probe accuracy=`0.9040`，因此该 rank
+应解释为 raw-covariance anisotropy/channel redundancy，不能单独等同于
+分类信息消失。完整证据见 `docs/stage1c_effective_rank_audit.md`。
 
 ### Phase 7 — Q4：权重更新机制
 
@@ -989,26 +996,26 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 #### P6C — Stage 1C effective-rank metric audit（Q4 前置）
 
-- [ ] `P6C-DATA-01` 复用并验证同一 2,000-image validation manifest；
-- [ ] `P6C-EXT-01` 提取 `z_pre_wta` 与同源 `z_post_wta`；
-- [ ] `P6C-EXT-02` 构造 dataset-centered、per-sample L2-normalized 和
+- [x] `P6C-DATA-01` 复用并验证同一 2,000-image validation manifest；
+- [x] `P6C-EXT-01` 提取 `z_pre_wta` 与同源 `z_post_wta`；
+- [x] `P6C-EXT-02` 构造 dataset-centered、per-sample L2-normalized 和
   class-centered `z`；
-- [ ] `P6C-EXT-03` 保存 `h1/h2/z` singular-value spectra；
-- [ ] `P6C-AXIS-01` 分离并验证 convolutional channel-health view 与
+- [x] `P6C-EXT-03` 保存 `h1/h2/z` singular-value spectra；
+- [x] `P6C-AXIS-01` 分离并验证 convolutional channel-health view 与
   sample-representation flatten view；
-- [ ] `P6C-QA-01` 验证 rows=observations、columns=features，covariance
+- [x] `P6C-QA-01` 验证 rows=observations、columns=features，covariance
   shape 为 feature × feature；
-- [ ] `P6C-QA-02` 验证 dataset-level centering 明确且可复算；
-- [ ] `P6C-QA-03` 运行 float64 epsilon/数值阈值敏感性检查；
-- [ ] `P6C-QA-04` 验证每类 200 张、sample IDs 唯一且顺序匹配；
-- [ ] `P6C-QA-05` 验证 checkpoint/probe hash 不变且 test access 为 0；
-- [ ] `P6C-METRIC-01` 保存 covariance eigenvalue spectra；
-- [ ] `P6C-METRIC-02` 保存 participation-ratio rank、stable rank 和 rank ratio；
-- [ ] `P6C-METRIC-03` 保存 per-class effective rank；
-- [ ] `P6C-METRIC-04` 保存 between-class 与 within-class covariance rank；
-- [ ] `P6C-METRIC-05` 报告原 frozen linear-probe accuracy；
-- [ ] `P6C-DEC-01` 按 pre/post-WTA 规则记录 metric-validity 和机制判断；
-- [ ] `P6C-NOTE-01` 保存审计报告并更新 live status；不训练、不调参、不重开 Stage 1B。
+- [x] `P6C-QA-02` 验证 dataset-level centering 明确且可复算；
+- [x] `P6C-QA-03` 运行 float64 epsilon/数值阈值敏感性检查；
+- [x] `P6C-QA-04` 验证每类 200 张、sample IDs 唯一且顺序匹配；
+- [x] `P6C-QA-05` 验证 checkpoint/probe hash 不变且 test access 为 0；
+- [x] `P6C-METRIC-01` 保存 covariance eigenvalue spectra；
+- [x] `P6C-METRIC-02` 保存 participation-ratio rank、stable rank 和 rank ratio；
+- [x] `P6C-METRIC-03` 保存 per-class effective rank；
+- [x] `P6C-METRIC-04` 保存 between-class 与 within-class covariance rank；
+- [x] `P6C-METRIC-05` 报告原 frozen linear-probe accuracy；
+- [x] `P6C-DEC-01` 按 pre/post-WTA 规则记录 metric-validity 和机制判断；
+- [x] `P6C-NOTE-01` 保存审计报告并更新 live status；不训练、不调参、不重开 Stage 1B。
 
 #### P7 — Q4 update mechanism
 
@@ -1157,6 +1164,7 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-23 | Stage 1 representation health gate 判定当前 Hebbian selected config 为 FAIL | seed-42 `z` 在 2,000 张 validation 图上固定由同一 7/64 units 获胜，effective rank=1.0186；Q1 seeds 0–1 重复 | 将 `0.109375≈winner_fraction` 直接解释为正常稀疏；继续 Q4/Q1 | 必须先执行 Stage 1B；collapse 定义分离 per-location density、dataset-wide coverage 与 representation rank |
 | 2026-07-23 | Stage 1B 冻结为 `COMPLETED — NO CANDIDATE PASSED` | 两轮八个预注册 validation-only candidates 均未同时通过 unchanged health gate 和 accuracy floor；test access 为 0 | 继续增加 v3/v4；从失败候选中强行选择一个 | 不生成 replacement formal config；保留完整负结果并停止 repair tuning |
 | 2026-07-23 | 在 Q4 前增加 Stage 1C effective-rank metric audit | Stage 1B 显示 winner coverage 可提高但 rank 仍低，需要区分 WTA 压缩、filter 重复和 metric/axis 问题 | 重新训练或继续调参；未经审计直接解释 rank≈1 | 复用既有 checkpoint 和 2,000-image validation subset，仅审计 pre/post-WTA、centering、axes、spectra、epsilon 和 class covariance |
+| 2026-07-23 | Stage 1C 完成，metric validity=PASS，机制分类为 `PRE_AND_POST_WTA_NEAR_ONE` | pre-WTA PR=1.0186、post-WTA PR=1.0000；主结果不受 epsilon 主导；frozen probe 在同 subset accuracy=0.9040 | 将低 rank 归因于 WTA；将低 PR 直接等同于没有分类信息 | Stage 1/1B 的 raw-covariance anisotropy 结论保留但缩窄解释；现有 seed-42 checkpoint 仅作为 Q4 failure-case snapshot |
 
 ---
 
