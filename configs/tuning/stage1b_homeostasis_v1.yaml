@@ -1,0 +1,31 @@
+version: stage1b-homeostasis-v1
+protocol_base_ref: phase0-v1.1-formal
+base_config: ../selected/hebbian_validation_selected.yaml
+health_config: ../experiments/representation_health_v1.yaml
+output_dir: results/tuning/stage1b_homeostasis_v1
+tuning_seed: 42
+baseline_validation_accuracy: 0.9063
+noninferiority_margin: 0.02
+fixed:
+  latent_dim: 64
+  learning_rate: 0.0005
+  epochs_per_layer: 10
+  filter_l2_normalize: true
+  update: oja
+candidates:
+  - id: rms_power_0p5_wta_0p10
+    competition_mode: channel_rms
+    competition_power: 0.5
+    winner_fraction: 0.10
+  - id: rms_power_1p0_wta_0p10
+    competition_mode: channel_rms
+    competition_power: 1.0
+    winner_fraction: 0.10
+  - id: standardized_wta_0p10
+    competition_mode: channel_standardized
+    competition_power: 1.0
+    winner_fraction: 0.10
+  - id: standardized_wta_0p20
+    competition_mode: channel_standardized
+    competition_power: 1.0
+    winner_fraction: 0.20

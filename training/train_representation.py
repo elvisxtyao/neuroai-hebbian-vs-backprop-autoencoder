@@ -473,6 +473,12 @@ def _train_hebbian(
                 "tuning_encoder_only": True,
                 "decoder_trained": False,
                 "winner_fraction": config["hebbian"]["winner_fraction"],
+                "competition_mode": config["hebbian"].get(
+                    "competition_mode", "raw"
+                ),
+                "competition_power": config["hebbian"].get(
+                    "competition_power", 1.0
+                ),
                 "learning_rate": config["hebbian"]["lr"],
                 "layer_lrs": config["hebbian"].get("layer_lrs", {}),
                 "epochs_per_layer": epochs_per_layer,
@@ -502,6 +508,12 @@ def _train_hebbian(
         {
             "rule": "competitive_oja_topk",
             "winner_fraction": config["hebbian"]["winner_fraction"],
+            "competition_mode": config["hebbian"].get(
+                "competition_mode", "raw"
+            ),
+            "competition_power": config["hebbian"].get(
+                "competition_power", 1.0
+            ),
             "learning_rate": config["hebbian"]["lr"],
             "layer_lrs": config["hebbian"].get("layer_lrs", {}),
             "epochs_per_layer": epochs_per_layer,

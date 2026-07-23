@@ -85,6 +85,60 @@ def test_multistep_local_updates_are_reproducible():
     assert torch.equal(first.weight, second.weight)
 
 
+def test_channel_rms_competition_breaks_scale_monopoly():
+    layer = nn.Conv2d(1, 2, kernel_size=1, bias=False)
+    inputs = torch.ones(2, 1, 1, 1)
+    post = torch.tensor([[[[10.0]], [[1.0]]], [[[9.0]], [[0.1]]]])
+    raw = CompetitiveOjaConv2d(
+        learning_rate=0.1,
+        winner_fraction=0.5,
+        competition_mode="raw",
+    )
+    homeostatic = CompetitiveOjaConv2d(
+        learning_rate=0.1,
+        winner_fraction=0.5,
+        competition_mode="channel_rms",
+        competition_power=1.0,
+    )
+
+    _, raw_diagnostics = raw.compute_local_update(
+        layer, post, post, inputs=inputs
+    )
+    _, homeostatic_diagnostics = homeostatic.compute_local_update(
+        layer, post, post, inputs=inputs
+    )
+
+    assert raw_diagnostics.winner_counts.tolist() == [2, 0]
+    assert homeostatic_diagnostics.winner_counts.tolist() == [1, 1]
+
+
+def test_channel_standardized_competition_is_deterministic_and_non_mutating():
+    generator = torch.Generator().manual_seed(303)
+    layer = nn.Conv2d(2, 4, kernel_size=1, bias=False)
+    inputs = torch.rand(8, 2, 3, 3, generator=generator)
+    post = torch.rand(8, 4, 3, 3, generator=generator)
+    before = layer.weight.detach().clone()
+    rule = CompetitiveOjaConv2d(
+        learning_rate=0.1,
+        winner_fraction=0.25,
+        competition_mode="channel_standardized",
+    )
+
+    first, first_diagnostics = rule.compute_local_update(
+        layer, post, post, inputs=inputs
+    )
+    second, second_diagnostics = rule.compute_local_update(
+        layer, post, post, inputs=inputs
+    )
+
+    assert torch.equal(first, second)
+    assert torch.equal(
+        first_diagnostics.winner_counts,
+        second_diagnostics.winner_counts,
+    )
+    assert torch.equal(layer.weight, before)
+
+
 def test_competition_collapse_detector_covers_balanced_and_collapsed_cases():
     balanced = assess_competition(
         torch.tensor([10, 10, 10, 10]),

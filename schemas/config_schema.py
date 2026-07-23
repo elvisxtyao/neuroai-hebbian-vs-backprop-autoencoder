@@ -125,6 +125,13 @@ def validate_config(config: dict[str, Any]) -> None:
         value = config["hebbian"].get(key)
         if value is None or not 0 <= value <= 1:
             raise ConfigError(f"hebbian.{key} must be in [0,1]")
+    competition_mode = config["hebbian"].get("competition_mode", "raw")
+    if competition_mode not in {"raw", "channel_rms", "channel_standardized"}:
+        raise ConfigError("Unsupported hebbian.competition_mode")
+    if float(config["hebbian"].get("competition_power", 1.0)) <= 0:
+        raise ConfigError("hebbian.competition_power must be positive")
+    if float(config["hebbian"].get("competition_epsilon", 1e-6)) <= 0:
+        raise ConfigError("hebbian.competition_epsilon must be positive")
 
     if config["version"] == "phase0-v1.1":
         protocol = _require(config, "protocol")
