@@ -22,6 +22,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/validation_tuning.md](docs/validation_tuning.md): formal seed-42 validation-only search and frozen configs.
 - [docs/q1_clean_performance.md](docs/q1_clean_performance.md): paused
   two-seed Q1 run, preliminary results, and recovery instructions.
+- [docs/representation_health_gate.md](docs/representation_health_gate.md):
+  completed validation-only Stage 1 gate, corrected collapse definition, and
+  evidence for the required Stage 1B repair.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -73,6 +76,21 @@ The smoke test uses synthetic inputs and does not download MNIST.
 
 The immutable Stage 0 full-suite record is
 `verification/phase0_v1_1/pytest_full.log`.
+
+## Stage 1 representation-health gate
+
+The gate uses a fixed, class-balanced 2,000-image validation subset and compares
+per-location WTA density with dataset-wide winner coverage, entropy, variance,
+and effective rank. It performs no training and never accesses MNIST test data.
+
+```powershell
+python -m evaluation.run_representation_health `
+  --config configs/experiments/representation_health_v1.yaml
+```
+
+The selected Hebbian seed-42 checkpoint failed the gate: its `z` representation
+uses the same seven winners on all 2,000 validation images and has effective
+rank `1.0186`. See the Stage 1 report before running subsequent experiments.
 
 ## Generate the fixed MNIST split
 

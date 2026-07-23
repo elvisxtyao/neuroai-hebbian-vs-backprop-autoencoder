@@ -792,7 +792,7 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [x] `P2-SMOKE-03` 重新加载 checkpoint 并复现相同 test metrics；
 - [x] `P2-GATE-01` 计算 active-neuron ratio；
 - [x] `P2-GATE-02` 计算 winner entropy；
-- [ ] `P2-GATE-03` 计算 activation variance 和 effective rank；
+- [x] `P2-GATE-03` 计算 activation variance 和 effective rank；
 - [ ] `P2-GATE-04` 与 random encoder probe 和 10% chance baseline 比较；
 - [x] `P2-GATE-05` 对 collapse gate 给出 pass/fail 和原因。
 
@@ -1021,6 +1021,7 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-23 | 发布 Phase 0 v1.1 addendum；BP Adam learning rate 冻结为 `0.003` | validation-only tuning 已选定该值；避免重跑 BP tuning，并补齐正式复现治理 | 沿用父协议 `0.001`；重新 tuning BP | 正式运行改用 `configs/formal/` 和 canonical source ref |
 | 2026-07-23 | 在 Q1/Q4 多 seed 前先执行 representation health gate | `active_neuron_ratio` 接近 `winner_fraction` 时，旧 collapse threshold 可能把预期 top-k 稀疏性误判为病理 collapse | 直接继续 Q1 seeds；仅依据单一 active-ratio 阈值判定 | Stage 1 必须同时检查 winner concentration、dead units、entropy、variance 与 effective rank |
 | 2026-07-23 | Formal probe 在 validation checkpoint 冻结后才首次读取 test | 防止 representation extraction 提前接触 test | 训练 probe 前一次性缓存 train/validation/test | 所有正式 test 只作最终一次评估；tuning 完全不构造 test features |
+| 2026-07-23 | Stage 1 representation health gate 判定当前 Hebbian selected config 为 FAIL | seed-42 `z` 在 2,000 张 validation 图上固定由同一 7/64 units 获胜，effective rank=1.0186；Q1 seeds 0–1 重复 | 将 `0.109375≈winner_fraction` 直接解释为正常稀疏；继续 Q4/Q1 | 必须先执行 Stage 1B；collapse 定义分离 per-location density、dataset-wide coverage 与 representation rank |
 
 ---
 

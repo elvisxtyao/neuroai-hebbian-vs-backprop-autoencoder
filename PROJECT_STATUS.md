@@ -31,6 +31,7 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `docs/phase0_team_confirmation.md` | BP-team compliance evidence/template | Replace pending fields with dated teammate evidence |
 | `docs/validation_tuning.md` | Formal validation-only tuning table, decisions, hashes, and limitations | Preserve seed-42 results; do not add test metrics |
 | `docs/q1_clean_performance.md` | Preliminary paired clean-performance results and exact recovery point | Keep the n=2 limitation until seeds 2–4 complete |
+| `docs/representation_health_gate.md` | Formal Stage 1 validation-only health result and corrected collapse definition | Preserve the FAIL decision; supersede only through Stage 1B with a new config/hash |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -43,11 +44,12 @@ so the repository does not contain broken links to private run records.
 | Phase | Status | Evidence | Open gate |
 |---|---|---|---|
 | Stage 0: formal governance and reproducible snapshot | Complete | Phase 0 v1.1 addendum, formal configs/schema, environment and split identity, deferred test access, immutable full pytest log (37 passed), canonical Git ref | None; external tutorial/team records remain archival follow-ups |
-| Phase 1: explicit Hebbian rule | Partial | Conv2d WTA/Oja, L2 normalization, `lr=0`, 500-step stability, reproducible trajectory, legacy collapse detector | Representation-health definition and BP-reference compatibility |
-| Phase 2: seed-0 end-to-end engineering loop | Partial | Encoder, frozen decoder/probe, exact resume, reconstruction, random-encoder decoder-only control, paired BP–Hebbian diagnostics | Stage 1 health gate; historical collapse interpretation is unresolved |
-| Phase 3: validation-only tuning | Complete | Seed 42; 8 Hebbian + 8 BP unique trials; zero test rows; selected config hashes | Hebbian enc3 collapse remains a downstream mechanism warning |
+| Stage 1: representation health gate | Complete — FAIL | Fixed 2,000-image validation manifest; density/coverage/entropy/variance/effective-rank metrics; clean seed-42 run; 41 tests | Stage 1B must repair or reselect Hebbian config before Stage 2 |
+| Phase 1: explicit Hebbian rule | Partial | Conv2d WTA/Oja, L2 normalization, `lr=0`, stability/reproducibility; corrected collapse definition | Repair winner monopoly; BP-reference compatibility |
+| Phase 2: seed-0 end-to-end engineering loop | Partial | Encoder, frozen decoder/probe, exact resume, reconstruction, random-encoder decoder-only control, paired diagnostics | Current Hebbian selected config failed Stage 1 |
+| Phase 3: validation-only tuning | Complete, selection not approved | Seed 42; 8 Hebbian + 8 BP unique trials; zero test rows; selected config hashes | Stage 1B must supersede or validate a repaired Hebbian config |
 | Phase 4 / Q1: clean performance | Partial | Paired seeds 0–1; BP, Hebbian, and random controls; test metrics, reconstruction, AULC, timing, preliminary paired CI | Resume partial Hebbian seed 2 and finish paired seeds 2–4 |
-| Phase 5 / Q2: representations | Planned | Extraction helper exists | Fixed 2,000-sample manifest and quantitative layerwise analysis |
+| Phase 5 / Q2: representations | Partial | Fixed validation subset and health metrics show deep fixed-winner/rank collapse | Formal multi-seed class geometry, probes, k-NN and separability |
 | Phase 6 / Q3: robustness | Planned | Noise severities specified in config | Deterministic noise generator and paired evaluation |
 | Phase 7 / Q4: update mechanisms | Planned | Hebbian candidate update exists | Frozen BP reference, alignment, bias, variance, and SNR |
 | Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | Configurable channel architecture, sweeps, and representation analysis |
@@ -108,9 +110,9 @@ canonical source freeze.
 - A 500-update stress test remains finite with unit filter norms.
 - A fixed-seed multi-step update trajectory is bitwise reproducible.
 - Active-filter and maximum-winner-share thresholds produce a legacy
-  `collapse_detected` field in every Hebbian epoch record. Its scientific
-  interpretation is not accepted until Stage 1 validates it against expected
-  top-k sparsity and additional representation-health metrics.
+  `collapse_detected` field in every Hebbian epoch record. Stage 1 showed that
+  its `active_neuron_ratio` is dataset-wide winner coverage, not per-location
+  WTA density; future reporting must use the explicit names.
 
 ### Open engineering debt
 
@@ -168,8 +170,7 @@ cannot demonstrate that the Hebbian encoder learned a better latent
 representation. The random-encoder linear-probe control is still required for
 classification and representation claims.
 
-The run remains exploratory because the representation-health gate has not
-been run. The historical threshold produced the following diagnostic:
+The run remains exploratory. The historical threshold produced:
 
 | Layer | Final active-neuron ratio | Final winner entropy | Gate interpretation |
 |---|---:|---:|---|
@@ -177,11 +178,16 @@ been run. The historical threshold produced the following diagnostic:
 | enc2 | 0.4688 | 0.5711 | Participation falls; needs Stage 1 context |
 | enc3 | 0.2031 | 0.6167 | Unresolved; active ratio alone is not a valid collapse verdict |
 
-Another current checkpoint reports `active_neuron_ratio=0.109375`, close to
-the configured `winner_fraction=0.10`; this is exactly the condition under
-which expected WTA sparsity may be confused with pathological winner
-concentration. Stage 1 must reconcile checkpoints on one fixed validation
-subset. Effective rank was not saved in the historical seed-0 run. A paired
+Stage 1 resolved the ambiguity around `active_neuron_ratio=0.109375`.
+At `z`, `7/64=0.109375` is the expected number of winners per sample, but the
+same seven Hebbian units win for every one of the 2,000 validation images.
+Winner coverage is therefore only 0.109375 when its healthy expectation over
+the dataset is near 1; effective rank is 1.0186. Q1 Hebbian seeds 0 and 1
+repeat the fixed-seven and rank-near-one pattern, whereas their BP effective
+ranks are 20.94 and 21.69. This is confirmed pathological winner
+concentration plus representation degeneracy, not normal WTA sparsity.
+
+A paired
 random-encoder **linear-probe** control is now included in the formal Q1
 pipeline; the two completed seeds average 82.765% test accuracy. The older
 89.00% Hebbian result remains development evidence and is not mixed with the
@@ -192,7 +198,7 @@ new frozen-configuration Q1 runs.
 | Question | Current answer | Required before claiming an answer |
 |---|---|---|
 | Q1: classification performance | Preliminary n=2: BP 91.595%, Hebbian 90.220%, random encoder 82.765%; paired Hebbian−BP gap −1.375 pp | Resume and complete paired seeds 2–4 before confirmatory claim |
-| Q2: latent representations | Only sparsity/active ratio/winner entropy are available | h1/h2/z fixed-subset geometry and quantitative metrics |
+| Q2: latent representations | Preliminary mechanism evidence: current Hebbian h1/h2/z fail the validation health gate; `z` uses fixed seven winners and rank≈1 across seed42 and preliminary seeds 0–1 | Formal multi-seed h1/h2/z class geometry, layerwise probe, k-NN and separability |
 | Q3: robustness | No result | Deterministic paired clean-to-noisy evaluation |
 | Q4: weight updates | Only Hebbian candidate norms are logged | Matched-state BP reference, alignment, norm ratio, bias, variance, SNR |
 | Q5: dimension/asymmetry performance | No result | Parameterized models, frozen matrices, sensitivity/interaction analysis |
@@ -217,25 +223,23 @@ new frozen-configuration Q1 runs.
   the formal artifact tree.
 - No further Q1 seeds, Q4 run, dimension sweep, or architecture sweep may start
   before the Stage 1 health gate and Stage 2 Q4 tooling gate pass.
+- Stage 1 decision is FAIL. The selected Hebbian `lr=0.0005,
+  winner_fraction=0.10` config is not approved for formal runs; Stage 1B must
+  use train/validation only and rerun the unchanged gate.
 
 ## 9. Immediate next actions
 
-1. **Stage 1 — representation health gate:** create one deterministic,
-   class-balanced 2,000-image validation manifest and evaluate expected versus
-   observed sparsity, winner frequency/concentration, dead-unit ratio, entropy,
-   activation variance, and effective rank on seed-42/current Q1 checkpoints.
-   Output an explicit PASS/FAIL without reading test.
-2. **Stage 1B — conditional Hebbian repair:** run only if Stage 1 FAILS. Use
+1. **Stage 1B — Hebbian repair/reselection:** Stage 1 failed. Use
    train/validation evidence and preregistered candidates; freeze a new config
    and hash only after it passes the same health gate.
-3. **Stage 2 / Q4 tooling gate:** on the health-approved seed-42 snapshots and
+2. **Stage 2 / Q4 tooling gate:** on the health-approved seed-42 snapshots and
    50 fixed batches, implement raw BP direction, raw/effective Hebbian delta,
    cosine, norm ratio, alpha-star, scale-matched bias, and per-rule SNR. Require
    synthetic tests, fixed sample IDs, no optimizer step, unchanged hashes, and
    complete seed-42 output.
-4. **Stage 3 / Q1 formal runs:** only after Stages 1–2 pass, generate paired
+3. **Stage 3 / Q1 formal runs:** only after Stage 1B and Stage 2 pass, generate paired
    BP/Hebbian/random seeds 0–4 from the canonical ref and formal configs.
-5. Continue in dependency order: Q4 five-seed analysis; Q1 final statistics;
+4. Continue in dependency order: Q4 five-seed analysis; Q1 final statistics;
    Q2 representations; Q3 deterministic noise; Q5 dimension; Q5/Q6 asymmetry;
    final paper and reproducibility package.
 
@@ -256,3 +260,4 @@ but they do not replace or reorder the scientific gates above.
 | 2026-07-23 | Step 3 validation-only tuning completed and shared-L64 configs frozen | `docs/validation_tuning.md`, tuning runner, manifests, selected configs |
 | 2026-07-23 | Step 4 paused after paired seeds 0–1; preliminary Q1 table, random controls, AULC/timing plots, paired CI, and safe seed-boundary resume added | `docs/q1_clean_performance.md`, `training/run_q1_clean.py`, `tests/test_q1_clean.py` |
 | 2026-07-23 | Stage 0 formal governance frozen: Phase 0 v1.1, BP `lr=0.003`, formal configs/schema, environment/split identity, deferred test access, full tests, and canonical source ref | `PHASE0_STANDARD_V1_1_ADDENDUM.md`, `configs/formal/`, `environment/`, `verification/phase0_v1_1/pytest_full.log` |
+| 2026-07-23 | Stage 1 completed with FAIL: corrected density-versus-coverage definition; selected Hebbian `z` has fixed 7/64 winners and effective rank 1.0186; no test access | `docs/representation_health_gate.md`, `evaluation/representation_health.py`, local formal gate artifacts |
