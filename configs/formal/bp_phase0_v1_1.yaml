@@ -1,0 +1,18 @@
+extends: ../selected/bp_validation_selected.yaml
+
+version: phase0-v1.1
+
+training:
+  seed: 0
+
+protocol:
+  release_id: phase0-v1.1
+  addendum: PHASE0_STANDARD_V1_1_ADDENDUM.md
+  canonical_source_ref: phase0-v1.1-formal
+  evidence_tier: formal
+  formal_seeds: [0, 1, 2, 3, 4]
+  tuning_seed: 42
+  test_access_policy: validation_select_then_single_test_evaluation
+
+results:
+  root: results/formal/phase0_v1_1/stage3_q1

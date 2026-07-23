@@ -1,0 +1,63 @@
+version: representation-health-v1
+protocol_base_ref: phase0-v1.1-formal
+output_dir: results/formal/phase0_v1_1/stage1_representation_health/gate_v1
+batch_size: 128
+winner_fraction: 0.10
+activation_epsilon: 1.0e-12
+variance_epsilon: 1.0e-12
+
+subset:
+  data_root: data/raw
+  split_manifest: data/splits/mnist_split_v1.npz
+  manifest: data/splits/mnist_validation_health_v1.npz
+  seed: 17
+  samples_per_class: 200
+
+thresholds:
+  winner_density_abs_tolerance: 0.01
+  winner_density_relative_tolerance: 0.10
+  min_active_unit_ratio: 0.50
+  min_nonzero_variance_ratio: 0.50
+  min_effective_rank: 2.0
+  min_normalized_effective_rank: 0.10
+  min_winner_coverage_ratio: 0.50
+  min_winner_entropy: 0.50
+  max_winner_share: 0.25
+
+checkpoints:
+  - id: hebbian_selected_seed42
+    role: primary_gate
+    rule: hebbian
+    seed: 42
+    run_dir: results/tuning/validation_tuning_v1/runs/20260723T071035Z_hebbian_seed42
+    checkpoint: model_best.pt
+  - id: bp_selected_seed42
+    role: seed42_reference
+    rule: bp
+    seed: 42
+    run_dir: results/tuning/validation_tuning_v1/runs/20260723T075814Z_bp_seed42
+    checkpoint: model_best.pt
+  - id: hebbian_q1_seed0
+    role: preliminary_repeat
+    rule: hebbian
+    seed: 0
+    run_dir: results/q1_clean_v1/runs/20260723T093611Z_hebbian_seed0
+    checkpoint: model_best.pt
+  - id: bp_q1_seed0
+    role: preliminary_repeat
+    rule: bp
+    seed: 0
+    run_dir: results/q1_clean_v1/runs/20260723T093123Z_bp_seed0
+    checkpoint: model_best.pt
+  - id: hebbian_q1_seed1
+    role: preliminary_repeat
+    rule: hebbian
+    seed: 1
+    run_dir: results/q1_clean_v1/runs/20260723T095022Z_hebbian_seed1
+    checkpoint: model_best.pt
+  - id: bp_q1_seed1
+    role: preliminary_repeat
+    rule: bp
+    seed: 1
+    run_dir: results/q1_clean_v1/runs/20260723T094504Z_bp_seed1
+    checkpoint: model_best.pt

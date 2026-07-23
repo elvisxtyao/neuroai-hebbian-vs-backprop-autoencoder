@@ -2,19 +2,46 @@
 
 Shared Phase 0 framework for comparing backpropagation and explicit local Hebbian learning in a 3-layer convolutional autoencoder on MNIST.
 
-The frozen settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md). The research plan is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
+The parent settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md).
+Formal experiments use the versioned
+[Phase 0 v1.1 addendum](PHASE0_STANDARD_V1_1_ADDENDUM.md), which freezes the
+BP learning rate at `0.003` and adds reproducibility gates. The research plan
+is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 
 ## Documentation map
 
 - [PROJECT_STATUS.md](PROJECT_STATUS.md): current completion state, blockers, and next actions; this is the live status source.
 - [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md): frozen BP/Hebbian comparison contract.
+- [PHASE0_STANDARD_V1_1_ADDENDUM.md](PHASE0_STANDARD_V1_1_ADDENDUM.md):
+  formal experiment override, source snapshot, test policy, and artifact naming.
+- [environment/phase0_v1_1_environment.md](environment/phase0_v1_1_environment.md):
+  exact CPU runtime, deterministic flags, split hash, dependencies, and test evidence.
 - [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): research questions, formulas, WBS, and acceptance criteria.
 - [docs/tutorial_migration.md](docs/tutorial_migration.md): source provenance and notebook-to-module migration boundary.
 - [docs/phase0_team_confirmation.md](docs/phase0_team_confirmation.md): pending BP teammate compliance evidence.
+- [docs/validation_tuning.md](docs/validation_tuning.md): formal seed-42 validation-only search and frozen configs.
+- [docs/q1_clean_performance.md](docs/q1_clean_performance.md): paused
+  two-seed Q1 run, preliminary results, and recovery instructions.
+- [docs/representation_health_gate.md](docs/representation_health_gate.md):
+  completed validation-only Stage 1 gate, corrected collapse definition, and
+  evidence for the required Stage 1B repair.
+- [docs/stage1b_hebbian_repair.md](docs/stage1b_hebbian_repair.md):
+  frozen validation-only repair outcome; all eight preregistered candidates
+  failed and no replacement Hebbian config was selected.
+- [docs/stage1c_effective_rank_audit.md](docs/stage1c_effective_rank_audit.md):
+  completed no-training audit of rank axes, centering, spectra, epsilon
+  sensitivity, pre/post-WTA mechanism and frozen-probe interpretation.
+- [docs/q4_update_mechanism_seed42.md](docs/q4_update_mechanism_seed42.md):
+  completed seed-42 frozen-snapshot Q4 tooling gate, update definitions,
+  integrity evidence, results, and single-failure-case limitations.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
 current conclusions remain in tracked source, plan, and status files.
+
+Formal runs must use `configs/formal/`, live below
+`results/formal/phase0_v1_1/`, and start from the immutable Git ref
+`phase0-v1.1-formal`. Existing `results/` runs remain preliminary.
 
 ## Current seed-0 baseline
 
@@ -55,6 +82,54 @@ python -m scripts.smoke_test --config configs/bp_main.yaml
 ```
 
 The smoke test uses synthetic inputs and does not download MNIST.
+
+The immutable Stage 0 full-suite record is
+`verification/phase0_v1_1/pytest_full.log`.
+
+## Stage 1 representation-health gate
+
+The gate uses a fixed, class-balanced 2,000-image validation subset and compares
+per-location WTA density with dataset-wide winner coverage, entropy, variance,
+and effective rank. It performs no training and never accesses MNIST test data.
+
+```powershell
+python -m evaluation.run_representation_health `
+  --config configs/experiments/representation_health_v1.yaml
+```
+
+The selected Hebbian seed-42 checkpoint failed the gate: its `z` representation
+uses the same seven winners on all 2,000 validation images and has effective
+rank `1.0186`. Stage 1B then evaluated eight preregistered validation-only
+repair candidates; none passed both the unchanged health gate and the
+validation-accuracy floor. Stage 1B is frozen with no selected replacement.
+Stage 1C then verified the rank implementation and found `z` participation
+rank `1.0186` before WTA and `1.0000` after analysis-only WTA. The same-subset
+frozen probe accuracy is `90.4%`, so low raw-covariance rank is evidence of
+strong anisotropy/redundancy, not by itself absence of class information.
+
+Reproduce the final validation-only, no-training Stage 1C audit:
+
+```powershell
+python -m evaluation.run_effective_rank_audit `
+  --config configs/experiments/effective_rank_audit_v1_1.yaml
+```
+
+## Stage 2 / Q4 update-mechanism tooling
+
+The seed-42 tooling gate compares raw reconstruction negative gradients with
+raw and effective Hebbian deltas at the three greedy layer-boundary snapshots.
+It uses 50 fixed training batches, performs zero analysis optimizer steps, and
+accesses no test samples. The source checkpoint is a Stage 1 health-gate
+failure case, so this validates the tool and supplies preliminary mechanism
+evidence rather than a formal multi-seed Q4 answer.
+
+```powershell
+python -m evaluation.run_q4_tooling `
+  --config configs/experiments/q4_tooling_seed42_v1.yaml
+```
+
+The immutable test record is
+`verification/phase0_v1_1/q4_tooling_pytest.log` (`62 passed in 16.70s`).
 
 ## Generate the fixed MNIST split
 
@@ -117,6 +192,39 @@ python -m training.train_random_encoder_decoder `
 
 The seed-0 result and interpretation are summarized in
 [PROJECT_STATUS.md](PROJECT_STATUS.md).
+
+## Validation-only tuning
+
+The formal tuning manifest uses seed 42, balanced eight-unique-trial budgets,
+and never evaluates a test metric. The runner is safe to restart.
+
+```powershell
+python -m training.run_validation_tuning `
+  --manifest configs/tuning/validation_tuning_v1.yaml `
+  --output-dir results/tuning/validation_tuning_v1
+```
+
+Selected L=64 main-comparison configs are in `configs/selected/`. See
+[docs/validation_tuning.md](docs/validation_tuning.md).
+
+## Q1 clean-performance run
+
+The resumable Q1 runner executes paired BP, Hebbian, and random-encoder
+controls, then writes raw rows, paired differences, bootstrap summaries, and
+learning-curve figures. It can stop safely after a complete seed:
+
+```powershell
+python -m training.run_q1_clean `
+  --manifest configs/experiments/q1_clean_v1.yaml `
+  --output-dir results/q1_clean_v1 `
+  --stop-after-seed 1
+```
+
+The current run is paused after seeds 0–1. Its preliminary mean test accuracy
+is 91.595% for BP, 90.220% for Hebbian, and 82.765% for the random encoder.
+See [docs/q1_clean_performance.md](docs/q1_clean_performance.md) before citing
+these values; five paired seeds are still required for the final Q1 claim.
+Resume the full matrix by omitting `--stop-after-seed`.
 
 ## Project layout
 

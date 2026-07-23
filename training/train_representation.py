@@ -6,7 +6,7 @@ import argparse
 import platform
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import torch
@@ -462,6 +462,37 @@ def _train_hebbian(
         base_progress = resume_payload["progress"]
         decoder_resume = resume_payload
 
+    if config["training"].get("encoder_only_tuning", False):
+        torch.save(model.state_dict(), run_dir / "model_last.pt")
+        torch.save(model.state_dict(), run_dir / "model_best.pt")
+        write_json(
+            run_dir,
+            "hebbian_training_summary.json",
+            {
+                "rule": "competitive_oja_topk",
+                "tuning_encoder_only": True,
+                "decoder_trained": False,
+                "winner_fraction": config["hebbian"]["winner_fraction"],
+                "competition_mode": config["hebbian"].get(
+                    "competition_mode", "raw"
+                ),
+                "competition_power": config["hebbian"].get(
+                    "competition_power", 1.0
+                ),
+                "center_inputs": config["hebbian"].get(
+                    "center_inputs", False
+                ),
+                "learning_rate": config["hebbian"]["lr"],
+                "layer_lrs": config["hebbian"].get("layer_lrs", {}),
+                "epochs_per_layer": epochs_per_layer,
+                "layer_order": list(trainer.layer_names),
+                "final_encoder_hash": state_dict_checksum(model.encoder),
+                "layers": base_progress.get("layer_summaries", layer_summaries),
+            },
+            overwrite=True,
+        )
+        return True
+
     decoder_summary, complete, final_progress = _train_frozen_decoder(
         model,
         loaders,
@@ -480,6 +511,15 @@ def _train_hebbian(
         {
             "rule": "competitive_oja_topk",
             "winner_fraction": config["hebbian"]["winner_fraction"],
+            "competition_mode": config["hebbian"].get(
+                "competition_mode", "raw"
+            ),
+            "competition_power": config["hebbian"].get(
+                "competition_power", 1.0
+            ),
+            "center_inputs": config["hebbian"].get(
+                "center_inputs", False
+            ),
             "learning_rate": config["hebbian"]["lr"],
             "layer_lrs": config["hebbian"].get("layer_lrs", {}),
             "epochs_per_layer": epochs_per_layer,
@@ -510,6 +550,7 @@ def _new_run_metadata(
         "model_type": "convolutional_autoencoder",
         "architecture_id": config["model"]["architecture"],
         "seed": int(config["training"]["seed"]),
+        "protocol": config.get("protocol", {}),
         "device": str(device),
         "python": platform.python_version(),
         "torch": torch.__version__,
@@ -528,6 +569,7 @@ def train_config(
     run_root: str | Path | None = None,
     resume_run_dir: str | Path | None = None,
     stop_after_global_epoch: int | None = None,
+    on_run_created: Callable[[Path], None] | None = None,
 ) -> Path:
     """Run a resolved config; ``stop_after_global_epoch`` simulates preemption."""
 
@@ -537,7 +579,7 @@ def train_config(
     set_global_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if loaders is None:
-        loaders = build_mnist_dataloaders(config, seed=seed)
+        loaders = build_mnist_dataloaders(config, seed=seed, include_test=False)
     model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed)
     trainer = build_trainer(model, config, device)
 
@@ -607,6 +649,8 @@ def train_config(
             status="running",
             checkpoint="initial_state.pt",
         )
+        if on_run_created is not None:
+            on_run_created(run_dir)
     else:
         run_dir = Path(resume_run_dir)
         status = read_run_status(run_dir)

@@ -13,6 +13,9 @@ class ConfigError(ValueError):
     """Raised when an experiment config violates the shared contract."""
 
 
+SUPPORTED_VERSIONS = {"phase0-v1", "phase0-v1.1"}
+
+
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
     merged = deepcopy(base)
     for key, value in override.items():
@@ -83,8 +86,11 @@ def validate_config(config: dict[str, Any]) -> None:
     for key in required:
         _require(config, key)
 
-    if config["version"] != "phase0-v1":
-        raise ConfigError("This skeleton implements version 'phase0-v1' only")
+    if config["version"] not in SUPPORTED_VERSIONS:
+        raise ConfigError(
+            f"Unsupported protocol version {config['version']!r}; "
+            f"expected one of {sorted(SUPPORTED_VERSIONS)}"
+        )
     if config["data"]["dataset"] != "MNIST":
         raise ConfigError("phase0-v1 requires MNIST")
     if config["data"]["normalization"] != "none":
@@ -119,3 +125,41 @@ def validate_config(config: dict[str, Any]) -> None:
         value = config["hebbian"].get(key)
         if value is None or not 0 <= value <= 1:
             raise ConfigError(f"hebbian.{key} must be in [0,1]")
+    competition_mode = config["hebbian"].get("competition_mode", "raw")
+    if competition_mode not in {"raw", "channel_rms", "channel_standardized"}:
+        raise ConfigError("Unsupported hebbian.competition_mode")
+    if float(config["hebbian"].get("competition_power", 1.0)) <= 0:
+        raise ConfigError("hebbian.competition_power must be positive")
+    if float(config["hebbian"].get("competition_epsilon", 1e-6)) <= 0:
+        raise ConfigError("hebbian.competition_epsilon must be positive")
+    if not isinstance(config["hebbian"].get("center_inputs", False), bool):
+        raise ConfigError("hebbian.center_inputs must be boolean")
+
+    if config["version"] == "phase0-v1.1":
+        protocol = _require(config, "protocol")
+        if protocol.get("release_id") != "phase0-v1.1":
+            raise ConfigError("phase0-v1.1 requires protocol.release_id=phase0-v1.1")
+        if protocol.get("canonical_source_ref") != "phase0-v1.1-formal":
+            raise ConfigError(
+                "phase0-v1.1 requires canonical_source_ref=phase0-v1.1-formal"
+            )
+        if protocol.get("formal_seeds") != [0, 1, 2, 3, 4]:
+            raise ConfigError("phase0-v1.1 formal seeds must be [0,1,2,3,4]")
+        if protocol.get("tuning_seed") != 42:
+            raise ConfigError("phase0-v1.1 tuning seed must be 42")
+        if (
+            protocol.get("test_access_policy")
+            != "validation_select_then_single_test_evaluation"
+        ):
+            raise ConfigError("phase0-v1.1 test-access policy is not frozen")
+        results_root = Path(config["results"]["root"]).as_posix()
+        if not results_root.startswith("results/formal/phase0_v1_1/"):
+            raise ConfigError(
+                "phase0-v1.1 formal results must be under "
+                "results/formal/phase0_v1_1/"
+            )
+        if (
+            config["training"]["learning_rule"] == "bp"
+            and config["backprop"]["lr"] != 0.003
+        ):
+            raise ConfigError("phase0-v1.1 freezes the BP learning rate at 0.003")

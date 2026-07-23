@@ -70,14 +70,47 @@ class CompetitiveOjaConv2d:
         learning_rate: float,
         winner_fraction: float,
         normalization_epsilon: float = 1e-8,
+        competition_mode: str = "raw",
+        competition_power: float = 1.0,
+        competition_epsilon: float = 1e-6,
+        center_inputs: bool = False,
     ) -> None:
         if learning_rate < 0:
             raise ValueError("learning_rate must be non-negative")
         if not 0 < winner_fraction <= 1:
             raise ValueError("winner_fraction must be in (0,1]")
+        if competition_mode not in {"raw", "channel_rms", "channel_standardized"}:
+            raise ValueError(
+                "competition_mode must be raw, channel_rms or "
+                "channel_standardized"
+            )
+        if competition_power <= 0:
+            raise ValueError("competition_power must be positive")
+        if competition_epsilon <= 0:
+            raise ValueError("competition_epsilon must be positive")
         self.learning_rate = learning_rate
         self.winner_fraction = winner_fraction
         self.normalization_epsilon = normalization_epsilon
+        self.competition_mode = competition_mode
+        self.competition_power = competition_power
+        self.competition_epsilon = competition_epsilon
+        self.center_inputs = center_inputs
+
+    def _competition_scores(self, post_activity: torch.Tensor) -> torch.Tensor:
+        if self.competition_mode == "raw":
+            return post_activity
+        dimensions = (0, 2, 3)
+        if self.competition_mode == "channel_rms":
+            rms = post_activity.square().mean(
+                dim=dimensions, keepdim=True
+            ).sqrt()
+            denominator = (rms + self.competition_epsilon).pow(
+                self.competition_power
+            )
+            return post_activity / denominator
+        mean = post_activity.mean(dim=dimensions, keepdim=True)
+        std = post_activity.std(dim=dimensions, unbiased=False, keepdim=True)
+        return (post_activity - mean) / (std + self.competition_epsilon)
 
     @torch.no_grad()
     def compute_local_update(
@@ -106,7 +139,8 @@ class CompetitiveOjaConv2d:
         batch_size, out_channels, out_height, out_width = post_activity.shape
         num_locations = out_height * out_width
         top_k = max(1, math.ceil(self.winner_fraction * out_channels))
-        winner_indices = torch.topk(post_activity, k=top_k, dim=1).indices
+        competition_scores = self._competition_scores(post_activity)
+        winner_indices = torch.topk(competition_scores, k=top_k, dim=1).indices
         winner_mask = torch.zeros_like(post_activity, dtype=torch.bool)
         winner_mask.scatter_(1, winner_indices, True)
         winning_activity = post_activity * winner_mask
@@ -118,6 +152,8 @@ class CompetitiveOjaConv2d:
             padding=layer.padding,
             stride=layer.stride,
         )
+        if self.center_inputs:
+            patches = patches - patches.mean(dim=(0, 2), keepdim=True)
         winning_flat = winning_activity.flatten(start_dim=2)
         if patches.shape[-1] != num_locations:
             raise RuntimeError("Unfolded patch count does not match convolution output")
@@ -174,6 +210,12 @@ class HebbianTrainer(RepresentationTrainer):
                 learning_rate=layer_lrs.get(layer_name, hebbian["lr"]),
                 winner_fraction=hebbian["winner_fraction"],
                 normalization_epsilon=hebbian["normalization_epsilon"],
+                competition_mode=hebbian.get("competition_mode", "raw"),
+                competition_power=float(hebbian.get("competition_power", 1.0)),
+                competition_epsilon=float(
+                    hebbian.get("competition_epsilon", 1e-6)
+                ),
+                center_inputs=bool(hebbian.get("center_inputs", False)),
             )
             for layer_name in self.layer_names
         }

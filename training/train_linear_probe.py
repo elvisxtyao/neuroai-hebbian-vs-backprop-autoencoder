@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import time
 from copy import deepcopy
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from data.mnist import build_mnist_dataloaders
 from evaluation.metrics import classification_metrics
 from evaluation.representations import extract_representations
 from models import ConvAutoencoder, LinearProbe
-from schemas import load_config
+from schemas import load_config, validate_config
 from utils.reproducibility import set_global_seed, state_dict_checksum
 from utils.results import append_metric, remove_metric_stages
 
@@ -54,8 +55,16 @@ def _evaluate_probe(probe, loader, device: torch.device) -> dict[str, float]:
     return classification_metrics(labels_np, predictions_np, probabilities_np)
 
 
-def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
-    config = load_config(config_path)
+def train_linear_probe_config(
+    config: dict,
+    run_dir: str | Path,
+    *,
+    validation_only: bool = False,
+    loaders=None,
+) -> Path:
+    """Train a frozen probe without touching test data when tuning."""
+
+    validate_config(config)
     run_dir = Path(run_dir)
     remove_metric_stages(run_dir, {"linear_probe", "linear_probe_final"})
     checkpoint = run_dir / "model_best.pt"
@@ -72,12 +81,21 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
         parameter.requires_grad_(False)
     encoder_hash_before = state_dict_checksum(model.encoder)
 
-    loaders = build_mnist_dataloaders(config, seed=seed)
+    if loaders is None:
+        loaders = build_mnist_dataloaders(
+            config,
+            seed=seed,
+            include_test=False,
+        )
+    # The test set is deliberately excluded while the probe is fitted and its
+    # checkpoint is selected. Formal test features are extracted only after
+    # the validation-selected checkpoint has been restored below.
+    representation_splits = ("train", "validation")
     representations = {
         split: extract_representations(
-            model, loader, device=device, layers=("z",)
+            model, loaders[split], device=device, layers=("z",)
         )
-        for split, loader in loaders.items()
+        for split in representation_splits
     }
     features = {
         split: values["z"].flatten(start_dim=1).float()
@@ -108,12 +126,15 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
             shuffle=split == "train",
             seed=seed,
         )
-        for split in ("train", "validation", "test")
+        for split in representation_splits
     }
 
     best_accuracy = float("-inf")
     best_state = None
     best_epoch = 0
+    started = time.perf_counter()
+    steps_completed = 0
+    samples_seen = 0
     for epoch in range(1, config["probe"]["epochs"] + 1):
         probe.train()
         for batch_features, batch_labels in feature_loaders["train"]:
@@ -122,6 +143,8 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
             loss = criterion(logits, batch_labels.to(device))
             loss.backward()
             optimizer.step()
+            steps_completed += 1
+            samples_seen += batch_features.shape[0]
         validation_metrics = _evaluate_probe(probe, feature_loaders["validation"], device)
         append_metric(
             run_dir,
@@ -129,6 +152,11 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
                 "stage": "linear_probe",
                 "split": "validation",
                 "epoch": epoch,
+                "global_epoch": epoch,
+                "step": steps_completed,
+                "samples_seen": samples_seen,
+                "dataset_passes": epoch,
+                "wall_time_sec": time.perf_counter() - started,
                 **validation_metrics,
                 "num_samples": labels["validation"].numel(),
             },
@@ -141,8 +169,33 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
     if best_state is None:
         raise RuntimeError("Linear probe produced no checkpoint")
     probe.load_state_dict(best_state)
+
+    if not validation_only:
+        if "test" not in loaders:
+            loaders["test"] = build_mnist_dataloaders(
+                config,
+                seed=seed,
+                include_test=True,
+            )["test"]
+        test_representations = extract_representations(
+            model,
+            loaders["test"],
+            device=device,
+            layers=("z",),
+        )
+        features["test"] = test_representations["z"].flatten(start_dim=1).float()
+        labels["test"] = test_representations["label"].long()
+        feature_loaders["test"] = _feature_loader(
+            features["test"],
+            labels["test"],
+            batch_size=config["data"]["batch_size"],
+            shuffle=False,
+            seed=seed,
+        )
+
     torch.save(probe.state_dict(), run_dir / "linear_probe.pt")
-    for split in ("validation", "test"):
+    final_splits = ("validation",) if validation_only else ("validation", "test")
+    for split in final_splits:
         metrics = _evaluate_probe(probe, feature_loaders[split], device)
         append_metric(
             run_dir,
@@ -150,6 +203,11 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
                 "stage": "linear_probe_final",
                 "split": split,
                 "epoch": best_epoch,
+                "global_epoch": config["probe"]["epochs"],
+                "step": steps_completed,
+                "samples_seen": samples_seen,
+                "dataset_passes": config["probe"]["epochs"],
+                "wall_time_sec": time.perf_counter() - started,
                 **metrics,
                 "num_samples": labels[split].numel(),
             },
@@ -162,12 +220,32 @@ def train_linear_probe(config_path: str | Path, run_dir: str | Path) -> Path:
     return run_dir / "linear_probe.pt"
 
 
+def train_linear_probe(
+    config_path: str | Path,
+    run_dir: str | Path,
+    *,
+    validation_only: bool = False,
+) -> Path:
+    return train_linear_probe_config(
+        load_config(config_path),
+        run_dir,
+        validation_only=validation_only,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", required=True)
     parser.add_argument("--run-dir", required=True)
+    parser.add_argument("--validation-only", action="store_true")
     args = parser.parse_args()
-    print(train_linear_probe(args.config, args.run_dir).resolve())
+    print(
+        train_linear_probe(
+            args.config,
+            args.run_dir,
+            validation_only=args.validation_only,
+        ).resolve()
+    )
 
 
 if __name__ == "__main__":
