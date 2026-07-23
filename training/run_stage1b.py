@@ -136,7 +136,10 @@ class Stage1BRunner:
         self.manifest_path = Path(manifest_path).resolve()
         with self.manifest_path.open(encoding="utf-8") as handle:
             self.manifest = yaml.safe_load(handle)
-        if self.manifest.get("version") != "stage1b-homeostasis-v1":
+        if self.manifest.get("version") not in {
+            "stage1b-homeostasis-v1",
+            "stage1b-centered-v2",
+        }:
             raise ValueError("Unsupported Stage 1B manifest version")
         manifest_dir = self.manifest_path.parent
         self.base = load_config(
@@ -195,7 +198,9 @@ class Stage1BRunner:
             fixed["epochs_per_layer"]
         )
         config["model"]["latent_dim"] = int(fixed["latent_dim"])
-        config["hebbian"]["lr"] = float(fixed["learning_rate"])
+        config["hebbian"]["lr"] = float(
+            candidate.get("learning_rate", fixed["learning_rate"])
+        )
         config["hebbian"]["winner_fraction"] = float(
             candidate["winner_fraction"]
         )
@@ -204,6 +209,9 @@ class Stage1BRunner:
             candidate["competition_power"]
         )
         config["hebbian"]["competition_epsilon"] = 1e-6
+        config["hebbian"]["center_inputs"] = bool(
+            candidate.get("center_inputs", False)
+        )
         config["hebbian"]["filter_l2_normalize"] = bool(
             fixed["filter_l2_normalize"]
         )

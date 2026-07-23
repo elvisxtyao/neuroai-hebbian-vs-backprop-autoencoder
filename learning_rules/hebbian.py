@@ -73,6 +73,7 @@ class CompetitiveOjaConv2d:
         competition_mode: str = "raw",
         competition_power: float = 1.0,
         competition_epsilon: float = 1e-6,
+        center_inputs: bool = False,
     ) -> None:
         if learning_rate < 0:
             raise ValueError("learning_rate must be non-negative")
@@ -93,6 +94,7 @@ class CompetitiveOjaConv2d:
         self.competition_mode = competition_mode
         self.competition_power = competition_power
         self.competition_epsilon = competition_epsilon
+        self.center_inputs = center_inputs
 
     def _competition_scores(self, post_activity: torch.Tensor) -> torch.Tensor:
         if self.competition_mode == "raw":
@@ -150,6 +152,8 @@ class CompetitiveOjaConv2d:
             padding=layer.padding,
             stride=layer.stride,
         )
+        if self.center_inputs:
+            patches = patches - patches.mean(dim=(0, 2), keepdim=True)
         winning_flat = winning_activity.flatten(start_dim=2)
         if patches.shape[-1] != num_locations:
             raise RuntimeError("Unfolded patch count does not match convolution output")
@@ -211,6 +215,7 @@ class HebbianTrainer(RepresentationTrainer):
                 competition_epsilon=float(
                     hebbian.get("competition_epsilon", 1e-6)
                 ),
+                center_inputs=bool(hebbian.get("center_inputs", False)),
             )
             for layer_name in self.layer_names
         }

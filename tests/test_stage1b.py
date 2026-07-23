@@ -67,6 +67,27 @@ def test_stage1b_manifest_freezes_four_unique_equal_budget_candidates(tmp_path):
     } == {10}
 
 
+def test_stage1b_v2_freezes_centered_candidates_and_two_learning_rates():
+    runner = Stage1BRunner.__new__(Stage1BRunner)
+    import yaml
+
+    manifest_path = ROOT / "configs" / "tuning" / "stage1b_centered_v2.yaml"
+    runner.manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    runner.base = __import__("schemas").load_config(
+        ROOT / "configs" / "selected" / "hebbian_validation_selected.yaml",
+        validate=False,
+    )
+    configs = [
+        Stage1BRunner.candidate_config(runner, candidate)
+        for candidate in runner.manifest["candidates"]
+    ]
+
+    assert len(configs) == 4
+    assert all(config["hebbian"]["center_inputs"] for config in configs)
+    assert {config["hebbian"]["lr"] for config in configs} == {0.0005, 0.001}
+    assert {config["hebbian"]["winner_fraction"] for config in configs} == {0.1}
+
+
 def test_stage1b_selection_requires_health_and_accuracy_then_maximizes_accuracy():
     health_only = _result(
         "health_only",

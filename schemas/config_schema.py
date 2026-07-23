@@ -132,6 +132,8 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("hebbian.competition_power must be positive")
     if float(config["hebbian"].get("competition_epsilon", 1e-6)) <= 0:
         raise ConfigError("hebbian.competition_epsilon must be positive")
+    if not isinstance(config["hebbian"].get("center_inputs", False), bool):
+        raise ConfigError("hebbian.center_inputs must be boolean")
 
     if config["version"] == "phase0-v1.1":
         protocol = _require(config, "protocol")

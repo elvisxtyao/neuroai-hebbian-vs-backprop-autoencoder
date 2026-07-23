@@ -139,6 +139,34 @@ def test_channel_standardized_competition_is_deterministic_and_non_mutating():
     assert torch.equal(layer.weight, before)
 
 
+def test_centered_local_patches_remove_constant_input_component():
+    layer = nn.Conv2d(1, 1, kernel_size=1, bias=False)
+    with torch.no_grad():
+        layer.weight.fill_(0.5)
+    inputs = torch.tensor([[[[1.0]]], [[[3.0]]]])
+    post = layer(inputs).relu()
+    raw = CompetitiveOjaConv2d(
+        learning_rate=0.1,
+        winner_fraction=1.0,
+        center_inputs=False,
+    )
+    centered = CompetitiveOjaConv2d(
+        learning_rate=0.1,
+        winner_fraction=1.0,
+        center_inputs=True,
+    )
+
+    raw_delta, _ = raw.compute_local_update(
+        layer, post, post, inputs=inputs
+    )
+    centered_delta, _ = centered.compute_local_update(
+        layer, post, post, inputs=inputs
+    )
+
+    torch.testing.assert_close(raw_delta, torch.tensor([[[[1.875]]]]))
+    torch.testing.assert_close(centered_delta, torch.tensor([[[[-0.125]]]]))
+
+
 def test_competition_collapse_detector_covers_balanced_and_collapsed_cases():
     balanced = assess_competition(
         torch.tensor([10, 10, 10, 10]),

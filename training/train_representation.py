@@ -479,6 +479,9 @@ def _train_hebbian(
                 "competition_power": config["hebbian"].get(
                     "competition_power", 1.0
                 ),
+                "center_inputs": config["hebbian"].get(
+                    "center_inputs", False
+                ),
                 "learning_rate": config["hebbian"]["lr"],
                 "layer_lrs": config["hebbian"].get("layer_lrs", {}),
                 "epochs_per_layer": epochs_per_layer,
@@ -513,6 +516,9 @@ def _train_hebbian(
             ),
             "competition_power": config["hebbian"].get(
                 "competition_power", 1.0
+            ),
+            "center_inputs": config["hebbian"].get(
+                "center_inputs", False
             ),
             "learning_rate": config["hebbian"]["lr"],
             "layer_lrs": config["hebbian"].get("layer_lrs", {}),

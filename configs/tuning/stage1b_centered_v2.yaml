@@ -1,0 +1,39 @@
+version: stage1b-centered-v2
+protocol_base_ref: phase0-v1.1-formal
+base_config: ../selected/hebbian_validation_selected.yaml
+health_config: ../experiments/representation_health_v1.yaml
+output_dir: results/tuning/stage1b_centered_v2
+tuning_seed: 42
+baseline_validation_accuracy: 0.9063
+noninferiority_margin: 0.02
+fixed:
+  latent_dim: 64
+  learning_rate: 0.0005
+  epochs_per_layer: 10
+  filter_l2_normalize: true
+  update: oja
+candidates:
+  - id: centered_rms_lr_0p0005
+    competition_mode: channel_rms
+    competition_power: 1.0
+    center_inputs: true
+    learning_rate: 0.0005
+    winner_fraction: 0.10
+  - id: centered_rms_lr_0p001
+    competition_mode: channel_rms
+    competition_power: 1.0
+    center_inputs: true
+    learning_rate: 0.001
+    winner_fraction: 0.10
+  - id: centered_standardized_lr_0p0005
+    competition_mode: channel_standardized
+    competition_power: 1.0
+    center_inputs: true
+    learning_rate: 0.0005
+    winner_fraction: 0.10
+  - id: centered_standardized_lr_0p001
+    competition_mode: channel_standardized
+    competition_power: 1.0
+    center_inputs: true
+    learning_rate: 0.001
+    winner_fraction: 0.10
