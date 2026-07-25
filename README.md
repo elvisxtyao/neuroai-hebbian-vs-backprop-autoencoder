@@ -34,6 +34,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/q4_update_mechanism_seed42.md](docs/q4_update_mechanism_seed42.md):
   completed seed-42 frozen-snapshot Q4 tooling gate, update definitions,
   integrity evidence, results, and single-failure-case limitations.
+- [docs/output_filter_centering_mechanism.md](docs/output_filter_centering_mechanism.md):
+  notebook audit and the finite validation-only output-filter update-centering
+  experiment; the sole candidate failed both frozen gates.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -130,6 +133,26 @@ python -m evaluation.run_q4_tooling `
 
 The immutable test record is
 `verification/phase0_v1_1/q4_tooling_pytest.log` (`62 passed in 16.70s`).
+
+The notebook-inspired output-filter update-centering candidate was then tested
+once at seed 42 without test-set access. It reduced validation accuracy from
+`0.9063` to `0.1944`, did not improve effective rank or winner coverage, and
+made the `enc3` update anti-aligned with the BP reference. It is rejected and
+does not replace the original Oja + WTA baseline. Reproduce the bounded run and
+comparison with:
+
+```powershell
+python -m training.run_stage1b `
+  --config configs/tuning/output_filter_centering_v1.yaml
+python -m evaluation.run_q4_tooling `
+  --config configs/experiments/q4_output_filter_centering_seed42_v1.yaml
+python -m evaluation.compare_output_filter_centering `
+  --config configs/experiments/output_filter_centering_comparison_v1.yaml
+```
+
+The corresponding full-suite record is
+`verification/phase0_v1_1/output_filter_centering_pytest.log`
+(`70 passed in 27.06s`).
 
 ## Generate the fixed MNIST split
 

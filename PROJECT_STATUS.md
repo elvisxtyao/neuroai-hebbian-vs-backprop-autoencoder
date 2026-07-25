@@ -1,6 +1,6 @@
 # NeuroAI BP–Hebbian Project Status
 
-Last updated: 2026-07-23
+Last updated: 2026-07-25
 
 This file is the single source of truth for current execution status. It tracks
 what is complete, what is only exploratory, what is blocked, and what should be
@@ -27,13 +27,14 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `PHASE0_STANDARD_V1.md` | Frozen normative comparison contract | Do not add progress notes; version any material protocol change |
 | `PHASE0_STANDARD_V1_1_ADDENDUM.md` | Frozen formal-run override and reproducibility gate | Takes precedence over v1 where explicitly stated |
 | `HEBBIAN_PROJECT_PLAN.md` | Research design, formulas, WBS IDs, and acceptance criteria | Update design decisions; use this file for requirements, not live status |
-| `docs/tutorial_migration.md` | Source provenance and migration boundary | Update when a source notebook/tutorial is added or replaced |
+| `docs/tutorial_migration.md` | Source provenance, audited notebook semantics, and migration boundary | Update when a source notebook/tutorial is added or replaced |
 | `docs/phase0_team_confirmation.md` | BP-team compliance evidence/template | Replace pending fields with dated teammate evidence |
 | `docs/validation_tuning.md` | Formal validation-only tuning table, decisions, hashes, and limitations | Preserve seed-42 results; do not add test metrics |
 | `docs/q1_clean_performance.md` | Preliminary paired clean-performance results and exact recovery point | Keep the n=2 limitation until seeds 2–4 complete |
 | `docs/representation_health_gate.md` | Formal Stage 1 validation-only health result and corrected collapse definition | Preserve the FAIL decision |
 | `docs/stage1b_hebbian_repair.md` | Frozen Stage 1B validation-only repair matrix, integrity evidence, and no-selection decision | Preserve `COMPLETED — NO CANDIDATE PASSED`; do not append v3/v4 candidates |
 | `docs/stage1c_effective_rank_audit.md` | No-training metric audit, pre/post-WTA mechanism result, spectra, integrity evidence, and interpretation limits | Preserve the PASS decision and failure-case-snapshot scope |
+| `docs/output_filter_centering_mechanism.md` | Notebook audit and bounded seed-42 output-filter-centering mechanism experiment | Preserve the failed-gate decision; do not treat it as a new Stage 1B round |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -56,6 +57,7 @@ so the repository does not contain broken links to private run records.
 | Phase 5 / Q2: representations | Partial | Fixed validation subset shows pre-WTA PR=1.0186 and post-WTA PR=1.0000; same-subset frozen probe accuracy=0.9040; metric implementation is valid but its interpretation is raw-covariance anisotropy, not absence of class information | Formal multi-seed class geometry, probes, k-NN and separability |
 | Phase 6 / Q3: robustness | Planned | Noise severities specified in config | Deterministic noise generator and paired evaluation |
 | Phase 7 / Q4: update mechanisms | **Partial — seed-42 tooling gate PASS** | Three frozen layer-boundary snapshots; 50 fixed batches; raw BP and raw/effective Hebbian updates; alignment, norm ratio, alpha-star, scale-matched bias and SNR; immutable 62-test log; zero analysis optimizer steps and zero test access | Multi-seed execution, a health-passing comparison configuration, and exploratory cross-metric correlation |
+| Stage 2B: output-filter update-centering audit | **Complete — candidate failed** | Supplied notebook audited; exactly one validation-only seed-42 candidate; 70 tests; full health/Q4 comparison; zero test access | No replacement selected; Stage 1B remains frozen |
 | Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | Configurable channel architecture, sweeps, and representation analysis |
 | Phase 9: extensions | Planned | Scope listed | Core MNIST matrix must finish first |
 
@@ -84,17 +86,16 @@ so the repository does not contain broken links to private run records.
 
 ### Pending external evidence
 
-- The original Hebbian tutorial/notebook containing the custom-autograd,
-  BP-reference, cosine, or SNR teaching prototype has not been provided. Its
-  URL/path/version/hash therefore cannot yet be verified.
+- The supplied Hebbian notebook is now locally verified by filename, size,
+  access date, and SHA-256. Its upstream URL/version and license or sharing
+  terms remain unknown.
 - Written confirmation from the BP teammate that their implementation is
   `phase0-v1 compliant` has not been attached.
 
-These two items are tracked in `docs/tutorial_migration.md` and
-`docs/phase0_team_confirmation.md`. They must remain pending until real evidence
-is supplied; they must not be self-certified by the Hebbian implementation.
-They do not authorize protocol drift and are not blockers for the local
-canonical source freeze.
+These remaining fields are tracked in `docs/tutorial_migration.md` and
+`docs/phase0_team_confirmation.md`. They must not be inferred or self-certified
+by the Hebbian implementation. They do not authorize protocol drift and are
+not blockers for the local canonical source freeze.
 
 ## 5. Phase 1 implementation status
 
@@ -204,7 +205,7 @@ new frozen-configuration Q1 runs.
 | Q1: classification performance | Preliminary n=2: BP 91.595%, Hebbian 90.220%, random encoder 82.765%; paired Hebbian−BP gap −1.375 pp | Resume and complete paired seeds 2–4 before confirmatory claim |
 | Q2: latent representations | Preliminary mechanism evidence: low rank is already present pre-WTA (PR 1.0186) and becomes exactly rank-1 post-WTA; nevertheless the frozen standardized probe reaches 90.4% on the same subset, so low raw-covariance rank does not mean class information is absent | Formal multi-seed h1/h2/z class geometry, layerwise standardized probe, k-NN and separability |
 | Q3: robustness | No result | Deterministic paired clean-to-noisy evaluation |
-| Q4: weight updates | Preliminary seed-42 failure-case evidence: mean batch alignment falls from 0.342 at enc1 to 0.008 at enc2 and 0.00075 at enc3; scale-matched bias rises from 0.900 to 0.995 and approximately 1.0; effective scaling changes magnitude but not the depth-wise directional mismatch | Repeat the frozen-snapshot analysis across approved paired seeds/configurations before a general Q4 claim; correlation analysis remains pending |
+| Q4: weight updates | Preliminary seed-42 failure-case evidence: baseline mean batch alignment falls from 0.342 at enc1 to 0.00075 at enc3. A one-candidate notebook-inspired audit did not repair this: centered `enc3` raw/effective alignment became −0.1078/−0.1033, `alpha*` became negative, and Hebbian SNR fell to about 0.395. The operation changes direction and scale and does not resolve representation collapse | Repeat the frozen-snapshot analysis across an approved health-passing configuration and paired seeds before a general Q4 claim; correlation analysis remains pending |
 | Q5: dimension/asymmetry performance | No result | Parameterized models, frozen matrices, sensitivity/interaction analysis |
 | Q6: asymmetry and representations | No result | Q2 pipeline repeated across the Q5 architecture matrix |
 
@@ -245,6 +246,11 @@ new frozen-configuration Q1 runs.
   implementation, fixed-batch sampling, metric correctness, stored updates,
   and state integrity only; it does not reverse Stage 1/1B or complete formal
   multi-seed Q4.
+- The notebook-inspired output-filter update-centering audit is complete with
+  `DOES_NOT_RESOLVE_FAILURE`. Its sole seed-42 candidate failed the frozen
+  validation-accuracy and representation-health gates, so it cannot replace
+  the original Oja + WTA baseline. No follow-up candidate or threshold change
+  is authorized by this result.
 
 ## 9. Immediate next actions
 
@@ -280,3 +286,4 @@ but they do not replace or reorder the scientific gates above.
 | 2026-07-23 | Stage 1C effective-rank metric audit inserted before Q4; no training or retuning authorized | `HEBBIAN_PROJECT_PLAN.md`, this status file |
 | 2026-07-23 | Stage 1C completed with metric validity PASS: pre-WTA PR 1.0186, post-WTA PR 1.0000, same-subset frozen probe accuracy 0.9040; no training, tuning or test access | `docs/stage1c_effective_rank_audit.md`, audit implementation/config/tests, local `audit_v1_1` artifacts |
 | 2026-07-23 | Stage 2 / Q4 seed-42 tooling gate passed on the authorized failure-case snapshots: 50 fixed batches, raw BP and raw/effective Hebbian updates, full metrics/tensors, 62 tests, zero analysis optimizer steps, unchanged hashes, and zero test access | `docs/q4_update_mechanism_seed42.md`, `evaluation/update_analysis.py`, `evaluation/run_q4_tooling.py`, local `seed42_v1` artifacts |
+| 2026-07-25 | Audited the supplied notebook and completed the single seed-42 output-filter update-centering experiment; the candidate failed both frozen gates and is not eligible to replace the baseline | `docs/output_filter_centering_mechanism.md`, output-centering configs/tests, immutable 70-test log, and local comparison artifacts |

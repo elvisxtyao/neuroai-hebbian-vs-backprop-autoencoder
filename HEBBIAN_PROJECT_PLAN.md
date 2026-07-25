@@ -764,6 +764,44 @@ source/analysis checksums 前后一致，test access 为 0。该 PASS 仅验证�
 单个失败案例，不覆盖跨 seed 统计或 `P7-CORR-01`，完整记录见
 `docs/q4_update_mechanism_seed42.md`。
 
+#### Stage 2B — notebook-inspired output-filter update-centering audit
+
+本阶段是一次有限的 validation-only、seed-42 机制实验，不重开 Stage 1B，
+不访问 test set，不修改 gate threshold，也不允许根据结果追加候选。保留原始
+Oja + WTA failure-case baseline，只测试一个预注册候选：
+
+```python
+raw_update_centered = (
+    raw_update - raw_update.mean(dim=0, keepdim=True)
+)
+```
+
+Conv2d 权重为
+`[out_channels, in_channels, kernel_height, kernel_width]`，因此输出
+filter 维度固定为 `dim=0`。centering 必须作用于完整 raw Hebb–Oja
+candidate，并发生在 learning-rate scaling 之前；compute/apply 继续分离，
+apply 后仍执行 per-filter L2 normalization。
+
+- [x] 审计 supplied notebook 的默认 update-centering 语义与 Oja 注释分支；
+- [x] 验证 Conv2d output-channel axis 和 centering 顺序；
+- [x] synthetic tests 覆盖共同方向消除、残差保留、零均值、零更新、
+  compute non-mutation 与 resume determinism；
+- [x] 先重新核验已通过的 Stage 2 Q4 baseline 完整性；
+- [x] 只运行一个 seed-42 output-filter-centered candidate；
+- [x] 比较 validation accuracy、effective rank、winner coverage、
+  max winner share、alignment、bias 与 SNR；
+- [x] 确认 test access 为 0，分析前后 checksum 不变；
+- [x] 保持 Stage 1B 冻结，不新增候选、不修改门禁。
+
+截至 2026-07-25，本阶段结论为
+`COMPLETED — DOES_NOT_RESOLVE_FAILURE`。candidate validation accuracy
+为 `0.1944`，低于冻结 floor `0.8863`；`h1/h2/z` health gate 全部失败，
+`z` effective rank 从 `1.0186` 降至 `1.0000`。Enc3 raw/effective
+alignment 分别为 `-0.1078/-0.1033`，且 `alpha*` 为负，因此该操作不只是
+改变 update scale，也没有改善 representation health。candidate
+`eligible_to_replace_baseline=false`。完整证据见
+`docs/output_filter_centering_mechanism.md`。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension
@@ -1174,6 +1212,7 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-23 | 在 Q4 前增加 Stage 1C effective-rank metric audit | Stage 1B 显示 winner coverage 可提高但 rank 仍低，需要区分 WTA 压缩、filter 重复和 metric/axis 问题 | 重新训练或继续调参；未经审计直接解释 rank≈1 | 复用既有 checkpoint 和 2,000-image validation subset，仅审计 pre/post-WTA、centering、axes、spectra、epsilon 和 class covariance |
 | 2026-07-23 | Stage 1C 完成，metric validity=PASS，机制分类为 `PRE_AND_POST_WTA_NEAR_ONE` | pre-WTA PR=1.0186、post-WTA PR=1.0000；主结果不受 epsilon 主导；frozen probe 在同 subset accuracy=0.9040 | 将低 rank 归因于 WTA；将低 PR 直接等同于没有分类信息 | Stage 1/1B 的 raw-covariance anisotropy 结论保留但缩窄解释；现有 seed-42 checkpoint 仅作为 Q4 failure-case snapshot |
 | 2026-07-23 | Stage 2 / Q4 seed-42 tooling gate 完成并通过 | 三个 frozen layer-boundary snapshots、50 个固定 batches、raw BP 与 raw/effective Hebbian updates、完整 metrics/tensors、62 tests、零分析 optimizer step、零 test access、checksum 不变 | 把单失败案例当作正式多 seed Q4；把 decoder 训练 step 混同为分析 optimizer step | Q4 工具可复用；seed-42 仅提供 failure-case mechanism evidence，正式跨 seed Q4 与相关分析仍未完成 |
+| 2026-07-25 | 完成 notebook-inspired output-filter update-centering 单候选审计；候选判定 `DOES_NOT_RESOLVE_FAILURE` | validation accuracy=0.1944，三层 health gate 全失败，Enc3 alignment 变为负值；70 tests、零 test access、分析 checksum 不变 | 把 bias 数值略降解释为方向改善；继续追加候选；替换原始 baseline | 候选不具备 replacement 资格；Stage 1B 和门禁保持冻结，结果仅作为单 seed 机制负证据 |
 
 ---
 
