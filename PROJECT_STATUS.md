@@ -35,6 +35,7 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `docs/stage1b_hebbian_repair.md` | Frozen Stage 1B validation-only repair matrix, integrity evidence, and no-selection decision | Preserve `COMPLETED — NO CANDIDATE PASSED`; do not append v3/v4 candidates |
 | `docs/stage1c_effective_rank_audit.md` | No-training metric audit, pre/post-WTA mechanism result, spectra, integrity evidence, and interpretation limits | Preserve the PASS decision and failure-case-snapshot scope |
 | `docs/output_filter_centering_mechanism.md` | Notebook audit and bounded seed-42 output-filter-centering mechanism experiment | Preserve the failed-gate decision; do not treat it as a new Stage 1B round |
+| `docs/hebbian_failure_case_protocol_addendum.md` | Branch-D scope and restrictions after the failed repair | Do not start another repair candidate or Stage 3 from this decision |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -58,6 +59,7 @@ so the repository does not contain broken links to private run records.
 | Phase 6 / Q3: robustness | Planned | Noise severities specified in config | Deterministic noise generator and paired evaluation |
 | Phase 7 / Q4: update mechanisms | **Partial — seed-42 tooling gate PASS** | Three frozen layer-boundary snapshots; 50 fixed batches; raw BP and raw/effective Hebbian updates; alignment, norm ratio, alpha-star, scale-matched bias and SNR; immutable 62-test log; zero analysis optimizer steps and zero test access | Multi-seed execution, a health-passing comparison configuration, and exploratory cross-metric correlation |
 | Stage 2B: output-filter update-centering audit | **Complete — candidate failed** | Supplied notebook audited; exactly one validation-only seed-42 candidate; 70 tests; full health/Q4 comparison; zero test access | No replacement selected; Stage 1B remains frozen |
+| Stage 2C: frozen follow-up decision | **Complete — Branch D** | Unified snapshot/layer table, machine-readable branch decision, source/checksum manifest, immutable tests, zero new training and zero test access | Only a separately approved multi-seed failure-replication protocol may follow |
 | Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | Configurable channel architecture, sweeps, and representation analysis |
 | Phase 9: extensions | Planned | Scope listed | Core MNIST matrix must finish first |
 
@@ -251,18 +253,17 @@ new frozen-configuration Q1 runs.
   validation-accuracy and representation-health gates, so it cannot replace
   the original Oja + WTA baseline. No follow-up candidate or threshold change
   is authorized by this result.
+- The frozen follow-up decision is
+  `BRANCH D — FREEZE AS FAILURE-CASE BASELINE`. Record
+  `COMMON-MODE UPDATE REMOVAL: NOT SUFFICIENT`; no new seed-42 repair run or
+  Stage 3 execution is authorized.
 
 ## 9. Immediate next actions
 
-1. **Governance decision for formal continuation:** Stage 2 tooling is ready,
-   but Stage 1B selected no health-passing Hebbian configuration. Approve the
-   exact scope/configuration before any new Q4 seeds or paused Q1 runs resume.
-2. **Formal Q4 multi-seed analysis:** after that decision, reuse the frozen
-   batch manifest, update definitions, integrity checks, and result schema;
-   do not generalize the current seed-42 failure-case result.
-3. Continue in dependency order: Q4 five-seed analysis; Q1 final statistics;
-   Q2 representations; Q3 deterministic noise; Q5 dimension; Q5/Q6 asymmetry;
-   final paper and reproducibility package.
+1. **Preregister a multi-seed failure-replication protocol:** retain the
+   failure-case label, freeze paired seeds and analysis outputs, and obtain
+   separate approval before execution. Do not call this a repaired Hebbian
+   baseline or begin Stage 3.
 
 Tutorial provenance and teammate confirmation remain useful coordination items,
 but they do not replace or reorder the scientific gates above.
@@ -287,3 +288,4 @@ but they do not replace or reorder the scientific gates above.
 | 2026-07-23 | Stage 1C completed with metric validity PASS: pre-WTA PR 1.0186, post-WTA PR 1.0000, same-subset frozen probe accuracy 0.9040; no training, tuning or test access | `docs/stage1c_effective_rank_audit.md`, audit implementation/config/tests, local `audit_v1_1` artifacts |
 | 2026-07-23 | Stage 2 / Q4 seed-42 tooling gate passed on the authorized failure-case snapshots: 50 fixed batches, raw BP and raw/effective Hebbian updates, full metrics/tensors, 62 tests, zero analysis optimizer steps, unchanged hashes, and zero test access | `docs/q4_update_mechanism_seed42.md`, `evaluation/update_analysis.py`, `evaluation/run_q4_tooling.py`, local `seed42_v1` artifacts |
 | 2026-07-25 | Audited the supplied notebook and completed the single seed-42 output-filter update-centering experiment; the candidate failed both frozen gates and is not eligible to replace the baseline | `docs/output_filter_centering_mechanism.md`, output-centering configs/tests, immutable 70-test log, and local comparison artifacts |
+| 2026-07-25 | Applied the frozen follow-up decision tree and selected Branch D; stopped current Oja repair and froze the original configuration as a health-gate failure-case baseline | `docs/hebbian_failure_case_protocol_addendum.md`, `results/hebbian_followup_decision/` |

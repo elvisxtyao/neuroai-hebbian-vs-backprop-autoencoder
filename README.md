@@ -37,6 +37,8 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/output_filter_centering_mechanism.md](docs/output_filter_centering_mechanism.md):
   notebook audit and the finite validation-only output-filter update-centering
   experiment; the sole candidate failed both frozen gates.
+- [docs/hebbian_failure_case_protocol_addendum.md](docs/hebbian_failure_case_protocol_addendum.md):
+  Branch-D restrictions after common-mode removal failed to repair the model.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and

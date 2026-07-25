@@ -802,6 +802,14 @@ alignment 分别为 `-0.1078/-0.1033`，且 `alpha*` 为负，因此该操作不
 `eligible_to_replace_baseline=false`。完整证据见
 `docs/output_filter_centering_mechanism.md`。
 
+后续冻结决策树审计将该结果唯一分类为
+`BRANCH D — FREEZE AS FAILURE-CASE BASELINE`，并正式记录
+`COMMON-MODE UPDATE REMOVAL: NOT SUFFICIENT`。不得启动新的 repair
+candidate。原始 Oja + WTA config 只保留为
+`health-gate failure-case baseline`；后续若继续，只能在另行批准并预注册后
+执行正式多 seed failure replication。见
+`docs/hebbian_failure_case_protocol_addendum.md`。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension
@@ -1213,6 +1221,7 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-23 | Stage 1C 完成，metric validity=PASS，机制分类为 `PRE_AND_POST_WTA_NEAR_ONE` | pre-WTA PR=1.0186、post-WTA PR=1.0000；主结果不受 epsilon 主导；frozen probe 在同 subset accuracy=0.9040 | 将低 rank 归因于 WTA；将低 PR 直接等同于没有分类信息 | Stage 1/1B 的 raw-covariance anisotropy 结论保留但缩窄解释；现有 seed-42 checkpoint 仅作为 Q4 failure-case snapshot |
 | 2026-07-23 | Stage 2 / Q4 seed-42 tooling gate 完成并通过 | 三个 frozen layer-boundary snapshots、50 个固定 batches、raw BP 与 raw/effective Hebbian updates、完整 metrics/tensors、62 tests、零分析 optimizer step、零 test access、checksum 不变 | 把单失败案例当作正式多 seed Q4；把 decoder 训练 step 混同为分析 optimizer step | Q4 工具可复用；seed-42 仅提供 failure-case mechanism evidence，正式跨 seed Q4 与相关分析仍未完成 |
 | 2026-07-25 | 完成 notebook-inspired output-filter update-centering 单候选审计；候选判定 `DOES_NOT_RESOLVE_FAILURE` | validation accuracy=0.1944，三层 health gate 全失败，Enc3 alignment 变为负值；70 tests、零 test access、分析 checksum 不变 | 把 bias 数值略降解释为方向改善；继续追加候选；替换原始 baseline | 候选不具备 replacement 资格；Stage 1B 和门禁保持冻结，结果仅作为单 seed 机制负证据 |
+| 2026-07-25 | 按冻结 follow-up 决策树选择 Branch D | performance/health/direction 均无支持，完整性检查虽通过但不改变联合门禁失败 | B1/B2/B3/C 的额外修复；进入 Stage 3 | 停止 current Oja repair；原始配置仅作 health-gate failure-case baseline |
 
 ---
 
