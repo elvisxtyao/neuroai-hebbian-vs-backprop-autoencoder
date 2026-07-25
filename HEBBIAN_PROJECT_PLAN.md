@@ -825,6 +825,16 @@ optimizer parameter groups 外且 checksum 不变。本阶段只提供 diagnosti
 localization 与 Stage-3 candidate recommendation，不运行 confirmation 或
 formal seeds。完整预注册规则见 `docs/hybrid_depth_ablation_protocol.md`。
 
+截至 2026-07-25，本阶段已完成且 integrity/pairing gate 为 PASS。Full BP、
+Full Hebbian、Hybrid-HHB、Hybrid-HBB validation accuracy 分别为
+`0.9226/0.9063/0.9097/0.9161`；z effective rank 分别为
+`11.8533/1.0186/10.0850/12.9754`。HHB 修复 z，HBB 进一步修复 h2，
+但两者完整 applicable health gate 仍被早期 Hebbian layers 阻断，因此按预注册
+规则选择 Outcome D。两者均达到 confirmation eligibility；按“更小 BP
+intervention 优先”冻结 `Hybrid-HHB` 为 confirmation candidate。不得据此
+宣称跨 seed 结论或直接进入 Stage 3。完整记录见
+`docs/hybrid_depth_ablation_results.md`。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension
@@ -1237,6 +1247,7 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-23 | Stage 2 / Q4 seed-42 tooling gate 完成并通过 | 三个 frozen layer-boundary snapshots、50 个固定 batches、raw BP 与 raw/effective Hebbian updates、完整 metrics/tensors、62 tests、零分析 optimizer step、零 test access、checksum 不变 | 把单失败案例当作正式多 seed Q4；把 decoder 训练 step 混同为分析 optimizer step | Q4 工具可复用；seed-42 仅提供 failure-case mechanism evidence，正式跨 seed Q4 与相关分析仍未完成 |
 | 2026-07-25 | 完成 notebook-inspired output-filter update-centering 单候选审计；候选判定 `DOES_NOT_RESOLVE_FAILURE` | validation accuracy=0.1944，三层 health gate 全失败，Enc3 alignment 变为负值；70 tests、零 test access、分析 checksum 不变 | 把 bias 数值略降解释为方向改善；继续追加候选；替换原始 baseline | 候选不具备 replacement 资格；Stage 1B 和门禁保持冻结，结果仅作为单 seed 机制负证据 |
 | 2026-07-25 | 按冻结 follow-up 决策树选择 Branch D | performance/health/direction 均无支持，完整性检查虽通过但不改变联合门禁失败 | B1/B2/B3/C 的额外修复；进入 Stage 3 | 停止 current Oja repair；原始配置仅作 health-gate failure-case baseline |
+| 2026-07-25 | Stage 2C Hybrid depth ablation 完成，选择 Outcome D | 两个 hybrid 均过 performance floor 且修复深层 rank，但完整 health gate 仍被早期 Hebbian layers 阻断；Full BP 也未通过全部严格 health checks | 把单 seed 当正式结论；修改 threshold；自动运行 confirmation | 冻结 Hybrid-HHB 为最小 BP intervention confirmation candidate，需另行批准 |
 
 ---
 
