@@ -1,9 +1,11 @@
+import json
 from pathlib import Path
 
 import numpy as np
 import pytest
 import torch
 
+from evaluation.run_q4_tooling import _source_run_dir
 from evaluation.update_analysis import (
     bp_raw_negative_gradient,
     cosine_alignment,
@@ -166,3 +168,30 @@ def test_snapshot_integrity_gate_distinguishes_greedy_freezing():
         initial,
     )
     assert not failed["gate_pass"]
+
+
+def test_q4_source_run_can_be_resolved_from_frozen_candidate_decision(tmp_path):
+    run_dir = tmp_path / "candidate_run"
+    decision_path = tmp_path / "selection_decision.json"
+    decision_path.write_text(
+        json.dumps(
+            {
+                "trials": [
+                    {
+                        "trial_id": "frozen_candidate",
+                        "run_dir": str(run_dir),
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    resolved = _source_run_dir(
+        {
+            "selection_decision": str(decision_path),
+            "trial_id": "frozen_candidate",
+        }
+    )
+
+    assert resolved == run_dir.resolve()

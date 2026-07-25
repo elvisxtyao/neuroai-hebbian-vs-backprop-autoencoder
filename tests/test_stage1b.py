@@ -88,6 +88,32 @@ def test_stage1b_v2_freezes_centered_candidates_and_two_learning_rates():
     assert {config["hebbian"]["winner_fraction"] for config in configs} == {0.1}
 
 
+def test_output_filter_centering_manifest_freezes_exactly_one_candidate():
+    runner = Stage1BRunner.__new__(Stage1BRunner)
+    import yaml
+
+    manifest_path = (
+        ROOT / "configs" / "tuning" / "output_filter_centering_v1.yaml"
+    )
+    runner.manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    runner.base = __import__("schemas").load_config(
+        ROOT / "configs" / "selected" / "hebbian_validation_selected.yaml",
+        validate=False,
+    )
+    candidates = runner.manifest["candidates"]
+    config = Stage1BRunner.candidate_config(runner, candidates[0])
+
+    assert len(candidates) == 1
+    assert runner.manifest["allow_followup_candidates"] is False
+    assert runner.manifest["gate_thresholds_unchanged"] is True
+    assert config["training"]["seed"] == 42
+    assert config["hebbian"]["lr"] == 0.0005
+    assert config["hebbian"]["winner_fraction"] == 0.1
+    assert config["hebbian"]["competition_mode"] == "raw"
+    assert config["hebbian"]["center_inputs"] is False
+    assert config["hebbian"]["update_centering"] == "output_filters"
+
+
 def test_stage1b_selection_requires_health_and_accuracy_then_maximizes_accuracy():
     health_only = _result(
         "health_only",

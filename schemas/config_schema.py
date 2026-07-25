@@ -134,6 +134,11 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("hebbian.competition_epsilon must be positive")
     if not isinstance(config["hebbian"].get("center_inputs", False), bool):
         raise ConfigError("hebbian.center_inputs must be boolean")
+    update_centering = config["hebbian"].get("update_centering", "none")
+    if update_centering not in {"none", "output_filters"}:
+        raise ConfigError(
+            "hebbian.update_centering must be none or output_filters"
+        )
 
     if config["version"] == "phase0-v1.1":
         protocol = _require(config, "protocol")

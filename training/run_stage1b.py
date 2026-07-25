@@ -57,6 +57,7 @@ class Stage1BResult:
     z_winner_coverage: float | None
     status: str
     error: str | None
+    update_centering: str = "none"
 
 
 def _resolve(base: Path, value: str | Path) -> Path:
@@ -139,8 +140,17 @@ class Stage1BRunner:
         if self.manifest.get("version") not in {
             "stage1b-homeostasis-v1",
             "stage1b-centered-v2",
+            "output-filter-centering-mechanism-v1",
         }:
             raise ValueError("Unsupported Stage 1B manifest version")
+        if self.manifest.get("version") == "output-filter-centering-mechanism-v1":
+            candidates = self.manifest.get("candidates", [])
+            if len(candidates) != 1:
+                raise ValueError(
+                    "Output-filter centering experiment must freeze one candidate"
+                )
+            if candidates[0].get("update_centering") != "output_filters":
+                raise ValueError("The frozen candidate must center output filters")
         manifest_dir = self.manifest_path.parent
         self.base = load_config(
             _resolve(manifest_dir, self.manifest["base_config"]),
@@ -155,6 +165,19 @@ class Stage1BRunner:
         self.health_dir = self.output_dir / "health"
         self.state_path = self.output_dir / "stage1b_state.json"
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        manifest_snapshot = self.output_dir / "manifest_resolved.yaml"
+        if manifest_snapshot.exists():
+            existing_manifest = yaml.safe_load(
+                manifest_snapshot.read_text(encoding="utf-8")
+            )
+            if config_fingerprint(existing_manifest) != config_fingerprint(
+                self.manifest
+            ):
+                raise RuntimeError(
+                    "Saved validation manifest differs from requested manifest"
+                )
+        else:
+            _atomic_yaml(manifest_snapshot, self.manifest)
         provenance = git_provenance(str(ROOT))
         if self.state_path.exists():
             self.state = json.loads(self.state_path.read_text(encoding="utf-8"))
@@ -211,6 +234,9 @@ class Stage1BRunner:
         config["hebbian"]["competition_epsilon"] = 1e-6
         config["hebbian"]["center_inputs"] = bool(
             candidate.get("center_inputs", False)
+        )
+        config["hebbian"]["update_centering"] = candidate.get(
+            "update_centering", "none"
         )
         config["hebbian"]["filter_l2_normalize"] = bool(
             fixed["filter_l2_normalize"]
@@ -385,6 +411,7 @@ class Stage1BRunner:
                 ),
                 status="completed",
                 error=None,
+                update_centering=candidate.get("update_centering", "none"),
             )
         except Exception as error:
             result = Stage1BResult(
@@ -408,6 +435,7 @@ class Stage1BRunner:
                 z_winner_coverage=None,
                 status="failed",
                 error=f"{type(error).__name__}: {error}",
+                update_centering=candidate.get("update_centering", "none"),
             )
         self.state["trials"][trial_id] = {
             "status": result.status,

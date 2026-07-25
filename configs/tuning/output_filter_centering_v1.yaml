@@ -1,0 +1,32 @@
+version: output-filter-centering-mechanism-v1
+protocol_base_ref: phase0-v1.1-formal
+experiment_role: validation_only_finite_mechanism_candidate
+base_config: ../selected/hebbian_validation_selected.yaml
+health_config: ../experiments/representation_health_v1.yaml
+output_dir: results/tuning/output_filter_centering_v1
+tuning_seed: 42
+baseline_validation_accuracy: 0.9063
+noninferiority_margin: 0.02
+test_access_policy: zero_test_access
+candidate_count_frozen: 1
+allow_followup_candidates: false
+gate_thresholds_unchanged: true
+notebook_reference:
+  filename: Microlearning.ipynb
+  sha256: 7d4437af298a81b128106ef0236aa00d4d9a8108e6199799cfd90026b603eca3
+  cell_index: 51
+  operation: grad_weight - grad_weight.mean(axis=0)
+fixed:
+  latent_dim: 64
+  learning_rate: 0.0005
+  epochs_per_layer: 10
+  filter_l2_normalize: true
+  update: oja
+candidates:
+  - id: oja_wta_output_filter_centered
+    competition_mode: raw
+    competition_power: 1.0
+    center_inputs: false
+    update_centering: output_filters
+    learning_rate: 0.0005
+    winner_fraction: 0.10

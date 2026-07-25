@@ -65,6 +65,24 @@ def _atomic_json(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
+def _atomic_yaml(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        yaml.safe_dump(payload, handle, sort_keys=False)
+    temporary.replace(path)
+
+
+def _record_path(path: Path) -> str:
+    """Prefer a repository-relative path but support isolated clean worktrees."""
+
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         raise ValueError(f"Refusing to write empty CSV: {path}")
@@ -89,6 +107,24 @@ def _git_is_ancestor(ancestor: str) -> bool:
 
 def _config_sha256(path: Path) -> str:
     return file_sha256(path)
+
+
+def _source_run_dir(source: dict[str, Any]) -> Path:
+    if source.get("run_dir"):
+        return _resolve(source["run_dir"])
+    decision_path = _resolve(source["selection_decision"])
+    decision = json.loads(decision_path.read_text(encoding="utf-8"))
+    trial_id = source["trial_id"]
+    matches = [
+        trial
+        for trial in decision.get("trials", [])
+        if trial.get("trial_id") == trial_id
+    ]
+    if len(matches) != 1 or not matches[0].get("run_dir"):
+        raise RuntimeError(
+            f"Could not resolve Q4 source trial {trial_id!r} from {decision_path}"
+        )
+    return Path(matches[0]["run_dir"]).resolve()
 
 
 def _mnist_training_dataset(data_root: Path):
@@ -249,7 +285,7 @@ def _train_reference_decoder(
         "best_validation_mse": best_validation,
         "decoder_initial_state_hash": decoder_initial_hash,
         "decoder_best_state_hash": state_dict_checksum(model.decoder),
-        "decoder_checkpoint": str(checkpoint_path.relative_to(ROOT)),
+        "decoder_checkpoint": _record_path(checkpoint_path),
         "decoder_checkpoint_sha256": file_sha256(checkpoint_path),
         "encoder_hash_before": encoder_hash_before,
         "encoder_hash_after": encoder_hash_after,
@@ -304,6 +340,7 @@ def _hebbian_rule(run_config: dict[str, Any], layer_name: str):
         competition_power=float(hebbian.get("competition_power", 1.0)),
         competition_epsilon=float(hebbian.get("competition_epsilon", 1e-6)),
         center_inputs=bool(hebbian.get("center_inputs", False)),
+        update_centering=hebbian.get("update_centering", "none"),
     )
 
 
@@ -339,7 +376,7 @@ def _analyze_pair(
         return summary, list(csv.DictReader(records_path.open(encoding="utf-8"))), {
             "snapshot_id": snapshot_id,
             "layer": layer_name,
-            "path": str(tensor_path.relative_to(ROOT)),
+            "path": _record_path(tensor_path),
             "sha256": file_sha256(tensor_path),
         }
     if pair_dir.exists() and any(pair_dir.iterdir()):
@@ -465,6 +502,7 @@ def _analyze_pair(
         "batch_size": int(config["data"]["batch_size"]),
         "parameter_count": int(bp_stack[0].numel()),
         "weight_shape": list(bp_stack.shape[1:]),
+        "update_centering": rule.update_centering,
         "bp_reference": {
             "direction": "raw reconstruction negative gradient",
             "optimizer_state_included": False,
@@ -474,7 +512,9 @@ def _analyze_pair(
             "snr": update_snr(bp_stack, epsilon=epsilon),
         },
         "hebbian_raw": {
-            "definition": "unscaled competitive Oja candidate before apply",
+            "definition": (
+                "unscaled configured competitive Oja candidate before apply"
+            ),
             **raw_scale,
             "snr": update_snr(raw_stack, epsilon=epsilon),
             **_descriptive(
@@ -531,7 +571,7 @@ def _analyze_pair(
     tensor_record = {
         "snapshot_id": snapshot_id,
         "layer": layer_name,
-        "path": str(tensor_path.relative_to(ROOT)),
+        "path": _record_path(tensor_path),
         "sha256": file_sha256(tensor_path),
         "bp_raw_shape": list(bp_stack.shape),
         "hebbian_raw_shape": list(raw_stack.shape),
@@ -690,6 +730,7 @@ def run_q4_tooling(config_path: str | Path) -> Path:
     elif output_dir.exists() and any(output_dir.iterdir()):
         raise RuntimeError(f"Unrecognized Q4 output directory: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
+    _atomic_yaml(output_dir / "config_resolved.yaml", config)
     _atomic_json(
         state_path,
         {
@@ -703,7 +744,7 @@ def run_q4_tooling(config_path: str | Path) -> Path:
     )
 
     try:
-        source_dir = _resolve(config["source"]["run_dir"])
+        source_dir = _source_run_dir(config["source"])
         run_config = _load_yaml(source_dir / "config_resolved.yaml")
         if run_config["training"]["seed"] != config["source"]["seed"]:
             raise RuntimeError("Source run seed differs from Q4 config")
@@ -729,7 +770,7 @@ def run_q4_tooling(config_path: str | Path) -> Path:
                 {
                     "snapshot_id": spec["id"],
                     "active_layer": spec["active_layer"],
-                    "path": str(path.relative_to(ROOT)),
+                    "path": _record_path(path),
                     "file_sha256_before": file_sha256(path),
                     "state_dict_sha256": state_dict_checksum(state),
                 }
@@ -853,7 +894,7 @@ def run_q4_tooling(config_path: str | Path) -> Path:
             "stage": "Stage 2 / Q4 tooling gate",
             "status": "COMPLETED" if gate_pass else "RUN_BUT_NOT_VALIDATED",
             "decision": "PASS" if gate_pass else "FAIL",
-            "scope": "seed-42 failure-case mechanism snapshot tooling validation",
+            "scope": config["source"]["snapshot_role"],
             "representation_health_pass_claimed": False,
             "checks": gate_checks,
             "snapshot_layer_pairs": [
@@ -871,15 +912,15 @@ def run_q4_tooling(config_path: str | Path) -> Path:
         run_manifest = {
             "schema_version": "q4-tooling-run-v1",
             "completed_at_utc": utc_now(),
-            "config": str(config_path.relative_to(ROOT)),
+            "config": _record_path(config_path),
             "config_sha256": _config_sha256(config_path),
             "protocol_base_ref": config["protocol_base_ref"],
             **provenance,
-            "source_run": str(source_dir.relative_to(ROOT)),
+            "source_run": _record_path(source_dir),
             "source_seed": int(config["source"]["seed"]),
             "snapshot_role": config["source"]["snapshot_role"],
             "snapshots": snapshot_records,
-            "batch_manifest": str(manifest_path.relative_to(ROOT)),
+            "batch_manifest": _record_path(manifest_path),
             "batch_manifest_sha256": file_sha256(manifest_path),
             "batch_ids_sha256": batch_ids_hash,
             "batch_count": int(config["data"]["batch_count"]),
@@ -892,6 +933,9 @@ def run_q4_tooling(config_path: str | Path) -> Path:
                 "optimizer_steps": 0,
                 "target_clamping": False,
                 "hebbian_variants": ["raw", "effective"],
+                "update_centering": run_config["hebbian"].get(
+                    "update_centering", "none"
+                ),
                 "epsilon": float(config["analysis"]["epsilon"]),
             },
             "dataset_access": {
@@ -914,6 +958,7 @@ def run_q4_tooling(config_path: str | Path) -> Path:
                 "gate_decision.json",
                 "run_manifest.json",
                 "run_state.json",
+                "config_resolved.yaml",
             ],
         }
         _atomic_json(output_dir / "gate_decision.json", decision)
