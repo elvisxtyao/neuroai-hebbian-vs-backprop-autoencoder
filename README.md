@@ -39,6 +39,8 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
   experiment; the sole candidate failed both frozen gates.
 - [docs/hebbian_failure_case_protocol_addendum.md](docs/hebbian_failure_case_protocol_addendum.md):
   Branch-D restrictions after common-mode removal failed to repair the model.
+- [docs/hybrid_depth_ablation_protocol.md](docs/hybrid_depth_ablation_protocol.md):
+  preregistered validation-only Hybrid-HHB/Hybrid-HBB depth-ablation contract.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and

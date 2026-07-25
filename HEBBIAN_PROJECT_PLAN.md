@@ -810,6 +810,21 @@ candidate。原始 Oja + WTA config 只保留为
 执行正式多 seed failure replication。见
 `docs/hebbian_failure_case_protocol_addendum.md`。
 
+#### Stage 2C — Hybrid Hebbian–BP Depth Ablation
+
+经用户单独授权，在不修改 original full-Hebbian failure-case baseline 的
+前提下，预注册两个且仅两个 validation-only、seed-42 controls：
+
+- `Hybrid-HHB`：Enc1/Enc2 Hebbian，Enc3/decoder BP；
+- `Hybrid-HBB`：Enc1 Hebbian，Enc2/Enc3/decoder BP。
+
+同时从同一个 clean implementation commit 重跑 Full BP 与 Full Hebbian
+references，确保 split、对应层/decoder/probe initialization、BP `lr=0.003`
+和 validation checkpoint policy 完全配对。所有 frozen layers 必须排除在
+optimizer parameter groups 外且 checksum 不变。本阶段只提供 diagnostic
+localization 与 Stage-3 candidate recommendation，不运行 confirmation 或
+formal seeds。完整预注册规则见 `docs/hybrid_depth_ablation_protocol.md`。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension

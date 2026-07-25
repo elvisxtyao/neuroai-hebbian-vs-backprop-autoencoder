@@ -109,8 +109,34 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("phase0-v1 hidden encoder channels must be [16, 32]")
     if config["model"]["target_clamping"] is not False:
         raise ConfigError("Target clamping is forbidden in the main experiment")
-    if config["training"]["learning_rule"] not in {"bp", "hebbian"}:
-        raise ConfigError("training.learning_rule must be 'bp' or 'hebbian'")
+    if config["training"]["learning_rule"] not in {"bp", "hebbian", "hybrid"}:
+        raise ConfigError(
+            "training.learning_rule must be 'bp', 'hebbian' or 'hybrid'"
+        )
+    if config["training"]["learning_rule"] == "hybrid":
+        hybrid = _require(config, "hybrid")
+        layer_rules = hybrid.get("encoder_layer_rules")
+        if not isinstance(layer_rules, dict) or set(layer_rules) != {
+            "enc1",
+            "enc2",
+            "enc3",
+        }:
+            raise ConfigError(
+                "hybrid.encoder_layer_rules must define enc1/enc2/enc3"
+            )
+        if not set(layer_rules.values()).issubset({"hebbian", "bp", "frozen"}):
+            raise ConfigError(
+                "hybrid layer rules must be hebbian, bp or frozen"
+            )
+        seen_bp = False
+        for layer in ("enc1", "enc2", "enc3"):
+            rule = layer_rules[layer]
+            if rule == "bp":
+                seen_bp = True
+            elif rule == "hebbian" and seen_bp:
+                raise ConfigError(
+                    "hybrid Hebbian layers must precede BP layers"
+                )
     if config["training"]["paired_seeds"] != [0, 1, 2, 3, 4]:
         raise ConfigError("phase0-v1 paired seeds must be [0,1,2,3,4]")
     if config["data"]["batch_size"] != config["training"]["batch_size"]:

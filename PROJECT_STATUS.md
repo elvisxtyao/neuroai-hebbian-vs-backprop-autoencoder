@@ -36,6 +36,7 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `docs/stage1c_effective_rank_audit.md` | No-training metric audit, pre/post-WTA mechanism result, spectra, integrity evidence, and interpretation limits | Preserve the PASS decision and failure-case-snapshot scope |
 | `docs/output_filter_centering_mechanism.md` | Notebook audit and bounded seed-42 output-filter-centering mechanism experiment | Preserve the failed-gate decision; do not treat it as a new Stage 1B round |
 | `docs/hebbian_failure_case_protocol_addendum.md` | Branch-D scope and restrictions after the failed repair | Do not start another repair candidate or Stage 3 from this decision |
+| `docs/hybrid_depth_ablation_protocol.md` | Preregistered two-control Hybrid-HHB/Hybrid-HBB depth ablation | Do not add a third control or tune from seed-42 results |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -59,7 +60,8 @@ so the repository does not contain broken links to private run records.
 | Phase 6 / Q3: robustness | Planned | Noise severities specified in config | Deterministic noise generator and paired evaluation |
 | Phase 7 / Q4: update mechanisms | **Partial — seed-42 tooling gate PASS** | Three frozen layer-boundary snapshots; 50 fixed batches; raw BP and raw/effective Hebbian updates; alignment, norm ratio, alpha-star, scale-matched bias and SNR; immutable 62-test log; zero analysis optimizer steps and zero test access | Multi-seed execution, a health-passing comparison configuration, and exploratory cross-metric correlation |
 | Stage 2B: output-filter update-centering audit | **Complete — candidate failed** | Supplied notebook audited; exactly one validation-only seed-42 candidate; 70 tests; full health/Q4 comparison; zero test access | No replacement selected; Stage 1B remains frozen |
-| Stage 2C: frozen follow-up decision | **Complete — Branch D** | Unified snapshot/layer table, machine-readable branch decision, source/checksum manifest, immutable tests, zero new training and zero test access | Only a separately approved multi-seed failure-replication protocol may follow |
+| Stage 2B decision overlay | **Complete — Branch D** | Unified snapshot/layer table, machine-readable branch decision, source/checksum manifest, immutable tests, zero new training and zero test access | Superseded only for the separately authorized two-control depth diagnostic |
+| Stage 2C: Hybrid Hebbian–BP depth ablation | **In progress — preregistered** | Exactly Hybrid-HHB and Hybrid-HBB plus newly paired Full BP/Full Hebbian references; validation-only seed 42 | Clean implementation commit, four runs, representation analysis and decision |
 | Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | Configurable channel architecture, sweeps, and representation analysis |
 | Phase 9: extensions | Planned | Scope listed | Core MNIST matrix must finish first |
 

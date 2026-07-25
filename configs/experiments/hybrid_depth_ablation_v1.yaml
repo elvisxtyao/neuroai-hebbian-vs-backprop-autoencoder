@@ -1,0 +1,33 @@
+version: hybrid-depth-ablation-v1
+output_dir: results/hybrid_depth_ablation
+seed: 42
+performance_floor: 0.8863
+test_access_policy: validation_only
+
+methods:
+  - id: full_bp
+    role: reference
+    config: configs/experiments/hybrid_depth/full_bp_seed42.yaml
+  - id: full_hebbian
+    role: failure_case_reference
+    config: configs/experiments/hybrid_depth/full_hebbian_seed42.yaml
+  - id: hybrid_hhb
+    role: control_a
+    config: configs/experiments/hybrid_depth/hybrid_hhb_seed42.yaml
+  - id: hybrid_hbb
+    role: control_b
+    config: configs/experiments/hybrid_depth/hybrid_hbb_seed42.yaml
+
+representation:
+  subset_manifest: data/splits/mnist_validation_health_v1.npz
+  split_manifest: data/splits/mnist_split_v1.npz
+  data_root: data/raw
+  batch_size: 128
+  winner_fraction: 0.10
+  activation_epsilon: 1.0e-12
+  variance_epsilon: 1.0e-12
+  cv_folds: 5
+  cv_seed: 42
+  knn_neighbors: 5
+
+health_threshold_source: configs/experiments/representation_health_v1.yaml

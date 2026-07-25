@@ -18,7 +18,7 @@ from evaluation.representations import extract_representations
 from models import ConvAutoencoder, LinearProbe
 from schemas import load_config, validate_config
 from utils.reproducibility import set_global_seed, state_dict_checksum
-from utils.results import append_metric, remove_metric_stages
+from utils.results import append_metric, remove_metric_stages, write_json
 
 
 def _feature_loader(
@@ -109,6 +109,7 @@ def train_linear_probe_config(
             config["model"]["latent_dim"],
             epsilon=config["probe"]["standardization_epsilon"],
         )
+    classifier_initial_hash = state_dict_checksum(probe.classifier)
     probe.standardizer.fit(features["train"])
     probe.to(device)
     optimizer = torch.optim.SGD(
@@ -217,6 +218,22 @@ def train_linear_probe_config(
     encoder_hash_after = state_dict_checksum(model.encoder)
     if encoder_hash_before != encoder_hash_after:
         raise RuntimeError("Frozen encoder changed during linear-probe training")
+    write_json(
+        run_dir,
+        "linear_probe_summary.json",
+        {
+            "schema_version": "linear-probe-summary-v1",
+            "validation_only": validation_only,
+            "test_samples_accessed": 0 if validation_only else labels["test"].numel(),
+            "classifier_initial_hash": classifier_initial_hash,
+            "selected_epoch": best_epoch,
+            "best_validation_accuracy": best_accuracy,
+            "encoder_hash_before": encoder_hash_before,
+            "encoder_hash_after": encoder_hash_after,
+            "encoder_unchanged": True,
+        },
+        overwrite=True,
+    )
     return run_dir / "linear_probe.pt"
 
 
