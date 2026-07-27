@@ -137,6 +137,30 @@ def validate_config(config: dict[str, Any]) -> None:
                 raise ConfigError(
                     "hybrid Hebbian layers must precede BP layers"
                 )
+        confirmation_stage = hybrid.get("confirmation_stage")
+        if confirmation_stage is not None:
+            if confirmation_stage != "stage2d":
+                raise ConfigError("Unsupported hybrid confirmation stage")
+            if config["training"].get("seed") not in {43, 44}:
+                raise ConfigError("Stage 2D confirmation seed must be 43 or 44")
+            if config["backprop"]["lr"] != 0.003:
+                raise ConfigError("Stage 2D freezes BP learning rate at 0.003")
+            if config["hebbian"]["lr"] != 0.0005:
+                raise ConfigError("Stage 2D freezes Hebbian learning rate at 0.0005")
+            if config["hebbian"]["winner_fraction"] != 0.10:
+                raise ConfigError("Stage 2D freezes winner_fraction at 0.10")
+            standardized = _require(config, "standardized_decoder")
+            expected_standardized = {
+                "optimizer": "adam",
+                "lr": 0.003,
+                "betas": [0.9, 0.999],
+                "weight_decay": 0.0,
+                "epochs": 10,
+                "loss": "mse_pixel_mean",
+                "validation_selection": "min_reconstruction_mse",
+            }
+            if standardized != expected_standardized:
+                raise ConfigError("Stage 2D standardized-decoder protocol changed")
     if config["training"]["paired_seeds"] != [0, 1, 2, 3, 4]:
         raise ConfigError("phase0-v1 paired seeds must be [0,1,2,3,4]")
     if config["data"]["batch_size"] != config["training"]["batch_size"]:

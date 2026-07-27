@@ -38,6 +38,7 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `docs/hebbian_failure_case_protocol_addendum.md` | Branch-D scope and restrictions after the failed repair | Do not start another repair candidate or Stage 3 from this decision |
 | `docs/hybrid_depth_ablation_protocol.md` | Preregistered two-control Hybrid-HHB/Hybrid-HBB depth ablation | Do not add a third control or tune from seed-42 results |
 | `docs/hybrid_depth_ablation_results.md` | Completed seed-42 depth-ablation evidence and Outcome-D decision | Keep diagnostic-only language until confirmation seeds pass |
+| `docs/hybrid_hhb_confirmation_protocol.md` | Immutable Stage 2D seeds 43/44 confirmation and dual-reconstruction contract | Do not tune, change thresholds, access test, or append a third seed |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -63,7 +64,7 @@ so the repository does not contain broken links to private run records.
 | Stage 2B: output-filter update-centering audit | **Complete — candidate failed** | Supplied notebook audited; exactly one validation-only seed-42 candidate; 70 tests; full health/Q4 comparison; zero test access | No replacement selected; Stage 1B remains frozen |
 | Stage 2B decision overlay | **Complete — Branch D** | Unified snapshot/layer table, machine-readable branch decision, source/checksum manifest, immutable tests, zero new training and zero test access | Superseded only for the separately authorized two-control depth diagnostic |
 | Stage 2C: Hybrid Hebbian–BP depth ablation | **Complete — PASS, Outcome D** | Four newly paired clean-commit runs; pairing/freeze PASS; 2,000-image layerwise metrics; five figures; 78 tests; zero test access | Hybrid-HHB is confirmation candidate only; no Stage 3 until approved confirmation seeds pass |
-| Stage 2D: Hybrid-HHB confirmation | **Planned — next blocking gate** | Seeds 43/44, thresholds and paired BBB/HHH references are specified in the updated plan | Immutable protocol, system and standardized-decoder reconstruction, two complete validation-only seeds, zero test access |
+| Stage 2D: Hybrid-HHB confirmation | **Implemented, not run — next blocking gate** | Immutable protocol/configs; paired BBB/HHH/HHB runner; resumable standardized decoder; gate analysis; 84 tests | Run seeds 43/44 from the clean implementation snapshot, analyze both, and verify zero test access |
 | Phase 4 / Q1 expanded formal matrix | **Planned — blocked by Stage 2D** | BBB/HHH/HHB/HBB plus Full Random; RBB/RRB matched-prefix controls; five paired contrasts specified | Do not resume the historical two-rule seeds as formal evidence; create a new frozen seeds 0–4 matrix after confirmation |
 | Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | BBB/HHH/HHB/HBB sweeps, key RBB/RRB controls, and layerwise Hybrid-compensation analysis |
 | Phase 9: extensions | Planned | Scope listed | Core MNIST matrix must finish first |

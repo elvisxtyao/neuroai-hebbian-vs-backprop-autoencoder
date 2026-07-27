@@ -1,0 +1,34 @@
+version: hybrid-hhb-confirmation-v1
+output_dir: results/hybrid_hhb_confirmation
+seeds: [43, 44]
+methods: [full_bp, full_hebbian, hybrid_hhb]
+test_access_policy: validation_only
+
+configs:
+  "43":
+    full_bp: configs/experiments/hybrid_confirmation/full_bp_seed43.yaml
+    full_hebbian: configs/experiments/hybrid_confirmation/full_hebbian_seed43.yaml
+    hybrid_hhb: configs/experiments/hybrid_confirmation/hybrid_hhb_seed43.yaml
+  "44":
+    full_bp: configs/experiments/hybrid_confirmation/full_bp_seed44.yaml
+    full_hebbian: configs/experiments/hybrid_confirmation/full_hebbian_seed44.yaml
+    hybrid_hhb: configs/experiments/hybrid_confirmation/hybrid_hhb_seed44.yaml
+
+thresholds:
+  validation_accuracy_floor: 0.8863
+  standardized_decoder_mse_ratio_to_bp_max: 1.25
+  z_effective_rank_min: 2.0
+  z_effective_rank_ratio_to_full_hebbian_min: 2.0
+  z_to_h2_effective_rank_ratio_min: 2.0
+  epsilon: 1.0e-12
+
+representation:
+  subset_manifest: data/splits/mnist_validation_health_v1.npz
+  split_manifest: data/splits/mnist_split_v1.npz
+  data_root: data/raw
+  batch_size: 128
+  winner_fraction: 0.10
+  activation_epsilon: 1.0e-12
+  variance_epsilon: 1.0e-12
+
+protocol_document: docs/hybrid_hhb_confirmation_protocol.md

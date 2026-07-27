@@ -1,0 +1,12 @@
+extends: common.yaml
+
+training:
+  seed: 44
+
+hybrid:
+  method_id: full_bp
+  display_name: Full BP
+  encoder_layer_rules:
+    enc1: bp
+    enc2: bp
+    enc3: bp

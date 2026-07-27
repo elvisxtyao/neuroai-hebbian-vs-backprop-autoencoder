@@ -48,6 +48,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
   preregistered validation-only Hybrid-HHB/Hybrid-HBB depth-ablation contract.
 - [docs/hybrid_depth_ablation_results.md](docs/hybrid_depth_ablation_results.md):
   completed seed-42 depth-ablation metrics, Outcome D and candidate decision.
+- [docs/hybrid_hhb_confirmation_protocol.md](docs/hybrid_hhb_confirmation_protocol.md):
+  immutable Stage 2D seeds 43/44 confirmation gates, paired references, and
+  system-versus-standardized reconstruction contract.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and

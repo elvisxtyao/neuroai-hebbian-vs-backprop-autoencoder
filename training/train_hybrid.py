@@ -185,7 +185,11 @@ def _metadata(
     return {
         "schema_version": "hybrid-depth-run-metadata-v1",
         "version": config["version"],
-        "experiment_id": "hybrid_depth_ablation_seed42",
+        "experiment_id": (
+            "hybrid_hhb_confirmation"
+            if config["hybrid"].get("confirmation_stage") == "stage2d"
+            else "hybrid_depth_ablation_seed42"
+        ),
         "run_id": run_dir.name,
         "method_id": config["hybrid"]["method_id"],
         "learning_rule": "hybrid",
@@ -222,14 +226,20 @@ def train_hybrid_config(
     if config["training"]["learning_rule"] != "hybrid":
         raise ValueError("train_hybrid_config requires learning_rule=hybrid")
     seed = int(config["training"]["seed"])
-    if seed != 42:
-        raise ValueError("Stage 2C is frozen to diagnostic seed 42")
+    confirmation_stage = config["hybrid"].get("confirmation_stage")
+    allowed_seeds = {43, 44} if confirmation_stage == "stage2d" else {42}
+    if seed not in allowed_seeds:
+        stage_name = "Stage 2D" if confirmation_stage == "stage2d" else "Stage 2C"
+        raise ValueError(
+            f"{stage_name} hybrid training requires one of "
+            f"{sorted(allowed_seeds)}, got {seed}"
+        )
     set_global_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if loaders is None:
         loaders = build_mnist_dataloaders(config, seed=seed, include_test=False)
     if "test" in loaders:
-        raise RuntimeError("Stage 2C must not construct a test loader")
+        raise RuntimeError("Hybrid validation-only training must not construct a test loader")
 
     run_dir = Path(run_dir)
     layer_rules = dict(config["hybrid"]["encoder_layer_rules"])
