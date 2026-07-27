@@ -1,6 +1,9 @@
-# NeuroAI BP–Hebbian Shared Skeleton
+# Comparing Backpropagation, Hebbian Learning, and Minimal Hybrid Credit Assignment
 
-Shared Phase 0 framework for comparing backpropagation and explicit local Hebbian learning in a 3-layer convolutional autoencoder on MNIST.
+Shared three-layer convolutional-autoencoder framework for comparing Full BP,
+Full Hebbian, Hybrid-HHB/Hybrid-HBB, and matched random-prefix controls on
+MNIST. The three-layer encoder is held fixed while the number of
+Hebbian-trained layers changes from 0 to 3.
 
 The parent settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md).
 Formal experiments use the versioned
@@ -16,7 +19,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
   formal experiment override, source snapshot, test policy, and artifact naming.
 - [environment/phase0_v1_1_environment.md](environment/phase0_v1_1_environment.md):
   exact CPU runtime, deterministic flags, split hash, dependencies, and test evidence.
-- [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): research questions, formulas, WBS, and acceptance criteria.
+- [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): expanded Full
+  BP/Full Hebbian/Hybrid research questions, formal model matrix,
+  reconstruction controls, WBS, and acceptance criteria.
 - [docs/tutorial_migration.md](docs/tutorial_migration.md): source provenance and notebook-to-module migration boundary.
 - [docs/phase0_team_confirmation.md](docs/phase0_team_confirmation.md): pending BP teammate compliance evidence.
 - [docs/validation_tuning.md](docs/validation_tuning.md): formal seed-42 validation-only search and frozen configs.
@@ -52,7 +57,7 @@ Formal runs must use `configs/formal/`, live below
 `results/formal/phase0_v1_1/`, and start from the immutable Git ref
 `phase0-v1.1-formal`. Existing `results/` runs remain preliminary.
 
-## Current seed-0 baseline
+## Historical seed-0 baseline
 
 Both runs use the same deterministic MNIST split, autoencoder architecture,
 initial model state and frozen linear-probe protocol.
@@ -68,10 +73,14 @@ seed-0 run also shows winner concentration at depth: the final active-neuron
 ratios are 100%, 46.88% and 20.31% for `enc1`, `enc2` and `enc3`. These are
 single-seed development results rather than final multi-seed conclusions.
 
-The Hebbian rule trains the encoder only. Its reconstruction decoder and
+The Full Hebbian rule trains the encoder only. Its reconstruction decoder and
 classification probe are trained with backpropagation after the encoder is
-frozen. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for current conclusions,
-limitations, and remaining gates.
+frozen. Hybrid-HHB and Hybrid-HBB additionally train an encoder BP suffix.
+Future reconstruction comparisons therefore report both the decoder produced
+by the actual system and a standardized decoder retrained from paired
+initialization after freezing the whole encoder. See
+[PROJECT_STATUS.md](PROJECT_STATUS.md) for current conclusions, limitations,
+and remaining gates.
 
 ## Setup
 

@@ -1,17 +1,19 @@
-# Hebbian Learning 子项目：执行、记录与验收计划
+# Backpropagation、Hebbian Learning 与 Minimal Hybrid Credit Assignment：执行、记录与验收计划
 
-> 项目：3-layer convolutional autoencoder 中 Backpropagation 与 Hebbian learning 的比较
-> 本文档范围：Hebbian 模型的实现、训练、评估、机制分析，以及与 BP 组员的接口对齐
-> 当前状态：`Phase 4 paused after paired seeds 0–1; seeds 2–4 pending`
-> 最后更新：2026-07-21
+> 项目：Comparing Backpropagation, Hebbian Learning, and Minimal Hybrid Credit Assignment in a Three-Layer Convolutional Autoencoder
+> 本文档范围：Full BP、Full Hebbian、Hybrid-HHB/Hybrid-HBB 与匹配随机控制的实现、训练、评估和机制分析
+> 当前状态：`Stage 2C seed-42 diagnostic complete; Hybrid-HHB confirmation pending`
+> 最后更新：2026-07-27
 
 > 文档角色：本文件保存研究设计、公式、WBS ID 和验收条件。实时完成状态只在
 > `PROJECT_STATUS.md` 维护；本文件中的长 WBS checkbox 不再作为唯一状态源。
 
 当前交付已完成显式 convolutional WTA/Oja、逐 filter 权重归一化、三层 greedy
-训练、冻结 decoder、共享 frozen linear probe、逐层诊断和 seed-0 BP 对照。正式输出与
-未完成边界见 `PROJECT_STATUS.md`。多 seed、noise、representation
-geometry、architecture sweep 和 BP-reference cosine/bias/SNR 仍按后续 phase 执行。
+训练、共享 frozen linear probe、逐层诊断、BP/Hebbian 基线，以及 seed-42
+Hybrid-HHB/Hybrid-HBB depth diagnostic。正式输出与未完成边界见
+`PROJECT_STATUS.md`。后续主线是先确认最小 Hybrid intervention，再在冻结的
+三层框架内比较 0/1/2/3 个 Hebbian encoder layers；单 seed 诊断不得替代正式
+multi-seed 结论。
 
 ---
 
@@ -19,19 +21,44 @@ geometry、architecture sweep 和 BP-reference cosine/bias/SNR 仍按后续 phas
 
 ### 1.1 核心目标
 
-实现一个稳定、可复现的 **3-layer convolutional Hebbian encoder/autoencoder**，并在相同数据、结构、表示维度、分类探针和评估流程下，与 BP 模型比较：
+在稳定、可复现的 **3-layer convolutional autoencoder** 中比较 Full BP、
+Full Hebbian 与 Minimal Hybrid Credit Assignment，并判断浅层 Hebbian
+features 是否具有超越匹配随机前缀的价值。主研究轴是在总深度、参数 shape、
+初始化、数据和评估协议不变时，将 encoder 中 Hebbian layers 的数量从 0
+逐步增加到 3：
 
-1. 分类性能与学习速度；
-2. 各层及 bottleneck 的 latent representation；
-3. 噪声、随机种子和结构变化下的鲁棒性；
-4. Hebbian 与 BP 权重更新的方向、幅度、偏差和方差；
-5. latent dimensionality 与 architecture asymmetry 的影响。
+1. 比较分类、重建、学习速度与计算成本；
+2. 比较 h1、h2 与 bottleneck z 的 latent representation；
+3. 判断 BP encoder suffix 能否稳定补偿低秩 Hebbian prefix；
+4. 判断一层或两层 Hebbian prefix 是否优于匹配的 frozen-random prefix；
+5. 比较噪声、随机种子、latent dimension 与 architecture asymmetry 下的鲁棒性；
+6. 分析局部 Hebbian update、BP gradient 及 Hybrid rule boundary 的机制差异。
+
+三层是主实验的**固定控制框架**，不是“Hebbian 必须使用三层”的理论声明。
+改变 encoder 总层数会同时改变容量、感受野与空间压缩路径，必须留到独立的
+architecture-depth ablation；不能与本计划的 learning-rule allocation 主比较混用。
 
 ### 1.2 最重要的公平比较原则
 
-> 在每个主实验中，除学习规则及其必需的训练目标外，尽量保持数据、网络容量、初始化、训练预算、分类器和评估协议一致。
+> 在每个主实验中，除逐层学习规则及其必需的训练目标外，保持数据、总网络
+> 结构、初始化、分类器和评估协议一致。无法匹配总 dataset passes 时，匹配
+> per-layer exposure，并完整报告 total passes、samples seen 与 wall-clock。
 
 所有差异必须写入实验配置，不能只在代码中隐含。调参只使用 validation set，test set 仅用于最终评估。
+
+重建比较必须同时报告两种口径：
+
+- **System reconstruction：** 使用该方法实际训练流程得到的 decoder，衡量最终
+  系统性能；允许 Hybrid 的 BP suffix 与 decoder 按冻结协议联合适应。
+- **Standardized decoder reconstruction：** encoder 完成后冻结全部 encoder，
+  从相同 paired decoder initialization 重新训练新 decoder；所有方法使用相同
+  optimizer、learning rate、数据顺序、epoch 数和 validation checkpoint selection。
+  该指标用于比较 encoder representation 本身包含多少可恢复信息。
+
+Hybrid system reconstruction 的改善可能同时来自更丰富的 z 与 BP
+suffix–decoder joint adaptation，因此不能单独用它证明 representation 已修复。
+涉及“encoder 可恢复信息”的主张必须以 standardized decoder reconstruction
+为主要重建证据，并结合独立的 representation metrics。
 
 ### 1.3 必须修正原规划的地方
 
@@ -39,9 +66,17 @@ geometry、architecture sweep 和 BP-reference cosine/bias/SNR 仍按后续 phas
 
 - **卷积和 autoencoder 不能是 stretch goal。** MLP 可用于单元测试和快速验证，但正式主实验必须是 3 层卷积编码器，并包含明确的 decoder/reconstruction 协议。
 - **明确“3-layer”的含义。** 本文默认指 encoder 有 3 个可学习卷积层，decoder 镜像地有 3 个转置卷积层；不能把整个 encoder–decoder 合计 3 层与之混用。
+- **区分总深度与 Hebbian depth。** `BBB/HBB/HHB/HHH` 的 encoder 均为同一
+  三层结构，只改变每层规则；不能把 HBB 误写成“一层 encoder”，也不能把
+  HHB 的结果归为 Full Hebbian。
 - **分类和重建分开评估。** `classification cross-entropy` 与 `reconstruction loss` 分开记录，不能统称为 final test loss。
 - **BP 也必须使用 frozen encoder + 相同 linear probe。** 否则比较的是 end-to-end classifier 与 linear probe，而不是两种表示学习规则。
 - **Decoder 协议必须透明。** 若 decoder 使用 BP，则结论应表述为“Hebbian-trained encoder/representation”，不能声称整个模型均由纯 Hebbian rule 训练。
+- **Hybrid 声明必须准确。** “Minimal Hybrid”表示在 encoder 中加入修复
+  bottleneck 所需的最小 BP credit assignment；它不是纯 biologically plausible
+  model，也不能用来替代 HHH 基线。
+- **Random control 必须匹配 prefix。** Full Random 只给出整体下界；判断一层
+  或两层 Hebbian 是否有价值，必须分别比较 `HBB vs RBB` 和 `HHB vs RRB`。
 - **Architecture asymmetry 必须可测量。** 主分析优先改变 encoder 内部通道分配；单纯改变一个在 encoder 冻结后训练的 decoder，不应改变 Hebbian latent representation。
 - **Cosine similarity 不是完整的 bias。** 它称为 update alignment；偏差和 SNR 另行定义。
 - **Epoch 不能作为唯一学习速度单位。** 同时报告 samples seen、wall-clock time 和 normalized AULC。
@@ -75,12 +110,12 @@ geometry、architecture sweep 和 BP-reference cosine/bias/SNR 仍按后续 phas
 
 | 问题 | 主实验 | 核心指标 | 最小产出 |
 |---|---|---|---|
-| Q1 分类性能 | 固定主架构，BP-AE encoder vs Hebbian encoder，冻结后训练同一 linear probe | accuracy、macro-F1、CE、AULC、训练时间 | 学习曲线、均值 ± 95% CI、配对比较 |
-| Q2 latent representation | 对固定 test subset 提取每层 activation | linear probe、k-NN、separability、silhouette、effective rank | 每层 PCA/UMAP + 指标表 |
-| Q3 鲁棒性 | clean train → noisy test；seed 与超参扰动 | noisy accuracy、absolute/relative degradation、representation stability | severity curve + seed 方差 |
-| Q4 权重更新 | 同一权重状态、同一 batch 上计算 BP 与 Hebbian 候选更新 | alignment、norm ratio、bias、variance、SNR | layer × epoch 曲线 |
-| Q5 维度与非对称 | latent dimension sweep；参数预算约束下的 encoder 宽度分配 | accuracy、robustness、separability、sensitivity | interaction plot 与敏感度表 |
-| Q6 非对称与表示 | 对每种 encoder 宽度分配重复逐层表示分析 | CKA、linear probe、effective rank、class geometry | layerwise representation comparison |
+| Q1 分类与重建性能 | 固定三层架构，比较 BBB/HHH/HHB/HBB 与匹配随机控制；统一 frozen probe，并分别报告 system/standardized reconstruction | accuracy、macro-F1、CE、两种 reconstruction MSE、AULC、samples seen、wall-clock | 学习曲线、均值 ± 95% CI、预注册 paired contrasts |
+| Q2 latent representation | 对固定 class-balanced subset 提取 BBB/HHH/HHB/HBB/RBB/RRB 的 h1/h2/z | linear probe、k-NN、separability、effective/stable rank、class covariance、h2→z compensation | 每层 PCA/UMAP、spectrum 与跨 seed 指标表 |
+| Q3 鲁棒性 | frozen clean-trained models → matched noisy evaluation；比较 Full 与 Hybrid rules | noisy accuracy、absolute/relative degradation、representation stability、reconstruction degradation | severity curve + paired seed variance |
+| Q4 权重更新 | frozen snapshots 上比较 Hebbian candidate、BP reference，以及 Hybrid rule boundary 两侧的 updates | alignment、norm ratio、alpha-star、scale-matched bias、variance、SNR | method × layer × snapshot 曲线 |
+| Q5 维度与非对称 | 对 BBB/HHH/HHB/HBB 做 latent dimension 与 encoder-width sweep | accuracy、两种 reconstruction、robustness、separability、sensitivity | rule × architecture interaction 与敏感度表 |
+| Q6 非对称与表示 | 对 Q5 配置重复 h1/h2/z 分析，定位 Hybrid compensation 随结构变化的位置 | CKA、linear probe、effective rank、class geometry、compensation ratio | layerwise representation comparison |
 
 建议把 non-stationary learning 和 CIFAR-10 设为扩展实验；只有完成 MNIST 主矩阵后再开始。
 
@@ -90,7 +125,9 @@ geometry、architecture sweep 和 BP-reference cosine/bias/SNR 仍按后续 phas
 
 ### 3.1 主模型
 
-主实验使用 MNIST，输入为 `1 × 28 × 28`。BP 和 Hebbian 不维护两套 forward model，而是共享同一个 3-layer `ConvAutoencoder`；learning rule 由训练器切换。推荐基线结构如下，最终以冻结的公共配置为准：
+主实验使用 MNIST，输入为 `1 × 28 × 28`。所有方法共享同一个 3-layer
+`ConvAutoencoder`；learning rule 按 encoder layer 配置，不能为不同规则复制
+独立 forward model。推荐基线结构如下，最终以冻结的公共配置为准：
 
 ```text
 x
@@ -113,7 +150,11 @@ x_hat = decoder(z)
 训练规则与模型结构分离：
 
 ```python
-trainer = build_trainer(learning_rule="hebbian" | "bp", model=model, config=config)
+trainer = build_trainer(
+    layer_rules=["hebbian" | "bp" | "frozen_random"] * 3,
+    model=model,
+    config=config,
+)
 trainer.train_batch(x)  # 主表示学习阶段不接收 y
 ```
 
@@ -170,28 +211,54 @@ BP 模式应由共享模型的 `learning_rule: bp` 配置触发，而不是从 n
 - **BP baseline：** 正常训练完成的 BP autoencoder，用于 Q1–Q3/Q5–Q6；
 - **BP reference：** 在 Hebbian checkpoint 副本上临时计算的 reconstruction negative gradient，只用于 Q4，不执行 optimizer step。
 
-### 3.5 Decoder 与“生物合理性”声明
+### 3.5 Decoder、公平重建与“生物合理性”声明
 
 在编码器学习规则之外，decoder 是最主要的混杂因素。按以下顺序选择并固定协议：
 
-1. **主表示比较：** 两种 encoder 训练后均冻结；为二者分别训练结构、优化器、epoch 和初始化协议相同的 BP decoder。分类结论只基于 frozen encoder + linear probe。
-2. **机制对照：** 额外报告 tied-weight transpose-convolution reconstruction，不更新 encoder 权重。
-3. **可选扩展：** 若实现局部 decoder rule，单独作为实验，不替换主基线。
+1. **System reconstruction：** 保留各方法实际训练得到的 decoder。BBB 使用
+   end-to-end BP；HHH 使用冻结 encoder 后训练的 BP decoder；HHB/HBB 可按
+   冻结配置联合训练 BP suffix 与 decoder。该口径衡量系统结果，但包含训练
+   协议差异。
+2. **Standardized decoder reconstruction：** 每个 encoder 完成后冻结整个
+   encoder，从同一 paired decoder initialization 重新训练新 decoder。所有方法
+   使用相同 MSE、Adam `lr=0.003`、train batches、batch order、epoch budget
+   和 validation-only checkpoint selection；decoder gradient 不得进入 encoder。
+3. **机制对照：** 可额外报告 tied-weight transpose-convolution reconstruction，
+   不更新 encoder 权重。
+4. **可选扩展：** 若实现局部 decoder rule，单独作为实验，不替换上述两种口径。
 
-这一设计可以公平比较 encoder representation，但并非“纯 Hebbian 端到端 autoencoder”。摘要和图注必须如实描述。
+每个 reconstruction row 必须携带
+`reconstruction_protocol: system | standardized_decoder`。System reconstruction
+可用于最终系统性能；Standardized decoder reconstruction 是比较 encoder 可恢复
+信息的主要重建指标。若两者结论不同，必须报告差异，不得选择性呈现。
 
-### 3.6 必要对照组
+这一设计仍不是“纯 Hebbian 端到端 autoencoder”。HHH 的 decoder、Hybrid 的
+BP suffix/decoder 以及所有 linear probes 均使用 BP；摘要和图注必须如实描述。
 
-- Random frozen encoder + linear probe：表示学习下界；
-- BP-AE frozen encoder + linear probe：主要 BP 对照；
-- Hebbian frozen encoder + linear probe：主要研究模型；
-- 可选 supervised BP CNN：任务性能上界，不参与“表示学习规则公平比较”的主统计检验。
+### 3.6 正式模型矩阵与必要对照
+
+| ID | Enc1 | Enc2 | Enc3 | Decoder | 研究作用 |
+|---|---|---|---|---|---|
+| `BBB` / Full BP | BP | BP | BP | BP | 全局 credit-assignment reference |
+| `HBB` / Hybrid-HBB | Hebbian | BP | BP | BP | 一层 Hebbian depth；与 RBB 比较其净价值 |
+| `HHB` / Hybrid-HHB | Hebbian | Hebbian | BP | BP | 最小 BP 深层干预；主要 confirmation candidate |
+| `HHH` / Full Hebbian | Hebbian | Hebbian | Hebbian | BP | 纯 Hebbian encoder baseline |
+| `RBB` | frozen random | BP | BP | BP | HBB 的 matched random-prefix control |
+| `RRB` | frozen random | frozen random | BP | BP | HHB 的 matched random-prefix control |
+| Full Random | frozen random | frozen random | frozen random | BP | 整体表示学习下界 |
+
+`BBB/HBB/HHB/HHH` 构成固定三层结构中的 0/1/2/3 Hebbian-depth 梯度。
+`RBB/RRB` 用于回答 Hebbian prefix 是否超越随机 features；Full Random 不能
+替代这两个因果控制。可选 supervised BP CNN 只作为任务性能上界，不参与
+autoencoder representation 主统计比较。
 
 ---
 
 ## 4. Phase 0-v1 强制实验标准
 
-本节由 Hebbian 负责人发布，作为 BP/Hebbian 两条实现的唯一主基线。队友无需重新设计主架构；若发现实现问题，应提交变更说明并升级版本号。未经记录的偏离只能算 exploratory run，不能进入主比较表。
+本节由 Hebbian 负责人发布，作为 Full BP、Full Hebbian、Hybrid 与随机前缀
+控制的共同主基线。队友无需重新设计主架构；若发现实现问题，应提交变更说明
+并升级版本号。未经记录的偏离只能算 exploratory run，不能进入主比较表。
 
 ### 4.1 已冻结的总览
 
@@ -250,7 +317,11 @@ save_checkpoint(path, model, config, metadata)
 load_checkpoint(path, model)
 ```
 
-`trainer.train_batch(x)` 在表示学习阶段不接收 label。`learning_rule` 只决定 trainer/rule，不决定另一套模型 class。`return_all_layers=True` 时按固定 key 返回 `h1`、`h2`、`z`；不得只返回匿名 list。所有 representation 文件必须包含 `sample_id`、`label`、`seed`、`model_type`、`architecture_id` 和 `checkpoint_epoch`。
+`trainer.train_batch(x)` 在表示学习阶段不接收 label。`learning_rule` 与
+`encoder_layer_rules` 只决定 trainer/rule，不决定另一套模型 class。
+`return_all_layers=True` 时按固定 key 返回 `h1`、`h2`、`z`；不得只返回匿名
+list。所有 representation 文件必须包含 `sample_id`、`label`、`seed`、
+`model_type`、`encoder_layer_rules`、`architecture_id` 和 `checkpoint_epoch`。
 
 ### 4.4 数据划分、DataLoader 与预处理
 
@@ -281,7 +352,8 @@ pin_memory: false
 - Bias：encoder 无 bias；
 - Training order：greedy Conv1 → freeze，Conv2 → freeze，Conv3 → freeze；
 - Budget：每层 10 epochs，因此每个 encoder weight tensor 接触 10 次完整 training split；
-- Main LR：`1e-3`；validation grid 固定为 `[1e-4, 5e-4, 1e-3, 5e-3]`；
+- Phase 0 v1.1 frozen LR：`5e-4`；旧 validation grid
+  `[1e-4, 5e-4, 1e-3, 5e-3]` 只保留为 tuning provenance；
 - Labels：encoder trainer 不接收 label，`target_clamping=false`。
 
 正式公式仍以第 3.3 节为准。top-k、LR 或 normalization 的变化均属于消融或 validation search，不能悄悄改变主规则。
@@ -291,15 +363,21 @@ pin_memory: false
 - 同一 paired initial encoder/decoder state；
 - End-to-end reconstruction training；
 - Loss：pixel-mean MSE；
-- Optimizer：Adam，`lr=1e-3, betas=(0.9,0.999), weight_decay=0`；
+- Optimizer：Adam，Phase 0 v1.1 `lr=0.003,
+  betas=(0.9,0.999), weight_decay=0`；
 - Budget：10 epochs，使每个 encoder layer 与 Hebbian 对应层具有相同的 per-layer data exposure；
 - Checkpoint：最低 validation MSE，test 不参与选择。
 
 Hebbian 的 greedy encoder 共需 30 个 dataset passes，而 BP 同时更新三层，只需 10 passes。报告中必须同时给出 per-layer exposure、总 dataset passes 和 wall-clock，不能只用“epoch 数”宣称谁学习更快。
 
-#### Hebbian decoder
+#### Decoder protocols
 
-Hebbian encoder 三层训练完成后冻结。Decoder 从对应 paired decoder initialization 开始，用与 BP baseline 相同的 MSE、Adam 和 10 epochs 训练；decoder gradient 不得传入 encoder。此 decoder 只用于 reconstruction evaluation，不改变 linear-probe representation。
+HHH encoder 三层训练完成后冻结，其 system decoder 从 paired initialization
+开始训练。HHB/HBB 的 system decoder 可与 BP suffix 联合训练。除此之外，每个
+方法都必须在冻结完整 encoder 后，从 paired initialization 训练 standardized
+decoder。两类 decoder 均使用 pixel-mean MSE、Adam、10 epochs 和
+validation-only checkpoint selection；standardized decoder 必须统一使用
+Phase 0 v1.1 `lr=0.003`，且 gradient 不得传入 encoder。
 
 #### Linear probe
 
@@ -311,7 +389,7 @@ Hebbian encoder 三层训练完成后冻结。Decoder 从对应 paired decoder i
 - 30 epochs，batch size 128；
 - checkpoint 根据 validation accuracy 选择；
 - encoder checksum 在 probe 训练前后必须完全一致；
-- probe seed 与 model seed 相同，BP/Hebbian 使用相同 probe initialization protocol。
+- probe seed 与 model seed 相同，所有方法使用相同 probe initialization protocol。
 
 ### 4.6 Noise、representation 与 update-analysis 固定样本
 
@@ -320,7 +398,7 @@ Hebbian encoder 三层训练完成后冻结。Decoder 从对应 paired decoder i
 - Pixel masking：`ratio=[0.0,0.1,0.2,0.3,0.4]`，独立像素置 0；
 - 所有噪声先在 `[0,1]` 空间加入，再 clip 至 `[0,1]`；
 - `noise_seed=2026`，噪声由 `sample_id/noise_type/severity` 确定，与 model seed 无关；
-- BP/Hebbian 必须读取相同的 noisy sample，不能在各自循环中临时随机生成。
+- 所有方法必须读取相同的 noisy sample，不能在各自循环中临时随机生成。
 
 Representation 主分析使用固定的 2,000 张 test images，每类 200 张，`representation_subset_seed=17`，索引保存为 manifest。Update analysis 使用 training split 上固定的 50 个 mini-batches，batch size 128，`update_batch_seed=31415`；所有 snapshot 和 learning rules 复用相同 batch IDs。
 
@@ -360,18 +438,29 @@ model:
   target_clamping: false
 
 training:
-  learning_rule: hebbian     # hebbian | bp；不改变 forward architecture
+  learning_rule: hybrid      # bp | hebbian | hybrid | frozen_random
+  encoder_layer_rules:       # 不改变 forward architecture
+    enc1: hebbian
+    enc2: hebbian
+    enc3: bp
   seed: 0
   paired_seeds: [0, 1, 2, 3, 4]
   tuning_seed: 42
+  confirmation_seeds: [43, 44]
   max_tuning_trials_per_rule: 8
   hebbian_epochs_per_layer: 10
   bp_epochs: 10
   decoder_epochs: 10
-  decoder_protocol: frozen_encoder_bp_decoder
+  reconstruction_protocols:
+    - system
+    - standardized_decoder
+  standardized_decoder:
+    freeze_entire_encoder: true
+    paired_initialization: true
+    validation_selection: min_reconstruction_mse
 
 hebbian:
-  lr: 1.0e-3
+  lr: 5.0e-4
   winner_fraction: 0.10
   update: oja
   filter_l2_normalize: true
@@ -379,7 +468,7 @@ hebbian:
 
 backprop:
   optimizer: adam
-  lr: 1.0e-3
+  lr: 0.003
   betas: [0.9, 0.999]
   weight_decay: 0.0
   reconstruction_loss: mse_pixel_mean
@@ -417,7 +506,10 @@ update_analysis:
 
 主表同时包含每个 seed 的原始值以及 `mean ± SD`。模型差异以 paired seed difference 为基本单位，并对 seed-level paired differences 给出 bootstrap 95% CI；由于只有 5 个 seeds，不把单一 p-value 作为主要结论。
 
-超参数开发固定使用单独的 `tuning_seed=42`，不能把 confirmatory seeds `[0,1,2,3,4]` 中表现最好者用于选配置。两种规则各允许最多 8 个 validation trials：
+以下 trial budget 记录已完成的原始 BP/HHH validation tuning provenance。
+超参数开发固定使用单独的 `tuning_seed=42`，不能把 formal seeds
+`[0,1,2,3,4]` 中表现最好者用于选配置。原始两种规则各允许最多 8 个
+validation trials；HHB/HBB 继承冻结规则，不重新开启 tuning：
 
 - Hebbian：先搜索 `hebbian_lr=[1e-4,5e-4,1e-3,5e-3]`，再以最佳 LR 搜索 `winner_fraction=[0.05,0.10,0.20]`；
 - BP：搜索 Adam `lr=[3e-4,1e-3,3e-3]`，再以最佳 LR 搜索 `weight_decay=[0,1e-5,1e-4]`；
@@ -565,17 +657,33 @@ Stage 1B 到此冻结：不增加 v3/v4 候选，不选择 replacement config，
 seed-42 validation 结果写成正式多 seed 结论。完整表格、hash 和限制见
 `docs/stage1b_hebbian_repair.md`。
 
-### Phase 4 — Q1：clean classification performance
+### Phase 4 — Q1：正式 clean performance 与 Hebbian-depth value
 
-- [ ] 对预注册架构运行至少 5 个 paired seeds；
-- [x] 保存 encoder 与 probe 的逐 epoch/step 指标；
-- [x] 报告 accuracy、macro-F1、CE、AULC、samples-to-threshold、wall-clock；
-- [x] 分开报告 encoder learning 与 probe learning；
-- [x] 计算 paired difference 与 bootstrap 95% CI。
+本阶段只在 Stage 2D confirmation 通过后启动。固定三层结构，核心正式矩阵为
+`BBB/HHH/HHB/HBB/Full Random`；为回答“一层或两层 Hebbian 是否有价值”，
+加入 matched controls `RBB/RRB`。正式 seeds 为 `[0,1,2,3,4]`，所有方法按
+seed 配对初始化、数据顺序、decoder/probe 初始化和 validation selection。
 
-截至 2026-07-23，以上分析管线已在 paired seeds 0–1 上完成并验证，
-报告见 `docs/q1_clean_performance.md`。当前区间仅用于检查统计管线；
-完成 seeds 2–4 前不得作为五种子确认性结论。
+- [ ] 对完整模型矩阵运行 5 个 paired seeds；
+- [ ] 保存 encoder、system decoder、standardized decoder 与 probe 的逐 epoch/step 指标；
+- [ ] 报告 accuracy、macro-F1、CE、两种 reconstruction MSE、AULC、
+  samples-to-threshold、samples seen 和 wall-clock；
+- [ ] 分开报告 encoder、decoder 与 probe 的学习预算；
+- [ ] 计算预注册 paired differences、effect sizes 与 bootstrap 95% CI；
+- [ ] 每个冻结 run 只在最终阶段读取 test 一次。
+
+主要 contrasts 按以下顺序解释：
+
+1. `HHB − HHH`：最小 BP Enc3 intervention 是否修复 Full Hebbian；
+2. `HBB − HHB`：将 Enc2 从 Hebbian 改为 BP 的增量影响；
+3. `HBB − RBB`：单层 Hebbian prefix 的净价值；
+4. `HHB − RRB`：两层 Hebbian prefix 的净价值；
+5. `BBB − HHB`：最小 Hybrid 与 Full BP 的剩余差距。
+
+截至 2026-07-23 的 paired seeds 0–1 报告
+`docs/q1_clean_performance.md` 只覆盖旧的 BP/Hebbian/random matrix，用于
+验证统计与恢复管线。它不满足新的 Hybrid/matched-control 设计，不得与新
+formal seeds 拼接或作为正式结论。
 
 学习速度定义：
 
@@ -583,11 +691,13 @@ seed-42 validation 结果写成正式多 seed 结论。完整表格、hash 和�
 \mathrm{AULC}=\frac{1}{T}\sum_{t=1}^{T} A_t
 ```
 
-除 epoch-AULC 外，同时以 samples seen 或 wall-clock 对齐曲线。阈值时间只在两种模型都能达到同一阈值时报告。
+除 epoch-AULC 外，同时以 samples seen 或 wall-clock 对齐曲线。阈值时间只在
+被比较方法都能达到同一阈值时报告。
 
 ### Phase 5 — Q2：逐层 latent representation
 
-对完全相同的固定 test subset 和 sample order，提取 input、h1、h2、z：
+对完全相同的固定 class-balanced subset 和 sample order，提取
+`BBB/HHH/HHB/HBB/RBB/RRB` 的 input、h1、h2、z：
 
 - [ ] PCA（主图，确定性强）；
 - [ ] UMAP（辅助图，固定 seed 与参数）；
@@ -595,10 +705,14 @@ seed-42 validation 结果写成正式多 seed 结论。完整表格、hash 和�
 - [ ] within/between-class distance 与 separability ratio；
 - [ ] silhouette score；
 - [ ] effective rank、active-neuron ratio、sparsity；
+- [ ] covariance spectrum、stable rank、between/within-class covariance；
+- [ ] 计算 `ER(z)/ER(h2)` 与其他预注册 h2→z compensation 指标；
 - [ ] 可选 CKA，用于跨模型/架构表示相似性；
 - [ ] confusion matrix 与易混类别分析。
 
-不要只根据 t-SNE/UMAP 的视觉分离下结论。所有降维图必须共享样本、颜色、预处理和随机种子，并配套定量指标。
+重点检验 HHB 的 BP Enc3 是否跨 seed 将低秩 Hebbian h2 转换为更高秩 z，
+以及 HBB 是否从 h2 开始恢复。不要只根据 t-SNE/UMAP 的视觉分离下结论。
+所有降维图必须共享样本、颜色、预处理和随机种子，并配套定量指标。
 
 ### Phase 6 — Q3：噪声与配置鲁棒性
 
@@ -611,12 +725,13 @@ mask_ratio: [0.0, 0.1, 0.2, 0.3, 0.4]
 ```
 
 - [ ] 在 `[0,1]` 像素空间加噪并 clip，再执行 normalization；
-- [ ] 两种模型使用相同 sample-level noise realization；
+- [ ] 所有方法使用相同 sample-level noise realization；
 - [ ] 每个 severity 报告 accuracy、macro-F1 与 degradation；
+- [ ] 对 system/standardized reconstruction 分别报告 degradation；
 - [ ] 计算 clean/noisy representation cosine similarity；
 - [ ] 计算预测分布 JS divergence；
 - [ ] 画 accuracy–severity 和 representation-stability–severity 曲线；
-- [ ] 报告 seed、Hebbian LR、competition 参数扰动下的方差。
+- [ ] 比较 Full BP、Full Hebbian、HHB 与 HBB 的 seed/config 扰动方差。
 
 ```math
 D=A_{clean}-A_{noise},\qquad RD=\frac{A_{clean}-A_{noise}}{A_{clean}}
@@ -712,6 +827,17 @@ rank=`1.0000`；低秩在 WTA 前已经存在，WTA 进一步压缩但不是初�
 - `ΔW_Hebb`：局部 Hebbian 候选更新；
 - `ΔW_BP`：同一 encoder/decoder 状态下 reconstruction objective 对 encoder 的负梯度更新。
 
+正式多 seed Q4 除 HHH layer-end snapshots 外，还必须覆盖 HHB 与 HBB：
+
+- HHH：Enc1/Enc2/Enc3 的 local candidate 与 matched BP reference；
+- HHB：Enc1/Enc2 local candidates，以及 BP Enc3 的 raw gradient；
+- HBB：Enc1 local candidate，以及 BP Enc2/Enc3 的 raw gradients；
+- BBB：相同层的 raw BP gradients，作为全局 credit-assignment reference。
+
+分析重点是 Hebbian prefix 与 BP suffix 的 rule boundary，而不是把 Hybrid
+更新合并成一个平均方向。必须分别报告每层指标，并检验 Enc3 的方向、SNR
+或更新尺度是否与 h2→z representation recovery 同步；相关性不得表述为因果。
+
 两者都只作为 candidate update 记录，采样期间不得调用 `apply_local_update()`、`optimizer.step()` 或更新 BatchNorm running statistics。主 BP reference 定义为不包含 momentum、Adam state 和 weight decay 的 raw negative gradient；如需比较实际 optimizer step，另存为辅助指标并明确命名。
 
 所有指标按 layer 报告，必要时也按 filter 报告：
@@ -754,6 +880,7 @@ Hebbian 与 BP 的 SNR 分别计算。均值和方差的统计单位是“同一
 - [x] 在 `conv1_end/conv2_end/conv3_end` checkpoints 重复；
 - [x] 画 snapshot/layer–alignment、norm、bias、SNR panels；
 - [ ] 分析这些指标与 accuracy、separability、robustness 的相关性；
+- [ ] 在正式 paired seeds 上扩展到 BBB/HHH/HHB/HBB，并单列 Hybrid boundary；
 - [x] 明确 correlation 不代表 causation。
 
 截至 2026-07-23，Stage 2 / Q4 seed-42 tooling gate 已通过。该运行在
@@ -835,11 +962,41 @@ intervention 优先”冻结 `Hybrid-HHB` 为 confirmation candidate。不得据
 宣称跨 seed 结论或直接进入 Stage 3。完整记录见
 `docs/hybrid_depth_ablation_results.md`。
 
+#### Stage 2D — Hybrid-HHB validation-only confirmation gate
+
+在进入正式 Phase 4 前，用预注册 seeds `[43,44]` 确认 seed-42 localization
+是否可复现。配置完全继承 Stage 2C 的 `Hybrid-HHB`：Enc1/Enc2 使用冻结的
+Oja/WTA/L2 Hebbian 规则，Enc3 使用 BP，BP learning rate=`0.003`。不得
+重新调参、修改 health threshold、访问 test set，或根据 seed 43 的结果改变
+seed 44。
+
+每个 seed 必须同时运行 paired `BBB/HHH/HHB` references，并满足：
+
+- validation linear-probe accuracy `>=0.8863`；
+- **standardized decoder** reconstruction MSE
+  `<=1.25 ×` paired BBB standardized-decoder MSE；
+- `ER_z(HHB) >= 2.0` 且 `ER_z(HHB) >= 2 × ER_z(HHH)`；
+- `ER_z(HHB) / (ER_h2(HHB)+epsilon) >= 2.0`，表明 BP Enc3 能补偿低秩
+  Hebbian h2，而不是只复现 system-decoder joint adaptation；
+- system reconstruction 同时完整报告，但不作为 representation-repair
+  的单独证据；
+- pairing、frozen-layer checksum、resume determinism、artifact completeness
+  全部 PASS，且 `test_samples_accessed=0`。
+
+两个 confirmation seeds 都通过才可将 HHB 标记为
+`CONFIRMED FOR FORMAL STAGE 3/PHASE 4`。任一 seed 失败则状态为
+`CONFIRMATION FAILED`，停止正式矩阵并报告异质性；不得追加第三个
+confirmation seed 来覆盖失败结果。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension
 
-对每个可实现的 flatten latent dimension，运行 BP/Hebbian × 5 paired seeds，并报告 clean/noisy accuracy、probe、separability、effective rank 和训练时间。
+对每个可实现的 flatten latent dimension，优先运行
+`BBB/HHH/HHB/HBB × 5 paired seeds`，并报告 clean/noisy accuracy、两种
+reconstruction、probe、separability、effective rank 和训练时间。RBB/RRB
+只在与“Hebbian prefix 是否有价值”直接相关的关键维度上运行，避免无解释价值
+的完整笛卡尔积。
 
 #### 8.2 Architecture asymmetry 的主定义
 
@@ -871,10 +1028,11 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 ```
 
 - [ ] 比较 accuracy、robustness、separability 和 effective rank；
-- [ ] 检验 learning-rule × architecture interaction；
+- [ ] 检验 method × architecture interaction，并分别报告 Full 与 Hybrid；
 - [ ] 对每层画 representation 指标；
 - [ ] 用 CKA 或 centered geometry 比较结构变化前后的表示；
-- [ ] 结合 dead neuron、winner entropy 和 update SNR 解释 Hebbian 敏感性。
+- [ ] 结合 dead neuron、winner entropy、Hybrid compensation 和 update SNR
+  解释 HHH/HHB/HBB 的敏感性差异。
 
 ### Phase 9 — 扩展实验（主实验完成后）
 
@@ -992,6 +1150,30 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
   `COMPLETED — NO CANDIDATE PASSED`，停止 v3/v4，不生成 replacement config；
 - [x] `P2B-NOTE-01` 保存完整结果、hash、限制与机制观察。
 
+#### P2C — Stage 2C Hybrid depth diagnostic（已完成）
+
+- [x] `P2C-CFG-01` 预注册 BBB/HHH/HHB/HBB seed-42 validation-only matrix；
+- [x] `P2C-QA-01` 验证相同 clean source、split、初始化、probe 和零 test access；
+- [x] `P2C-RUN-01` 完成四个 paired runs 与完整 checkpoints；
+- [x] `P2C-REP-01` 在固定 2,000-image subset 计算 h1/h2/z health metrics；
+- [x] `P2C-DEC-01` 按预注册规则选择 Outcome D；
+- [x] `P2C-FREEZE-01` 冻结 HHB 为 confirmation candidate，不升级单 seed 结论。
+
+#### P2D — Hybrid-HHB confirmation（下一阻塞阶段）
+
+- [ ] `P2D-PROTO-01` 将 seeds `[43,44]`、阈值、paired references 和停止规则
+  写入不可变 protocol；
+- [ ] `P2D-DEC-01` 实现并核验 system reconstruction 输出；
+- [ ] `P2D-DEC-02` 为 BBB/HHH/HHB 从 paired initialization 训练 standardized decoder；
+- [ ] `P2D-QA-01` 验证 standardized decoder optimizer/data/epoch/selection 完全一致；
+- [ ] `P2D-RUN-01` 完整运行 seed 43，不因结果修改 seed 44；
+- [ ] `P2D-RUN-02` 完整运行 seed 44，不追加第三个 confirmation seed；
+- [ ] `P2D-GATE-01` 检查 accuracy、standardized reconstruction、z-rank 和
+  h2→z compensation；
+- [ ] `P2D-QA-02` 检查 pairing、checksum、resume、artifact completeness 和
+  `test_samples_accessed=0`；
+- [ ] `P2D-DECIDE-01` 仅在两个 seeds 都通过时批准正式 Phase 4。
+
 #### P3 — Validation-only 超参数选择
 
 - [x] `P3-CFG-01` 创建 tuning seed 42 的 Hebbian LR configs；
@@ -1009,47 +1191,54 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [x] `P3-FREEZE-03` 保存两份 resolved config hash；
 - [x] `P3-FREEZE-04` 在决策日志中记录选择理由。
 
-#### P4 — Q1 clean performance
+#### P4 — Q1 formal clean performance
 
-- [x] `P4-MATRIX-01` 生成 Hebbian seeds 0–4 run manifest；
-- [x] `P4-MATRIX-02` 生成 BP seeds 0–4 run manifest；
-- [ ] `P4-RUN-01` 完成 Hebbian seed 0–4 representation training（0–1 完成；2 部分完成）；
-- [ ] `P4-RUN-02` 完成 BP seed 0–4 autoencoder training（0–2 完成）；
-- [ ] `P4-RUN-03` 完成两种模型全部 frozen probes（完整配对 0–1）；
-- [ ] `P4-RUN-04` 完成两种模型全部 reconstruction evaluation（完整配对 0–1）；
-- [ ] `P4-QA-01` 检查每个 run 的 config、hash、checkpoint 和日志齐全（0–1 通过）；
-- [ ] `P4-QA-02` 检查 paired seeds 使用相同初始 state 与 batch order（0–1 通过）；
-- [x] `P4-METRIC-01` 汇总 accuracy、macro-F1 和 classification CE；
-- [x] `P4-METRIC-02` 汇总 reconstruction MSE；
-- [x] `P4-METRIC-03` 汇总 encoder/probe dataset passes 与 wall-clock；
-- [x] `P4-METRIC-04` 计算 epoch/samples-seen/wall-clock AULC；
-- [x] `P4-STAT-01` 输出已完成 seed 的 paired differences；
-- [x] `P4-STAT-02` 计算 mean±SD 和 paired bootstrap 95% CI（当前 n=2 preliminary）；
-- [x] `P4-FIG-01` 绘制 epoch/samples-seen/wall-clock learning curves；
-- [x] `P4-TABLE-01` 生成 clean performance 阶段性主表；
-- [x] `P4-NOTE-01` 写出 Q1 的阶段性结果摘要与限制。
+旧 seeds 0–1 BP/Hebbian/random 输出只验证了运行、恢复和统计管线；不得作为
+新矩阵的已完成 seed。
+
+- [ ] `P4-MATRIX-01` 生成 BBB/HHH/HHB/HBB/Full-Random seeds 0–4 manifest；
+- [ ] `P4-MATRIX-02` 生成 RBB/RRB seeds 0–4 matched-control manifest；
+- [ ] `P4-RUN-01` 完成全部 encoder/representation training；
+- [ ] `P4-RUN-02` 完成所有 frozen linear probes；
+- [ ] `P4-RUN-03` 保存各方法 system reconstruction；
+- [ ] `P4-RUN-04` 完成全部 standardized-decoder training/evaluation；
+- [ ] `P4-QA-01` 检查每个 run 的 config、hash、checkpoint、日志和 test-access audit；
+- [ ] `P4-QA-02` 检查 paired seeds 使用相同初始化、batch order 和 probe protocol；
+- [ ] `P4-QA-03` 检查 standardized decoders 使用相同 initialization、optimizer、
+  data、epoch 和 validation selection；
+- [ ] `P4-METRIC-01` 汇总 accuracy、macro-F1 和 classification CE；
+- [ ] `P4-METRIC-02` 分开汇总 system/standardized reconstruction MSE；
+- [ ] `P4-METRIC-03` 汇总 encoder/decoder/probe dataset passes、samples seen 与 wall-clock；
+- [ ] `P4-METRIC-04` 计算 epoch/samples-seen/wall-clock AULC；
+- [ ] `P4-STAT-01` 输出五个预注册 paired contrasts；
+- [ ] `P4-STAT-02` 计算 mean±SD、effect size 和 paired bootstrap 95% CI；
+- [ ] `P4-FIG-01` 绘制 learning curves 与 Hebbian-depth dose plot；
+- [ ] `P4-TABLE-01` 生成 clean performance 与双 reconstruction 主表；
+- [ ] `P4-NOTE-01` 写出 Q1 结论、限制及 Hybrid 非纯 Hebbian 声明。
 
 #### P5 — Q2 layerwise representation
 
 - [ ] `P5-DATA-01` 生成每类 200 张的 2,000-image subset manifest；
-- [ ] `P5-DATA-02` 验证 BP/Hebbian 使用相同 sample IDs 和顺序；
+- [ ] `P5-DATA-02` 验证 BBB/HHH/HHB/HBB/RBB/RRB 使用相同 sample IDs 和顺序；
 - [ ] `P5-EXT-01` 提取并保存 `input/h1/h2/z`；
 - [ ] `P5-EXT-02` 保存 labels、sample IDs、seed 和 checkpoint ID；
 - [ ] `P5-QA-01` 验证表示数组无 NaN/Inf 且 shape 正确；
 - [ ] `P5-METRIC-01` 计算每层 activation sparsity；
 - [ ] `P5-METRIC-02` 计算每层 active-neuron ratio；
 - [ ] `P5-METRIC-03` 计算每层 effective rank；
+- [ ] `P5-METRIC-03B` 计算 stable rank、covariance spectrum 与 rank ratio；
 - [ ] `P5-METRIC-04` 计算 within-class distance；
 - [ ] `P5-METRIC-05` 计算 between-class distance 与 separability ratio；
 - [ ] `P5-METRIC-06` 计算 silhouette score；
 - [ ] `P5-METRIC-07` 训练每层统一 linear probe；
 - [ ] `P5-METRIC-08` 计算每层 k-NN accuracy；
 - [ ] `P5-METRIC-09` 计算易混类别 centroid distances；
+- [ ] `P5-METRIC-10` 计算 h2→z compensation ratio 并做 paired-seed 汇总；
 - [ ] `P5-FIG-01` 用固定参数绘制 PCA；
 - [ ] `P5-FIG-02` 用固定 seed/参数绘制 UMAP；
 - [ ] `P5-FIG-03` 绘制 confusion matrices；
 - [ ] `P5-OPT-01` 可选计算跨规则 layerwise CKA；
-- [ ] `P5-TABLE-01` 生成 layer × rule 指标表；
+- [ ] `P5-TABLE-01` 生成 method × layer 指标表；
 - [ ] `P5-NOTE-01` 写出 Q2 的结果摘要与限制。
 
 #### P6 — Q3 noise robustness
@@ -1068,6 +1257,7 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [ ] `P6-METRIC-02` 计算 absolute/relative degradation；
 - [ ] `P6-METRIC-03` 计算 clean/noisy representation cosine；
 - [ ] `P6-METRIC-04` 计算 prediction JS divergence；
+- [ ] `P6-METRIC-05` 分开计算 system/standardized reconstruction degradation；
 - [ ] `P6-STAT-01` 汇总 seed-level paired degradation；
 - [ ] `P6-FIG-01` 绘制 accuracy–severity curves；
 - [ ] `P6-FIG-02` 绘制 representation-stability curves；
@@ -1123,21 +1313,23 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [x] `P7-FIG-01` 绘制 alignment/norm/bias/SNR panels；
 - [ ] `P7-CORR-01` 与 accuracy/separability/robustness 做探索性相关分析；
 - [x] `P7-NOTE-01` 写出 seed-42 failure-case Q4 结果并避免因果措辞。
+- [ ] `P7-HYBRID-01` 在正式 paired seeds 上分析 HHB/HBB rule boundaries；
+- [ ] `P7-HYBRID-02` 与 BBB/HHH matched snapshots 做逐层比较；
 
 #### P8 — Q5/Q6 dimension 与 asymmetry
 
 - [ ] `P8-DIM-01` 生成 `L=[16,32,64,128]` configs；
 - [ ] `P8-DIM-02` 验证每个 config 的 bottleneck shape；
-- [ ] `P8-DIM-03` 运行 Hebbian dimension × seeds；
-- [ ] `P8-DIM-04` 接收并校验 BP dimension × seeds；
+- [ ] `P8-DIM-03` 运行 BBB/HHH/HHB/HBB dimension × seeds；
+- [ ] `P8-DIM-04` 在关键 dimensions 运行 RBB/RRB matched controls；
 - [ ] `P8-DIM-05` 汇总 clean/noisy/probe/separability/effective-rank；
 - [ ] `P8-ARCH-01` 创建 early-heavy config；
 - [ ] `P8-ARCH-02` 创建 balanced config；
 - [ ] `P8-ARCH-03` 创建 late-heavy config；
 - [ ] `P8-ARCH-04` 自动计算 encoder/decoder/total parameter counts；
 - [ ] `P8-ARCH-05` 断言 encoder parameter range/mean <1%；
-- [ ] `P8-ARCH-06` 运行 Hebbian architecture × seeds；
-- [ ] `P8-ARCH-07` 接收并校验 BP architecture × seeds；
+- [ ] `P8-ARCH-06` 运行 BBB/HHH/HHB/HBB architecture × seeds；
+- [ ] `P8-ARCH-07` 在关键 architectures 运行 RBB/RRB matched controls；
 - [ ] `P8-METRIC-01` 计算每个 metric 的 relative-to-balanced change；
 - [ ] `P8-METRIC-02` 计算 sensitivity score；
 - [ ] `P8-STAT-01` 检验 learning-rule × architecture interaction；
@@ -1174,9 +1366,10 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 ### Summer Camp 正式最小结果
 
 - [ ] 3 层 convolutional encoder/autoencoder 协议；
-- [ ] BP-AE、Hebbian、random encoder 三个对照；
+- [ ] BBB、HHH、HHB、HBB 与 Full Random 核心对照；
+- [ ] RBB/RRB matched random-prefix controls，用于判断浅层 Hebbian 的净价值；
 - [ ] 至少 5 paired seeds；
-- [ ] clean classification + reconstruction；
+- [ ] clean classification + system/standardized reconstruction；
 - [ ] 逐层 representation 定量分析；
 - [ ] Gaussian noise severity curve；
 - [ ] 至少 3 个 latent dimensions；
@@ -1192,9 +1385,9 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 
 每次正式运行增加一行；失败实验也要保留并注明原因。
 
-| Run ID | Date | Git commit | Model | Dataset | Arch ID | Latent dim | Seed | Config path | Status | Key result | Notes |
-|---|---|---|---|---|---|---:|---:|---|---|---|---|
-| example | YYYY-MM-DD | hash | Hebbian | MNIST | balanced | 64 | 0 | `configs/...yaml` | planned | — | — |
+| Run ID | Date | Git commit | Model | Layer rules | Reconstruction protocol | Dataset | Arch ID | Latent dim | Seed | Config path | Status | Key result | Notes |
+|---|---|---|---|---|---|---|---|---:|---:|---|---|---|---|
+| example | YYYY-MM-DD | hash | HHB | H/H/B | system + standardized | MNIST | balanced | 64 | 0 | `configs/...yaml` | planned | — | — |
 
 ### 单次运行检查
 
@@ -1206,6 +1399,8 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 - [ ] 无 NaN/Inf；
 - [ ] weight norm、activation、sparsity、winner entropy 已记录；
 - [ ] encoder 冻结测试通过；
+- [ ] system 与 standardized decoder checkpoints/metrics 分开保存；
+- [ ] standardized decoder 前后 encoder checksum 不变；
 - [ ] representations 带 sample ID 和 label；
 - [ ] 主表示学习配置中 `target_clamping=false`，encoder trainer 未读取 label；
 - [ ] 运行由 CLI + resolved config 启动，不依赖 notebook state；
@@ -1248,6 +1443,8 @@ Salt-and-pepper、masking、CIFAR-10 与 non-stationary learning 可在时间不
 | 2026-07-25 | 完成 notebook-inspired output-filter update-centering 单候选审计；候选判定 `DOES_NOT_RESOLVE_FAILURE` | validation accuracy=0.1944，三层 health gate 全失败，Enc3 alignment 变为负值；70 tests、零 test access、分析 checksum 不变 | 把 bias 数值略降解释为方向改善；继续追加候选；替换原始 baseline | 候选不具备 replacement 资格；Stage 1B 和门禁保持冻结，结果仅作为单 seed 机制负证据 |
 | 2026-07-25 | 按冻结 follow-up 决策树选择 Branch D | performance/health/direction 均无支持，完整性检查虽通过但不改变联合门禁失败 | B1/B2/B3/C 的额外修复；进入 Stage 3 | 停止 current Oja repair；原始配置仅作 health-gate failure-case baseline |
 | 2026-07-25 | Stage 2C Hybrid depth ablation 完成，选择 Outcome D | 两个 hybrid 均过 performance floor 且修复深层 rank，但完整 health gate 仍被早期 Hebbian layers 阻断；Full BP 也未通过全部严格 health checks | 把单 seed 当正式结论；修改 threshold；自动运行 confirmation | 冻结 Hybrid-HHB 为最小 BP intervention confirmation candidate，需另行批准 |
+| 2026-07-27 | 项目扩展为 Full BP、Full Hebbian 与 Minimal Hybrid Credit Assignment 比较 | seed-42 显示 BP suffix 可定位并修复深层表示瓶颈；固定三层结构可形成 0/1/2/3 Hebbian-depth 梯度 | 用 HHB 替代 HHH；直接缩短 encoder 总深度 | HHH 保留为原始基线；新增 HBB、HHB、RBB、RRB，并先执行 seeds 43/44 confirmation |
+| 2026-07-27 | Reconstruction 同时报告 system 与 standardized-decoder protocols | Hybrid 的 BP suffix 可与 decoder 联合适应，system MSE 不能单独归因于 encoder information | 只报告训练流程自带 decoder；只比较分类 | encoder-representation 重建主张以 paired standardized decoder 为主，并保留 system performance |
 
 ---
 
@@ -1322,7 +1519,8 @@ results/{experiment_id}/{model}/{arch_id}/seed_{seed}/
 ├── split_manifest_ref.json
 ├── metrics.csv
 ├── encoder.pt
-├── decoder.pt
+├── decoder_system.pt
+├── decoder_standardized.pt
 ├── linear_probe.pt
 ├── representations.npz
 ├── update_records.npz
@@ -1333,8 +1531,8 @@ results/{experiment_id}/{model}/{arch_id}/seed_{seed}/
 `metrics.csv` 至少包含：
 
 ```text
-run_id, model, seed, split, stage, epoch, step, samples_seen,
-reconstruction_loss, classification_ce, accuracy, macro_f1,
+run_id, model, layer_rules, seed, split, stage, epoch, step, samples_seen,
+reconstruction_protocol, reconstruction_loss, classification_ce, accuracy, macro_f1,
 weight_norm, update_norm, activation_mean, activation_sparsity,
 active_neuron_ratio, winner_entropy, wall_time_sec
 ```
@@ -1356,8 +1554,10 @@ snapshot_hash, target_clamping, optimizer_state_included
 ## 11. 最终图表与表格清单
 
 - [ ] Table 1：共同架构、训练协议与参数量；
-- [ ] Table 2：clean classification/reconstruction，mean ± 95% CI；
-- [ ] Figure 1：BP vs Hebbian learning curves；
+- [ ] Table 2：BBB/HHH/HHB/HBB 与随机控制的 clean classification，
+  mean ± 95% CI；
+- [ ] Table 3：system 与 standardized-decoder reconstruction 并列表；
+- [ ] Figure 1：Full BP/Full Hebbian/Hybrid learning curves；
 - [ ] Figure 2：h1/h2/z 的 PCA/UMAP；
 - [ ] Figure 3：逐层 separability、linear probe、effective rank；
 - [ ] Figure 4：accuracy vs noise severity；
@@ -1365,6 +1565,7 @@ snapshot_hash, target_clamping, optimizer_state_included
 - [ ] Figure 6：latent dimension × learning rule；
 - [ ] Figure 7：architecture × learning rule interaction；
 - [ ] Figure 8：update alignment、scale-matched bias、norm ratio 与 SNR；
+- [ ] Figure 9：Hebbian depth（0/1/2/3）与 matched-random contrasts；
 - [ ] Appendix：每 seed 结果、失败运行、超参搜索空间和额外 reconstruction。
 
 每张主图都应标明 n、误差条定义、seed、数据 split 与统计单位。
@@ -1378,7 +1579,9 @@ snapshot_hash, target_clamping, optimizer_state_included
 | 深层 Hebbian 表示塌缩 | effective rank≈1、winner entropy 低 | greedy layer-wise、homeostasis、kernel normalization、降低 LR |
 | 比较不公平 | BP 使用 end-to-end 分类而 Hebbian 使用 probe | 两者统一 frozen encoder + 同一 probe |
 | 卷积 latent dimension 含糊 | 只报告 channel 数 | 报告 `C×H×W` 与 flatten 总维度 |
-| Decoder 混杂结论 | 两模型 decoder 训练方式不同 | 分类结论限定 encoder；decoder 协议单列 |
+| Decoder/suffix 联合适应混杂重建结论 | HHB/HBB system MSE 明显改善，但 BP suffix 与 decoder 联合训练 | 同时报告 system 与 paired standardized-decoder reconstruction；encoder-information 主张以后者为主 |
+| 用 Full Random 证明浅层 Hebbian 有价值 | HBB/HHB 只与完全随机 encoder 比较 | 增加 RBB/RRB，分别匹配 BP suffix 与训练预算 |
+| 把 Hybrid 当成纯 Hebbian | 图表把 HHB/HBB 合并进 Hebbian 结果 | 逐层标注 H/B/R；HHH 始终单列，Hybrid 只解释为 credit-assignment intervention |
 | 测试集泄漏 | 根据 test accuracy 选超参 | validation-only selection；test 最后一次评估 |
 | 标签泄漏到 Hebbian encoder | forward/trainer 接收 y 或启用 target clamping | 主训练接口只接收 x；配置断言与无标签测试 |
 | custom autograd 隐式改写梯度 | backward 行为难以追踪，optimizer 可能二次更新 | 使用显式 compute/apply local update；Hebbian 参数不进入 optimizer |
@@ -1396,13 +1599,17 @@ snapshot_hash, target_clamping, optimizer_state_included
 - [ ] Hebbian rule、competition、normalization 和训练顺序有公式与实现说明；
 - [ ] 教程路径/版本/hash 与迁移映射已记录，但主实验不依赖 notebook 执行；
 - [ ] 正式模型确为约定的 3-layer convolutional architecture；
-- [ ] BP/Hebbian 共用同一 forward model 和初始 `state_dict`，只切换训练规则；
+- [ ] BBB/HHH/HHB/HBB/RBB/RRB 共用同一 forward model、parameter shapes 与
+  paired initial `state_dict`，只改变逐层训练规则或 frozen-random 状态；
 - [ ] Hebbian update 为显式 local update，未通过 custom autograd backward 注入；
 - [ ] 主表示学习关闭 target clamping，标签只进入 frozen linear probe 与评估；
 - [ ] 与 BP 使用相同数据、encoder shape、latent size、probe、seed 和评估样本；
 - [ ] 所有主结果至少包含 5 个 paired seeds 与不确定性；
+- [ ] HHB seeds 43/44 validation-only confirmation 均通过后才启动正式主矩阵；
 - [ ] Q1–Q6 每题至少有一个定量实验和一个可解释结论；
 - [ ] clean/noisy、classification/reconstruction 指标没有混用；
+- [ ] system 与 standardized-decoder reconstruction 分开记录、并列报告；
+- [ ] HBB/RBB 与 HHB/RRB matched contrasts 已完成，Hebbian-value 结论不依赖 Full Random；
 - [ ] representation 分析覆盖 h1、h2、z，而不只 bottleneck；
 - [ ] update analysis 在 frozen snapshot 和相同 batch IDs 上完成，并正确区分 BP baseline/reference、alignment、bias 与 SNR；
 - [ ] 结果可由固定 config 和 checkpoint 重现；
@@ -1416,14 +1623,17 @@ snapshot_hash, target_clamping, optimizer_state_included
 
 ## 14. 下一步（按顺序执行）
 
-1. 补充缺失的原始 Hebbian tutorial 来源、版本、hash 与许可信息；
-2. 将 `docs/phase0_team_confirmation.md` 发送给 BP 队友并记录真实回复；
-3. 补齐 `lr=0`、500-step stability、multi-step reproducibility、BP-reference compatibility 和 collapse-detector tests；
-4. 实现 random encoder control、扩展 metrics schema 与固定 representation/update manifests；
-5. 仅使用 tuning seed 42 完成 validation-only search，冻结正式 BP/Hebbian configs；
-6. 在 frozen snapshots 上实现并验证 Q4 alignment、norm ratio、scale-matched bias 与 SNR；
-7. 完成 Q1 五 paired seeds，再复用 checkpoints 执行 Q2/Q3；
-8. 最后执行 latent-dimension 和 architecture-asymmetry matrices；
+1. 为 Stage 2D 写入不可变 protocol：seeds 43/44、BBB/HHH/HHB paired
+   references、双 reconstruction 与全部阈值；
+2. 在不访问 test、不调参的条件下完成两个 HHB confirmation seeds；
+3. 仅在两者均通过时冻结正式 BBB/HHH/HHB/HBB/RBB/RRB configs 和
+   seeds 0–4 manifest；
+4. 完成 Q1 formal clean performance、system reconstruction 与
+   standardized-decoder reconstruction；
+5. 复用同一 checkpoints 完成 Q2 layerwise representation 与 Q3 robustness；
+6. 将 Q4 frozen-snapshot tooling 扩展到 HHB/HBB rule boundaries 和 paired seeds；
+7. 最后执行 BBB/HHH/HHB/HBB latent-dimension 与 architecture-asymmetry matrices；
+8. 补充缺失的 tutorial provenance 与 BP 队友书面确认；这些不改变主实验门禁顺序；
 9. 每次 task 状态变化立即更新 `PROJECT_STATUS.md` 和对应证据，不在项目末尾补记。
 
 ---

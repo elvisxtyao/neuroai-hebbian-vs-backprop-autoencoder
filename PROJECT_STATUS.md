@@ -1,6 +1,6 @@
-# NeuroAI BP–Hebbian Project Status
+# NeuroAI BP–Hebbian–Hybrid Project Status
 
-Last updated: 2026-07-25
+Last updated: 2026-07-27
 
 This file is the single source of truth for current execution status. It tracks
 what is complete, what is only exploratory, what is blocked, and what should be
@@ -56,14 +56,16 @@ so the repository does not contain broken links to private run records.
 | Phase 1: explicit Hebbian rule | **Complete — convolutional experiment scope** | Conv2d WTA/Oja, L2 normalization, `lr=0`, stability/reproducibility, non-mutating raw/effective candidates, and matched-state BP-reference tests | Optional `HebbianLinear` pedagogy remains out of main-experiment scope; formal configuration selection is tracked separately by Stage 1/1B |
 | Phase 2: seed-0 end-to-end engineering loop | Partial | Encoder, frozen decoder/probe, exact resume, reconstruction, random-encoder decoder-only control, paired diagnostics | Current Hebbian selected config failed Stage 1 |
 | Phase 3: validation-only tuning | Complete, selection not approved | Seed 42; initial 8 Hebbian + 8 BP trials, followed by eight frozen Stage 1B repair candidates; zero test rows | No Stage 1B candidate passed; no repaired Hebbian config is approved |
-| Phase 4 / Q1: clean performance | Partial | Paired seeds 0–1; BP, Hebbian, and random controls; test metrics, reconstruction, AULC, timing, preliminary paired CI | Resume partial Hebbian seed 2 and finish paired seeds 2–4 |
+| Historical Phase 4 / Q1 two-rule run | **Exploratory — paused** | Paired seeds 0–1; BP, Hebbian, and random controls; test metrics, reconstruction, AULC, timing, preliminary paired CI | Superseded by the expanded Hybrid matrix; do not resume seeds 2–4 as formal evidence |
 | Phase 5 / Q2: representations | Partial | Fixed validation subset shows pre-WTA PR=1.0186 and post-WTA PR=1.0000; same-subset frozen probe accuracy=0.9040; metric implementation is valid but its interpretation is raw-covariance anisotropy, not absence of class information | Formal multi-seed class geometry, probes, k-NN and separability |
 | Phase 6 / Q3: robustness | Planned | Noise severities specified in config | Deterministic noise generator and paired evaluation |
 | Phase 7 / Q4: update mechanisms | **Partial — seed-42 tooling gate PASS** | Three frozen layer-boundary snapshots; 50 fixed batches; raw BP and raw/effective Hebbian updates; alignment, norm ratio, alpha-star, scale-matched bias and SNR; immutable 62-test log; zero analysis optimizer steps and zero test access | Multi-seed execution, a health-passing comparison configuration, and exploratory cross-metric correlation |
 | Stage 2B: output-filter update-centering audit | **Complete — candidate failed** | Supplied notebook audited; exactly one validation-only seed-42 candidate; 70 tests; full health/Q4 comparison; zero test access | No replacement selected; Stage 1B remains frozen |
 | Stage 2B decision overlay | **Complete — Branch D** | Unified snapshot/layer table, machine-readable branch decision, source/checksum manifest, immutable tests, zero new training and zero test access | Superseded only for the separately authorized two-control depth diagnostic |
 | Stage 2C: Hybrid Hebbian–BP depth ablation | **Complete — PASS, Outcome D** | Four newly paired clean-commit runs; pairing/freeze PASS; 2,000-image layerwise metrics; five figures; 78 tests; zero test access | Hybrid-HHB is confirmation candidate only; no Stage 3 until approved confirmation seeds pass |
-| Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | Configurable channel architecture, sweeps, and representation analysis |
+| Stage 2D: Hybrid-HHB confirmation | **Planned — next blocking gate** | Seeds 43/44, thresholds and paired BBB/HHH references are specified in the updated plan | Immutable protocol, system and standardized-decoder reconstruction, two complete validation-only seeds, zero test access |
+| Phase 4 / Q1 expanded formal matrix | **Planned — blocked by Stage 2D** | BBB/HHH/HHB/HBB plus Full Random; RBB/RRB matched-prefix controls; five paired contrasts specified | Do not resume the historical two-rule seeds as formal evidence; create a new frozen seeds 0–4 matrix after confirmation |
+| Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | BBB/HHH/HHB/HBB sweeps, key RBB/RRB controls, and layerwise Hybrid-compensation analysis |
 | Phase 9: extensions | Planned | Scope listed | Core MNIST matrix must finish first |
 
 ## 4. Phase 0 evidence
@@ -207,12 +209,12 @@ new frozen-configuration Q1 runs.
 
 | Question | Current answer | Required before claiming an answer |
 |---|---|---|
-| Q1: classification performance | Preliminary n=2: BP 91.595%, Hebbian 90.220%, random encoder 82.765%; paired Hebbian−BP gap −1.375 pp | Resume and complete paired seeds 2–4 before confirmatory claim |
-| Q2: latent representations | Preliminary mechanism evidence: low rank is already present pre-WTA (PR 1.0186) and becomes exactly rank-1 post-WTA; nevertheless the frozen standardized probe reaches 90.4% on the same subset, so low raw-covariance rank does not mean class information is absent | Formal multi-seed h1/h2/z class geometry, layerwise standardized probe, k-NN and separability |
-| Q3: robustness | No result | Deterministic paired clean-to-noisy evaluation |
-| Q4: weight updates | Preliminary seed-42 failure-case evidence: baseline mean batch alignment falls from 0.342 at enc1 to 0.00075 at enc3. A one-candidate notebook-inspired audit did not repair this: centered `enc3` raw/effective alignment became −0.1078/−0.1033, `alpha*` became negative, and Hebbian SNR fell to about 0.395. The operation changes direction and scale and does not resolve representation collapse | Repeat the frozen-snapshot analysis across an approved health-passing configuration and paired seeds before a general Q4 claim; correlation analysis remains pending |
-| Q5: dimension/asymmetry performance | No result | Parameterized models, frozen matrices, sensitivity/interaction analysis |
-| Q6: asymmetry and representations | No result | Q2 pipeline repeated across the Q5 architecture matrix |
+| Q1: classification and reconstruction performance | Historical n=2 BP/HHH/random evidence is exploratory. Seed-42 Stage 2C suggests HHB/HBB can preserve classification while improving system reconstruction, but the latter is confounded by BP-suffix/decoder joint adaptation | Pass HHB seeds 43/44, then run BBB/HHH/HHB/HBB/Full-Random plus RBB/RRB for five paired seeds; report both system and standardized-decoder reconstruction |
+| Q2: latent representations | Seed-42 evidence localizes severe HHH rank compression and shows HHB restores z while HBB additionally restores h2; this is not yet a cross-seed result | Formal multi-seed h1/h2/z spectra, probes, k-NN, class geometry, and h2→z compensation across BBB/HHH/HHB/HBB/RBB/RRB |
+| Q3: robustness | No comparative Full/Hybrid result | Deterministic paired clean-to-noisy evaluation for BBB/HHH/HHB/HBB, including both reconstruction protocols |
+| Q4: weight updates | Preliminary seed-42 HHH failure-case evidence exists; output-filter centering did not repair alignment or health | Extend frozen-snapshot analysis to HHB/HBB rule boundaries and paired BBB/HHH references across approved seeds |
+| Q5: dimension/asymmetry performance | No Full/Hybrid result | BBB/HHH/HHB/HBB dimension and width matrices, key RBB/RRB controls, and method × architecture sensitivity |
+| Q6: asymmetry and representations | No Full/Hybrid result | Repeat Q2 across Q5 and localize where Hybrid h2→z compensation changes |
 
 ## 8. Frozen decisions
 
@@ -223,17 +225,24 @@ new frozen-configuration Q1 runs.
   BP learning-rate tuning is not repeated.
 - Test representations and metrics are evaluated only after every
   validation-only choice is frozen and the best validation checkpoint restored.
-- BP and Hebbian must continue to share forward architecture and evaluation
-  code within each experiment variant.
-- The main model must be described as a Hebbian-trained encoder with a
-  BP-trained decoder and linear probe, not a fully Hebbian autoencoder.
+- BBB/HHH/HHB/HBB/RBB/RRB must share forward architecture, parameter shapes
+  and evaluation code within each experiment variant.
+- The fixed three-layer encoder defines total depth; BBB/HBB/HHB/HHH define
+  0/1/2/3 Hebbian layers. HBB/HHB are Hybrid interventions, not Full Hebbian.
+- Full Random is only an overall lower bound. Claims that one or two Hebbian
+  layers add value require the matched `HBB−RBB` and `HHB−RRB` contrasts.
+- Reconstruction must be reported as both **system reconstruction** and
+  **standardized-decoder reconstruction**. The latter freezes the completed
+  encoder and retrains a new decoder from paired initialization with identical
+  optimizer, data, epochs and validation selection; encoder-information claims
+  cannot rely on Hybrid system reconstruction alone.
 - Any material change to data, shapes, loss, training budget, probe, or noise
   realization requires a documented standard-version change and paired reruns.
 - Existing dirty/historical runs remain preliminary and cannot be copied into
   the formal artifact tree.
-- No further Q1 seeds, dimension sweep, or architecture sweep may start until
-  an exact formal Hebbian config is approved. Stage 2 / Q4 tooling may proceed
-  only on the frozen seed-42 failure-case snapshot named by Stage 1C.
+- No formal Q1, dimension sweep, or architecture sweep may start until Stage 2D
+  passes. HHH remains the frozen failure-case baseline; HHB is only a candidate
+  until both confirmation seeds pass.
 - Stage 1 decision is FAIL. The selected Hebbian `lr=0.0005,
   winner_fraction=0.10` config is not approved for formal runs.
 - Stage 1B is frozen as **COMPLETED — NO CANDIDATE PASSED**. Its eight
@@ -259,14 +268,18 @@ new frozen-configuration Q1 runs.
 - The frozen follow-up decision is
   `BRANCH D — FREEZE AS FAILURE-CASE BASELINE`. Record
   `COMMON-MODE UPDATE REMOVAL: NOT SUFFICIENT`; no new seed-42 repair run or
-  Stage 3 execution is authorized.
+  Stage 3 execution is authorized by that repair branch alone.
+- Stage 2C remains seed-42 diagnostic evidence. Stage 2D uses exactly
+  validation-only seeds 43 and 44; it cannot tune, change thresholds, read
+  test, or append a third confirmation seed after a failure.
 
 ## 9. Immediate next actions
 
-1. **Preregister two Hybrid-HHB confirmation seeds:** freeze the exact Stage 2C
-   config, pairing checks, thresholds and outputs before execution. Obtain
-   explicit user approval; do not start Stage 3 or call the candidate confirmed
-   until both validation-only seeds pass.
+1. **Freeze the Stage 2D protocol:** retain exact HHB settings; preregister
+   seeds 43/44, paired BBB/HHH references, accuracy/rank/compensation gates,
+   both reconstruction protocols, integrity checks and the no-third-seed rule.
+2. **Run Stage 2D only after protocol review:** do not access test or begin the
+   expanded formal matrix until both confirmation seeds pass.
 
 Tutorial provenance and teammate confirmation remain useful coordination items,
 but they do not replace or reorder the scientific gates above.
@@ -293,3 +306,5 @@ but they do not replace or reorder the scientific gates above.
 | 2026-07-25 | Audited the supplied notebook and completed the single seed-42 output-filter update-centering experiment; the candidate failed both frozen gates and is not eligible to replace the baseline | `docs/output_filter_centering_mechanism.md`, output-centering configs/tests, immutable 70-test log, and local comparison artifacts |
 | 2026-07-25 | Applied the frozen follow-up decision tree and selected Branch D; stopped current Oja repair and froze the original configuration as a health-gate failure-case baseline | `docs/hebbian_failure_case_protocol_addendum.md`, `results/hebbian_followup_decision/` |
 | 2026-07-25 | Completed Stage 2C Hybrid-HHB/Hybrid-HBB depth ablation with clean pairing, zero test access and Outcome D; froze Hybrid-HHB as confirmation candidate | `docs/hybrid_depth_ablation_protocol.md`, `docs/hybrid_depth_ablation_results.md`, local `results/hybrid_depth_ablation/` |
+| 2026-07-27 | Expanded the research design to Full BP, Full Hebbian and Minimal Hybrid Credit Assignment in a fixed three-layer encoder; added HBB/HHB Hebbian-depth comparisons and RBB/RRB matched random-prefix controls | `HEBBIAN_PROJECT_PLAN.md`, this status file |
+| 2026-07-27 | Added a reconstruction fairness control: report actual system reconstruction and paired standardized-decoder reconstruction separately | `HEBBIAN_PROJECT_PLAN.md`, `README.md`, this status file |
