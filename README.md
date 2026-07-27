@@ -51,6 +51,10 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/hybrid_hhb_confirmation_protocol.md](docs/hybrid_hhb_confirmation_protocol.md):
   immutable Stage 2D seeds 43/44 confirmation gates, paired references, and
   system-versus-standardized reconstruction contract.
+- [docs/hybrid_hhb_confirmation_results.md](docs/hybrid_hhb_confirmation_results.md):
+  completed two-seed validation result. HHB passed the accuracy and
+  representation gates in both seeds, but seed 43 failed the standardized
+  reconstruction gate; Stage 3 remains blocked.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and

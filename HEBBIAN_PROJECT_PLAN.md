@@ -2,18 +2,19 @@
 
 > 项目：Comparing Backpropagation, Hebbian Learning, and Minimal Hybrid Credit Assignment in a Three-Layer Convolutional Autoencoder
 > 本文档范围：Full BP、Full Hebbian、Hybrid-HHB/Hybrid-HBB 与匹配随机控制的实现、训练、评估和机制分析
-> 当前状态：`Stage 2C seed-42 diagnostic complete; Hybrid-HHB confirmation pending`
+> 当前状态：`Stage 2D completed — Hybrid-HHB confirmation failed`
 > 最后更新：2026-07-27
 
 > 文档角色：本文件保存研究设计、公式、WBS ID 和验收条件。实时完成状态只在
 > `PROJECT_STATUS.md` 维护；本文件中的长 WBS checkbox 不再作为唯一状态源。
 
 当前交付已完成显式 convolutional WTA/Oja、逐 filter 权重归一化、三层 greedy
-训练、共享 frozen linear probe、逐层诊断、BP/Hebbian 基线，以及 seed-42
-Hybrid-HHB/Hybrid-HBB depth diagnostic。正式输出与未完成边界见
-`PROJECT_STATUS.md`。后续主线是先确认最小 Hybrid intervention，再在冻结的
-三层框架内比较 0/1/2/3 个 Hebbian encoder layers；单 seed 诊断不得替代正式
-multi-seed 结论。
+训练、共享 frozen linear probe、逐层诊断、BP/Hebbian 基线、seed-42
+Hybrid-HHB/Hybrid-HBB depth diagnostic，以及 Stage 2D seeds 43/44
+confirmation。Stage 2D 因 seed 43 standardized-reconstruction gate 失败而未确认
+HHB；正式输出与未完成边界见 `PROJECT_STATUS.md`。后续训练须先经过新的版本化
+治理决策；单 seed 诊断或单个通过的 confirmation seed 不得替代正式 multi-seed
+结论。
 
 ---
 
@@ -988,6 +989,16 @@ seed 44。
 `CONFIRMATION FAILED`，停止正式矩阵并报告异质性；不得追加第三个
 confirmation seed 来覆盖失败结果。
 
+截至 2026-07-27，本阶段已按不可变协议完整执行。Seed 43/44 的 HHB
+validation accuracy 分别为 `0.9163/0.9118`，z effective rank 为
+`10.3835/9.0809`，两者均通过 accuracy、absolute/relative z-rank 与
+h2→z compensation gates；pairing、checksum、artifact completeness 与
+zero-test-access 也均为 PASS。Seed 43 的 standardized-decoder MSE 相对
+paired BBB 为 `1.5688×`，超过冻结上限 `1.25×`；seed 44 的比率为
+`0.9111×`。因此按 conjunctive rule 冻结结果为
+`COMPLETED — CONFIRMATION FAILED`，不追加第三个 seed，且不批准正式
+Phase 4/Stage 3。完整结果见 `docs/hybrid_hhb_confirmation_results.md`。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension
@@ -1159,20 +1170,21 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [x] `P2C-DEC-01` 按预注册规则选择 Outcome D；
 - [x] `P2C-FREEZE-01` 冻结 HHB 为 confirmation candidate，不升级单 seed 结论。
 
-#### P2D — Hybrid-HHB confirmation（下一阻塞阶段）
+#### P2D — Hybrid-HHB confirmation（已完成；confirmation failed）
 
-- [ ] `P2D-PROTO-01` 将 seeds `[43,44]`、阈值、paired references 和停止规则
+- [x] `P2D-PROTO-01` 将 seeds `[43,44]`、阈值、paired references 和停止规则
   写入不可变 protocol；
-- [ ] `P2D-DEC-01` 实现并核验 system reconstruction 输出；
-- [ ] `P2D-DEC-02` 为 BBB/HHH/HHB 从 paired initialization 训练 standardized decoder；
-- [ ] `P2D-QA-01` 验证 standardized decoder optimizer/data/epoch/selection 完全一致；
-- [ ] `P2D-RUN-01` 完整运行 seed 43，不因结果修改 seed 44；
-- [ ] `P2D-RUN-02` 完整运行 seed 44，不追加第三个 confirmation seed；
-- [ ] `P2D-GATE-01` 检查 accuracy、standardized reconstruction、z-rank 和
+- [x] `P2D-DEC-01` 实现并核验 system reconstruction 输出；
+- [x] `P2D-DEC-02` 为 BBB/HHH/HHB 从 paired initialization 训练 standardized decoder；
+- [x] `P2D-QA-01` 验证 standardized decoder optimizer/data/epoch/selection 完全一致；
+- [x] `P2D-RUN-01` 完整运行 seed 43，不因结果修改 seed 44；
+- [x] `P2D-RUN-02` 完整运行 seed 44，不追加第三个 confirmation seed；
+- [x] `P2D-GATE-01` 检查 accuracy、standardized reconstruction、z-rank 和
   h2→z compensation；
-- [ ] `P2D-QA-02` 检查 pairing、checksum、resume、artifact completeness 和
+- [x] `P2D-QA-02` 检查 pairing、checksum、resume、artifact completeness 和
   `test_samples_accessed=0`；
-- [ ] `P2D-DECIDE-01` 仅在两个 seeds 都通过时批准正式 Phase 4。
+- [x] `P2D-DECIDE-01` 执行 conjunctive decision rule；seed 43 reconstruction
+  gate 失败，因此不批准正式 Phase 4。
 
 #### P3 — Validation-only 超参数选择
 
@@ -1623,18 +1635,18 @@ snapshot_hash, target_clamping, optimizer_state_included
 
 ## 14. 下一步（按顺序执行）
 
-1. 为 Stage 2D 写入不可变 protocol：seeds 43/44、BBB/HHH/HHB paired
-   references、双 reconstruction 与全部阈值；
-2. 在不访问 test、不调参的条件下完成两个 HHB confirmation seeds；
-3. 仅在两者均通过时冻结正式 BBB/HHH/HHB/HBB/RBB/RRB configs 和
-   seeds 0–4 manifest；
-4. 完成 Q1 formal clean performance、system reconstruction 与
-   standardized-decoder reconstruction；
-5. 复用同一 checkpoints 完成 Q2 layerwise representation 与 Q3 robustness；
-6. 将 Q4 frozen-snapshot tooling 扩展到 HHB/HBB rule boundaries 和 paired seeds；
-7. 最后执行 BBB/HHH/HHB/HBB latent-dimension 与 architecture-asymmetry matrices；
-8. 补充缺失的 tutorial provenance 与 BP 队友书面确认；这些不改变主实验门禁顺序；
-9. 每次 task 状态变化立即更新 `PROJECT_STATUS.md` 和对应证据，不在项目末尾补记。
+1. 保留 Stage 2D 的 `CONFIRMATION FAILED` 结果、seed 异质性和全部本地
+   artifacts；不得追加第三个 confirmation seed 或事后修改门槛；
+2. 暂停正式 BBB/HHH/HHB/HBB/RBB/RRB seeds 0–4 matrix、test evaluation、
+   robustness 与 architecture sweeps；
+3. 在开始新训练前制定并显式批准一个版本化的后续决策：要么将 HHB 仅保留为
+   “稳定修复 z-rank/分类、但 reconstruction 未确认”的机制结果，要么预注册
+   新的研究协议；新协议不得覆盖本次失败；
+4. 仅当新的治理决策重新授权时，才恢复 Q1–Q6 后续实验，并继续使用 system
+   与 standardized-decoder 双 reconstruction；
+5. 补充缺失的 tutorial provenance 与 BP 队友书面确认；这些事项不改变
+   Stage 2D 的失败判定；
+6. 每次 task 状态变化立即更新 `PROJECT_STATUS.md` 和对应证据，不在项目末尾补记。
 
 ---
 

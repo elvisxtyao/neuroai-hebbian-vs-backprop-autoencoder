@@ -39,6 +39,7 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `docs/hybrid_depth_ablation_protocol.md` | Preregistered two-control Hybrid-HHB/Hybrid-HBB depth ablation | Do not add a third control or tune from seed-42 results |
 | `docs/hybrid_depth_ablation_results.md` | Completed seed-42 depth-ablation evidence and Outcome-D decision | Keep diagnostic-only language until confirmation seeds pass |
 | `docs/hybrid_hhb_confirmation_protocol.md` | Immutable Stage 2D seeds 43/44 confirmation and dual-reconstruction contract | Do not tune, change thresholds, access test, or append a third seed |
+| `docs/hybrid_hhb_confirmation_results.md` | Completed Stage 2D paired results, gate table, integrity evidence and failed confirmation decision | Preserve the seed-43 reconstruction failure and zero-test boundary |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -64,8 +65,8 @@ so the repository does not contain broken links to private run records.
 | Stage 2B: output-filter update-centering audit | **Complete — candidate failed** | Supplied notebook audited; exactly one validation-only seed-42 candidate; 70 tests; full health/Q4 comparison; zero test access | No replacement selected; Stage 1B remains frozen |
 | Stage 2B decision overlay | **Complete — Branch D** | Unified snapshot/layer table, machine-readable branch decision, source/checksum manifest, immutable tests, zero new training and zero test access | Superseded only for the separately authorized two-control depth diagnostic |
 | Stage 2C: Hybrid Hebbian–BP depth ablation | **Complete — PASS, Outcome D** | Four newly paired clean-commit runs; pairing/freeze PASS; 2,000-image layerwise metrics; five figures; 78 tests; zero test access | Hybrid-HHB is confirmation candidate only; no Stage 3 until approved confirmation seeds pass |
-| Stage 2D: Hybrid-HHB confirmation | **Implemented, not run — next blocking gate** | Immutable protocol/configs; paired BBB/HHH/HHB runner; resumable standardized decoder; gate analysis; 84 tests | Run seeds 43/44 from the clean implementation snapshot, analyze both, and verify zero test access |
-| Phase 4 / Q1 expanded formal matrix | **Planned — blocked by Stage 2D** | BBB/HHH/HHB/HBB plus Full Random; RBB/RRB matched-prefix controls; five paired contrasts specified | Do not resume the historical two-rule seeds as formal evidence; create a new frozen seeds 0–4 matrix after confirmation |
+| Stage 2D: Hybrid-HHB confirmation | **Complete — CONFIRMATION FAILED** | Six paired BBB/HHH/HHB validation runs; system and standardized decoders; both accuracy/rank gates passed; seed 43 standardized MSE ratio `1.5688 > 1.25`; pairing/checksums PASS; 84 tests; zero test access | Do not add a third seed or alter thresholds; preserve HHB as a mechanistic rank/classification result, not a confirmed formal candidate |
+| Phase 4 / Q1 expanded formal matrix | **Planned — blocked by failed Stage 2D** | BBB/HHH/HHB/HBB plus Full Random; RBB/RRB matched-prefix controls; five paired contrasts specified | Requires a new explicitly versioned governance decision; historical two-rule seeds remain exploratory |
 | Phase 8 / Q5–Q6: dimension/asymmetry | Planned | Dimensions and architecture IDs specified in plan | BBB/HHH/HHB/HBB sweeps, key RBB/RRB controls, and layerwise Hybrid-compensation analysis |
 | Phase 9: extensions | Planned | Scope listed | Core MNIST matrix must finish first |
 
@@ -241,9 +242,11 @@ new frozen-configuration Q1 runs.
   realization requires a documented standard-version change and paired reruns.
 - Existing dirty/historical runs remain preliminary and cannot be copied into
   the formal artifact tree.
-- No formal Q1, dimension sweep, or architecture sweep may start until Stage 2D
-  passes. HHH remains the frozen failure-case baseline; HHB is only a candidate
-  until both confirmation seeds pass.
+- No formal Q1, dimension sweep, or architecture sweep may start under the
+  current protocol because Stage 2D failed. HHH remains the frozen failure-case
+  baseline. HHB repaired z-rank and passed the accuracy floor in both seeds, but
+  is not a confirmed formal candidate because seed 43 failed standardized
+  reconstruction.
 - Stage 1 decision is FAIL. The selected Hebbian `lr=0.0005,
   winner_fraction=0.10` config is not approved for formal runs.
 - Stage 1B is frozen as **COMPLETED — NO CANDIDATE PASSED**. Its eight
@@ -273,14 +276,22 @@ new frozen-configuration Q1 runs.
 - Stage 2C remains seed-42 diagnostic evidence. Stage 2D uses exactly
   validation-only seeds 43 and 44; it cannot tune, change thresholds, read
   test, or append a third confirmation seed after a failure.
+- Stage 2D is complete with `CONFIRMATION FAILED`. Seed 43 failed only the
+  standardized-decoder reconstruction ratio (`1.5688 > 1.25`); seed 44 passed
+  all gates. Both seeds passed accuracy, z-rank, h2→z compensation, pairing,
+  checksum, numerical-integrity and zero-test-access checks. The formal matrix
+  remains blocked.
 
 ## 9. Immediate next actions
 
-1. **Freeze the Stage 2D protocol:** retain exact HHB settings; preregister
-   seeds 43/44, paired BBB/HHH references, accuracy/rank/compensation gates,
-   both reconstruction protocols, integrity checks and the no-third-seed rule.
-2. **Run Stage 2D only after protocol review:** do not access test or begin the
-   expanded formal matrix until both confirmation seeds pass.
+1. **Preserve the failed confirmation:** retain both seeds, the frozen
+   thresholds, local artifacts and the no-third-seed rule.
+2. **Keep formal work blocked:** do not access test or start the expanded
+   five-seed, robustness, dimension or architecture matrices under the current
+   protocol.
+3. **Require a versioned follow-up decision before new training:** either retain
+   HHB as limited mechanistic evidence or approve a new preregistered protocol
+   that does not erase or reinterpret this failed confirmation.
 
 Tutorial provenance and teammate confirmation remain useful coordination items,
 but they do not replace or reorder the scientific gates above.
@@ -309,3 +320,4 @@ but they do not replace or reorder the scientific gates above.
 | 2026-07-25 | Completed Stage 2C Hybrid-HHB/Hybrid-HBB depth ablation with clean pairing, zero test access and Outcome D; froze Hybrid-HHB as confirmation candidate | `docs/hybrid_depth_ablation_protocol.md`, `docs/hybrid_depth_ablation_results.md`, local `results/hybrid_depth_ablation/` |
 | 2026-07-27 | Expanded the research design to Full BP, Full Hebbian and Minimal Hybrid Credit Assignment in a fixed three-layer encoder; added HBB/HHB Hebbian-depth comparisons and RBB/RRB matched random-prefix controls | `HEBBIAN_PROJECT_PLAN.md`, this status file |
 | 2026-07-27 | Added a reconstruction fairness control: report actual system reconstruction and paired standardized-decoder reconstruction separately | `HEBBIAN_PROJECT_PLAN.md`, `README.md`, this status file |
+| 2026-07-27 | Completed Stage 2D on validation-only seeds 43/44. Both seeds passed accuracy and representation gates, but seed 43 failed the paired standardized-decoder MSE ratio; final decision `CONFIRMATION FAILED`, zero test access | `docs/hybrid_hhb_confirmation_results.md`, local `results/hybrid_hhb_confirmation/` artifacts |
