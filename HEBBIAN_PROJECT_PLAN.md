@@ -2,7 +2,7 @@
 
 > 项目：Comparing Backpropagation, Hebbian Learning, and Minimal Hybrid Credit Assignment in a Three-Layer Convolutional Autoencoder
 > 本文档范围：Full BP、Full Hebbian、Hybrid-HHB/Hybrid-HBB 与匹配随机控制的实现、训练、评估和机制分析
-> 当前状态：`Stage 2D completed — Hybrid-HHB confirmation failed`
+> 当前状态：`Stage 3 formal core implemented — canonical source freeze ready`
 > 最后更新：2026-07-27
 
 > 文档角色：本文件保存研究设计、公式、WBS ID 和验收条件。实时完成状态只在
@@ -12,9 +12,10 @@
 训练、共享 frozen linear probe、逐层诊断、BP/Hebbian 基线、seed-42
 Hybrid-HHB/Hybrid-HBB depth diagnostic，以及 Stage 2D seeds 43/44
 confirmation。Stage 2D 因 seed 43 standardized-reconstruction gate 失败而未确认
-HHB；正式输出与未完成边界见 `PROJECT_STATUS.md`。后续训练须先经过新的版本化
-治理决策；单 seed 诊断或单个通过的 confirmation seed 不得替代正式 multi-seed
-结论。
+完整 reconstruction repair；新的 Stage 3 v1 决策保留该失败，并授权 HHB 以
+“confirmed rank-repair candidate with unresolved reconstruction stability”
+进入正式矩阵。单 seed 诊断或单个通过的 confirmation seed 不得替代正式
+multi-seed 结论。
 
 ---
 
@@ -660,7 +661,11 @@ seed-42 validation 结果写成正式多 seed 结论。完整表格、hash 和�
 
 ### Phase 4 — Q1：正式 clean performance 与 Hebbian-depth value
 
-本阶段只在 Stage 2D confirmation 通过后启动。固定三层结构，核心正式矩阵为
+本阶段依据 `docs/stage3_formal_protocol_v1.md` 的版本化治理决策启动。
+Stage 2D 的 `CONFIRMATION FAILED` 历史保持不变；其 standardized-decoder
+reconstruction hard gate 不再作为 Stage 3 入场条件，而改为正式待研究 outcome。
+HHB 的固定表述为 “a confirmed rank-repair candidate with unresolved
+reconstruction stability”，不得写成 complete repair。固定三层结构，核心正式矩阵为
 `BBB/HHH/HHB/HBB/Full Random`；为回答“一层或两层 Hebbian 是否有价值”，
 加入 matched controls `RBB/RRB`。正式 seeds 为 `[0,1,2,3,4]`，所有方法按
 seed 配对初始化、数据顺序、decoder/probe 初始化和 validation selection。
@@ -1635,18 +1640,24 @@ snapshot_hash, target_clamping, optimizer_state_included
 
 ## 14. 下一步（按顺序执行）
 
-1. 保留 Stage 2D 的 `CONFIRMATION FAILED` 结果、seed 异质性和全部本地
-   artifacts；不得追加第三个 confirmation seed 或事后修改门槛；
-2. 暂停正式 BBB/HHH/HHB/HBB/RBB/RRB seeds 0–4 matrix、test evaluation、
-   robustness 与 architecture sweeps；
-3. 在开始新训练前制定并显式批准一个版本化的后续决策：要么将 HHB 仅保留为
-   “稳定修复 z-rank/分类、但 reconstruction 未确认”的机制结果，要么预注册
-   新的研究协议；新协议不得覆盖本次失败；
-4. 仅当新的治理决策重新授权时，才恢复 Q1–Q6 后续实验，并继续使用 system
-   与 standardized-decoder 双 reconstruction；
-5. 补充缺失的 tutorial provenance 与 BP 队友书面确认；这些事项不改变
+1. 冻结 Stage 3 v1 protocol、五种核心 method templates、artifact schema、
+   tests 与 clean canonical source snapshot；
+2. 在 test access 为 0 的条件下完成 BBB/HHH/HHB/HBB/Full Random
+   `5 methods × 5 paired seeds`，同时训练 system decoder、frozen probe 与
+   standardized decoder；
+3. 仅以 pairing、checksum、resume、artifact completeness、finite metrics 与
+   zero-test-access 作为 pre-test technical freeze gate；不得用 performance
+   或 reconstruction 删除条件；
+4. gate 通过后对每个冻结 checkpoint 一次性读取 test，完成 Q1；
+5. 复用同一 checkpoints/snapshots 完成 Q2 representation、Q3 noise 与
+   Q4 update mechanisms；
+6. 增加 RBB/RRB 五 seed matched-prefix controls 后，才允许声称一层/两层
+   Hebbian prefix 的净价值；
+7. 最后完成 latent dimensions `[16,32,64,128]` 与三种 encoder asymmetry
+   的 Q5/Q6 paired sweeps；
+8. 补充缺失的 tutorial provenance 与 BP 队友书面确认；这些事项不改变
    Stage 2D 的失败判定；
-6. 每次 task 状态变化立即更新 `PROJECT_STATUS.md` 和对应证据，不在项目末尾补记。
+9. 每次 task 状态变化立即更新 `PROJECT_STATUS.md` 和对应证据，不在项目末尾补记。
 
 ---
 

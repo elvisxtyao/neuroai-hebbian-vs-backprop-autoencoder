@@ -139,16 +139,24 @@ def validate_config(config: dict[str, Any]) -> None:
                 )
         confirmation_stage = hybrid.get("confirmation_stage")
         if confirmation_stage is not None:
-            if confirmation_stage != "stage2d":
+            if confirmation_stage not in {"stage2d", "stage3_core"}:
                 raise ConfigError("Unsupported hybrid confirmation stage")
-            if config["training"].get("seed") not in {43, 44}:
-                raise ConfigError("Stage 2D confirmation seed must be 43 or 44")
+            allowed_seeds = (
+                {43, 44}
+                if confirmation_stage == "stage2d"
+                else {0, 1, 2, 3, 4}
+            )
+            if config["training"].get("seed") not in allowed_seeds:
+                stage = "Stage 2D" if confirmation_stage == "stage2d" else "Stage 3"
+                raise ConfigError(
+                    f"{stage} seed must be one of {sorted(allowed_seeds)}"
+                )
             if config["backprop"]["lr"] != 0.003:
-                raise ConfigError("Stage 2D freezes BP learning rate at 0.003")
+                raise ConfigError("Formal Hybrid runs freeze BP learning rate at 0.003")
             if config["hebbian"]["lr"] != 0.0005:
-                raise ConfigError("Stage 2D freezes Hebbian learning rate at 0.0005")
+                raise ConfigError("Formal Hybrid runs freeze Hebbian learning rate at 0.0005")
             if config["hebbian"]["winner_fraction"] != 0.10:
-                raise ConfigError("Stage 2D freezes winner_fraction at 0.10")
+                raise ConfigError("Formal Hybrid runs freeze winner_fraction at 0.10")
             standardized = _require(config, "standardized_decoder")
             expected_standardized = {
                 "optimizer": "adam",
@@ -160,7 +168,7 @@ def validate_config(config: dict[str, Any]) -> None:
                 "validation_selection": "min_reconstruction_mse",
             }
             if standardized != expected_standardized:
-                raise ConfigError("Stage 2D standardized-decoder protocol changed")
+                raise ConfigError("Formal standardized-decoder protocol changed")
     if config["training"]["paired_seeds"] != [0, 1, 2, 3, 4]:
         raise ConfigError("phase0-v1 paired seeds must be [0,1,2,3,4]")
     if config["data"]["batch_size"] != config["training"]["batch_size"]:

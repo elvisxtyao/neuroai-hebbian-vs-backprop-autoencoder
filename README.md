@@ -54,7 +54,11 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/hybrid_hhb_confirmation_results.md](docs/hybrid_hhb_confirmation_results.md):
   completed two-seed validation result. HHB passed the accuracy and
   representation gates in both seeds, but seed 43 failed the standardized
-  reconstruction gate; Stage 3 remains blocked.
+  reconstruction gate; this historical decision is preserved by Stage 3 v1.
+- [docs/stage3_formal_protocol_v1.md](docs/stage3_formal_protocol_v1.md):
+  approved formal five-seed matrix. HHB enters as a rank-repair condition with
+  unresolved reconstruction stability; standardized reconstruction is a
+  measured outcome rather than an entry gate.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -110,6 +114,25 @@ The smoke test uses synthetic inputs and does not download MNIST.
 
 The immutable Stage 0 full-suite record is
 `verification/phase0_v1_1/pytest_full.log`.
+
+## Stage 3 formal core matrix
+
+Stage 3 first runs validation-only representation training, the frozen linear
+probe and the paired standardized decoder. Running a selected seed is the
+recommended recoverable unit:
+
+```powershell
+python -m training.run_stage3_formal_core `
+  --config configs/experiments/stage3_formal_core_v1.yaml `
+  --seed 0
+```
+
+Omit `--seed` only when intentionally running the complete five-seed matrix.
+The pre-test freeze gate is written only after all 25 method/seed combinations
+are complete. This command does not construct the official test loader.
+
+The Stage 3 implementation test record is
+`verification/phase0_v1_1/stage3_formal_core_implementation_pytest.log`.
 
 ## Stage 1 representation-health gate
 

@@ -188,7 +188,11 @@ def _metadata(
         "experiment_id": (
             "hybrid_hhb_confirmation"
             if config["hybrid"].get("confirmation_stage") == "stage2d"
-            else "hybrid_depth_ablation_seed42"
+            else (
+                "stage3_formal_core"
+                if config["hybrid"].get("confirmation_stage") == "stage3_core"
+                else "hybrid_depth_ablation_seed42"
+            )
         ),
         "run_id": run_dir.name,
         "method_id": config["hybrid"]["method_id"],
@@ -227,9 +231,17 @@ def train_hybrid_config(
         raise ValueError("train_hybrid_config requires learning_rule=hybrid")
     seed = int(config["training"]["seed"])
     confirmation_stage = config["hybrid"].get("confirmation_stage")
-    allowed_seeds = {43, 44} if confirmation_stage == "stage2d" else {42}
+    allowed_seeds = (
+        {43, 44}
+        if confirmation_stage == "stage2d"
+        else ({0, 1, 2, 3, 4} if confirmation_stage == "stage3_core" else {42})
+    )
     if seed not in allowed_seeds:
-        stage_name = "Stage 2D" if confirmation_stage == "stage2d" else "Stage 2C"
+        stage_name = (
+            "Stage 2D"
+            if confirmation_stage == "stage2d"
+            else ("Stage 3" if confirmation_stage == "stage3_core" else "Stage 2C")
+        )
         raise ValueError(
             f"{stage_name} hybrid training requires one of "
             f"{sorted(allowed_seeds)}, got {seed}"

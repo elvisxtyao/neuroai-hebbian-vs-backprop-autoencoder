@@ -1,0 +1,9 @@
+extends: common.yaml
+
+hybrid:
+  method_id: full_random
+  display_name: Full Random Encoder
+  encoder_layer_rules:
+    enc1: frozen
+    enc2: frozen
+    enc3: frozen

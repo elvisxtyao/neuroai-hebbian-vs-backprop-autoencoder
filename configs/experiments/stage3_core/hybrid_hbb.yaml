@@ -1,0 +1,9 @@
+extends: common.yaml
+
+hybrid:
+  method_id: hybrid_hbb
+  display_name: Hybrid-HBB
+  encoder_layer_rules:
+    enc1: hebbian
+    enc2: bp
+    enc3: bp
