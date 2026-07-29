@@ -670,13 +670,13 @@ reconstruction stability”，不得写成 complete repair。固定三层结构�
 加入 matched controls `RBB/RRB`。正式 seeds 为 `[0,1,2,3,4]`，所有方法按
 seed 配对初始化、数据顺序、decoder/probe 初始化和 validation selection。
 
-- [ ] 对完整模型矩阵运行 5 个 paired seeds；
-- [ ] 保存 encoder、system decoder、standardized decoder 与 probe 的逐 epoch/step 指标；
+- [x] 对核心模型矩阵 `BBB/HHH/HHB/HBB/Full Random` 运行 5 个 paired seeds；
+- [x] 保存核心矩阵 encoder、system decoder、standardized decoder 与 probe 的逐 epoch/step 指标；
 - [ ] 报告 accuracy、macro-F1、CE、两种 reconstruction MSE、AULC、
   samples-to-threshold、samples seen 和 wall-clock；
 - [ ] 分开报告 encoder、decoder 与 probe 的学习预算；
 - [ ] 计算预注册 paired differences、effect sizes 与 bootstrap 95% CI；
-- [ ] 每个冻结 run 只在最终阶段读取 test 一次。
+- [x] 核心矩阵每个冻结 run 只在 technical gate PASS 后读取 test 一次。
 
 主要 contrasts 按以下顺序解释：
 
@@ -1213,25 +1213,25 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 旧 seeds 0–1 BP/Hebbian/random 输出只验证了运行、恢复和统计管线；不得作为
 新矩阵的已完成 seed。
 
-- [ ] `P4-MATRIX-01` 生成 BBB/HHH/HHB/HBB/Full-Random seeds 0–4 manifest；
+- [x] `P4-MATRIX-01` 生成 BBB/HHH/HHB/HBB/Full-Random seeds 0–4 manifest；
 - [ ] `P4-MATRIX-02` 生成 RBB/RRB seeds 0–4 matched-control manifest；
-- [ ] `P4-RUN-01` 完成全部 encoder/representation training；
-- [ ] `P4-RUN-02` 完成所有 frozen linear probes；
-- [ ] `P4-RUN-03` 保存各方法 system reconstruction；
-- [ ] `P4-RUN-04` 完成全部 standardized-decoder training/evaluation；
-- [ ] `P4-QA-01` 检查每个 run 的 config、hash、checkpoint、日志和 test-access audit；
-- [ ] `P4-QA-02` 检查 paired seeds 使用相同初始化、batch order 和 probe protocol；
-- [ ] `P4-QA-03` 检查 standardized decoders 使用相同 initialization、optimizer、
+- [x] `P4-RUN-01` 完成核心矩阵全部 encoder/representation training；
+- [x] `P4-RUN-02` 完成核心矩阵所有 frozen linear probes；
+- [x] `P4-RUN-03` 保存核心矩阵各方法 system reconstruction；
+- [x] `P4-RUN-04` 完成核心矩阵全部 standardized-decoder training/evaluation；
+- [x] `P4-QA-01` 检查核心矩阵每个 run 的 config、hash、checkpoint、日志和 test-access audit；
+- [x] `P4-QA-02` 检查核心矩阵 paired seeds 使用相同初始化、batch order 和 probe protocol；
+- [x] `P4-QA-03` 检查核心矩阵 standardized decoders 使用相同 initialization、optimizer、
   data、epoch 和 validation selection；
-- [ ] `P4-METRIC-01` 汇总 accuracy、macro-F1 和 classification CE；
-- [ ] `P4-METRIC-02` 分开汇总 system/standardized reconstruction MSE；
-- [ ] `P4-METRIC-03` 汇总 encoder/decoder/probe dataset passes、samples seen 与 wall-clock；
-- [ ] `P4-METRIC-04` 计算 epoch/samples-seen/wall-clock AULC；
+- [x] `P4-METRIC-01` 汇总核心矩阵 accuracy、macro-F1 和 classification CE；
+- [x] `P4-METRIC-02` 分开汇总核心矩阵 system/standardized reconstruction MSE；
+- [x] `P4-METRIC-03` 汇总核心矩阵 encoder/decoder/probe dataset passes、samples seen 与 wall-clock；
+- [x] `P4-METRIC-04` 计算核心矩阵 epoch reconstruction AULC；samples/wall-clock 已保存供后续曲线分析；
 - [ ] `P4-STAT-01` 输出五个预注册 paired contrasts；
 - [ ] `P4-STAT-02` 计算 mean±SD、effect size 和 paired bootstrap 95% CI；
 - [ ] `P4-FIG-01` 绘制 learning curves 与 Hebbian-depth dose plot；
-- [ ] `P4-TABLE-01` 生成 clean performance 与双 reconstruction 主表；
-- [ ] `P4-NOTE-01` 写出 Q1 结论、限制及 Hybrid 非纯 Hebbian 声明。
+- [x] `P4-TABLE-01` 生成核心 clean performance 与双 reconstruction 主表；
+- [x] `P4-NOTE-01` 写出核心 Q1 结论、限制及 Hybrid 非纯 Hebbian声明；RBB/RRB 结论仍待完成。
 
 #### P5 — Q2 layerwise representation
 

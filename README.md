@@ -59,6 +59,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
   approved formal five-seed matrix. HHB enters as a rank-repair condition with
   unresolved reconstruction stability; standardized reconstruction is a
   measured outcome rather than an entry gate.
+- [docs/stage3_formal_core_results.md](docs/stage3_formal_core_results.md):
+  completed five-seed core matrix, technical freeze gate, one-time test table,
+  paired contrasts, learning budgets and remaining matched-control limits.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -133,6 +136,15 @@ are complete. This command does not construct the official test loader.
 
 The Stage 3 implementation test record is
 `verification/phase0_v1_1/stage3_formal_core_implementation_pytest.log`.
+The completed formal results are summarized in
+`docs/stage3_formal_core_results.md`. The one-time test evaluator is guarded by
+the saved technical freeze gate and refuses to run again when its output
+directory already exists:
+
+```powershell
+python -m evaluation.run_stage3_test_evaluation `
+  --results-root results/formal/phase0_v1_1/stage3_core
+```
 
 ## Stage 1 representation-health gate
 
