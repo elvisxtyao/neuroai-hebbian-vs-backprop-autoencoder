@@ -1235,28 +1235,28 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 #### P5 — Q2 layerwise representation
 
-- [ ] `P5-DATA-01` 生成每类 200 张的 2,000-image subset manifest；
-- [ ] `P5-DATA-02` 验证 BBB/HHH/HHB/HBB/RBB/RRB 使用相同 sample IDs 和顺序；
-- [ ] `P5-EXT-01` 提取并保存 `input/h1/h2/z`；
-- [ ] `P5-EXT-02` 保存 labels、sample IDs、seed 和 checkpoint ID；
-- [ ] `P5-QA-01` 验证表示数组无 NaN/Inf 且 shape 正确；
-- [ ] `P5-METRIC-01` 计算每层 activation sparsity；
-- [ ] `P5-METRIC-02` 计算每层 active-neuron ratio；
-- [ ] `P5-METRIC-03` 计算每层 effective rank；
-- [ ] `P5-METRIC-03B` 计算 stable rank、covariance spectrum 与 rank ratio；
-- [ ] `P5-METRIC-04` 计算 within-class distance；
-- [ ] `P5-METRIC-05` 计算 between-class distance 与 separability ratio；
-- [ ] `P5-METRIC-06` 计算 silhouette score；
-- [ ] `P5-METRIC-07` 训练每层统一 linear probe；
-- [ ] `P5-METRIC-08` 计算每层 k-NN accuracy；
-- [ ] `P5-METRIC-09` 计算易混类别 centroid distances；
-- [ ] `P5-METRIC-10` 计算 h2→z compensation ratio 并做 paired-seed 汇总；
-- [ ] `P5-FIG-01` 用固定参数绘制 PCA；
-- [ ] `P5-FIG-02` 用固定 seed/参数绘制 UMAP；
-- [ ] `P5-FIG-03` 绘制 confusion matrices；
-- [ ] `P5-OPT-01` 可选计算跨规则 layerwise CKA；
-- [ ] `P5-TABLE-01` 生成 method × layer 指标表；
-- [ ] `P5-NOTE-01` 写出 Q2 的结果摘要与限制。
+- [x] `P5-DATA-01` 生成每类 200 张的 2,000-image subset manifest；
+- [x] `P5-DATA-02` 验证 BBB/HHH/HHB/HBB/RBB/RRB 使用相同 sample IDs 和顺序；
+- [x] `P5-EXT-01` 提取并保存 `input/h1/h2/z`；
+- [x] `P5-EXT-02` 保存 labels、sample IDs、seed 和 checkpoint ID；
+- [x] `P5-QA-01` 验证表示数组无 NaN/Inf 且 shape 正确；
+- [x] `P5-METRIC-01` 计算每层 activation sparsity；
+- [x] `P5-METRIC-02` 计算每层 active-neuron ratio；
+- [x] `P5-METRIC-03` 计算每层 effective rank；
+- [x] `P5-METRIC-03B` 计算 stable rank、covariance spectrum 与 rank ratio；
+- [x] `P5-METRIC-04` 计算 within-class distance；
+- [x] `P5-METRIC-05` 计算 between-class distance 与 separability ratio；
+- [x] `P5-METRIC-06` 计算 silhouette score；
+- [x] `P5-METRIC-07` 训练每层统一 linear probe；
+- [x] `P5-METRIC-08` 计算每层 k-NN accuracy；
+- [x] `P5-METRIC-09` 计算易混类别 centroid distances；
+- [x] `P5-METRIC-10` 计算 h2→z compensation ratio 并做 paired-seed 汇总；
+- [x] `P5-FIG-01` 用固定参数绘制 PCA；
+- [x] `P5-FIG-02` 用固定 seed/参数绘制 UMAP；
+- [x] `P5-FIG-03` 绘制 confusion matrices；
+- [x] `P5-OPT-01` 计算跨规则 layerwise CKA；
+- [x] `P5-TABLE-01` 生成 method × layer 指标表；
+- [x] `P5-NOTE-01` 写出 Q2 的结果摘要与限制。
 
 #### P6 — Q3 noise robustness
 
