@@ -1260,25 +1260,25 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 #### P6 — Q3 noise robustness
 
-- [ ] `P6-NOISE-01` 实现 deterministic Gaussian noise；
-- [ ] `P6-NOISE-02` 实现 deterministic salt-and-pepper noise；
-- [ ] `P6-NOISE-03` 实现 deterministic pixel masking；
-- [ ] `P6-NOISE-04` 使用稳定 hash 绑定 sample ID、type 和 severity；
-- [ ] `P6-TEST-01` 测试相同 noise key 输出逐像素一致；
-- [ ] `P6-TEST-02` 测试不同模型读取相同 noisy tensors；
-- [ ] `P6-TEST-03` 测试输出始终在 `[0,1]`；
-- [ ] `P6-RUN-01` 完成 Gaussian severity × model × seed 评估；
-- [ ] `P6-RUN-02` 完成 salt-and-pepper 补充评估；
-- [ ] `P6-RUN-03` 完成 pixel masking 补充评估；
-- [ ] `P6-METRIC-01` 计算 noisy accuracy 与 macro-F1；
-- [ ] `P6-METRIC-02` 计算 absolute/relative degradation；
-- [ ] `P6-METRIC-03` 计算 clean/noisy representation cosine；
-- [ ] `P6-METRIC-04` 计算 prediction JS divergence；
-- [ ] `P6-METRIC-05` 分开计算 system/standardized reconstruction degradation；
-- [ ] `P6-STAT-01` 汇总 seed-level paired degradation；
-- [ ] `P6-FIG-01` 绘制 accuracy–severity curves；
-- [ ] `P6-FIG-02` 绘制 representation-stability curves；
-- [ ] `P6-NOTE-01` 写出 Q3 的结果摘要与限制。
+- [x] `P6-NOISE-01` 实现 deterministic Gaussian noise；
+- [x] `P6-NOISE-02` 实现 deterministic salt-and-pepper noise；
+- [x] `P6-NOISE-03` 实现 deterministic pixel masking；
+- [x] `P6-NOISE-04` 使用稳定 hash 绑定 sample ID、type 和 severity；
+- [x] `P6-TEST-01` 测试相同 noise key 输出逐像素一致；
+- [x] `P6-TEST-02` 测试不同模型读取相同 noisy tensors；
+- [x] `P6-TEST-03` 测试输出始终在 `[0,1]`；
+- [x] `P6-RUN-01` 完成 Gaussian severity × model × seed 评估；
+- [x] `P6-RUN-02` 完成 salt-and-pepper 补充评估；
+- [x] `P6-RUN-03` 完成 pixel masking 补充评估；
+- [x] `P6-METRIC-01` 计算 noisy accuracy 与 macro-F1；
+- [x] `P6-METRIC-02` 计算 absolute/relative degradation；
+- [x] `P6-METRIC-03` 计算 clean/noisy representation cosine；
+- [x] `P6-METRIC-04` 计算 prediction JS divergence；
+- [x] `P6-METRIC-05` 分开计算 system/standardized reconstruction degradation；
+- [x] `P6-STAT-01` 汇总 seed-level paired degradation；
+- [x] `P6-FIG-01` 绘制 accuracy–severity curves；
+- [x] `P6-FIG-02` 绘制 representation-stability curves；
+- [x] `P6-NOTE-01` 写出 Q3 的结果摘要与限制。
 
 #### P6C — Stage 1C effective-rank metric audit（Q4 前置）
 
