@@ -1,0 +1,22 @@
+version: stage3-matched-controls-v1
+output_dir: results/formal/phase0_v1_1/stage3_matched_controls
+core_results_dir: results/formal/phase0_v1_1/stage3_core
+seeds: [0, 1, 2, 3, 4]
+methods: [random_hbb, random_rrb]
+pre_freeze_test_access_policy: validation_only
+post_freeze_test_access_policy: single_evaluation_per_checkpoint
+method_configs:
+  random_hbb: configs/experiments/stage3_matched/random_hbb.yaml
+  random_rrb: configs/experiments/stage3_matched/random_rrb.yaml
+contrasts:
+  HBB_minus_RBB:
+    left_core_method: hybrid_hbb
+    right_method: random_hbb
+  HHB_minus_RRB:
+    left_core_method: hybrid_hhb
+    right_method: random_rrb
+statistics:
+  bootstrap_seed: 2026
+  bootstrap_resamples: 10000
+  confidence_level: 0.95
+protocol_document: docs/stage3_formal_protocol_v1.md

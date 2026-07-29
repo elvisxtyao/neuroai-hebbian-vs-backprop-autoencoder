@@ -1,0 +1,13 @@
+extends: ../stage3_core/common.yaml
+
+results:
+  root: results/formal/phase0_v1_1/stage3_matched_controls/runs
+
+hybrid:
+  confirmation_stage: stage3_core
+  method_id: random_hbb
+  display_name: Random-BP-BP matched prefix control
+  encoder_layer_rules:
+    enc1: frozen
+    enc2: bp
+    enc3: bp
