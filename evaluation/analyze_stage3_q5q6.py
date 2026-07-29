@@ -96,6 +96,15 @@ def _require_complete(protocol: dict[str, Any]) -> dict[tuple[str, str], Path]:
                 and noise.get("all_components_unchanged") is True
             ),
         }
+        if sweep == "architecture":
+            update = _json(directory / "update_mechanisms" / "integrity.json")
+            checks["update_mechanisms"] = (
+                update.get("seed_count") == 5
+                and update.get("formal_update_rows") == 90
+                and update.get("all_source_files_unchanged") is True
+                and update.get("analysis_optimizer_steps") == 0
+                and update.get("test_samples_accessed") == 0
+            )
         if not all(checks.values()):
             raise RuntimeError(f"Incomplete {sweep}/{case}: {checks}")
     return directories
@@ -224,6 +233,39 @@ def _noise_rows(
         rows.extend(
             _typed(
                 _csv(directory / "noise" / "per_seed_condition_metrics.csv")
+            )
+        )
+    return rows
+
+
+def _update_rows(
+    directories: dict[tuple[str, str], Path],
+) -> list[dict[str, Any]]:
+    core_path = (
+        ROOT
+        / "results"
+        / "formal"
+        / "phase0_v1_1"
+        / "stage3_q4_updates"
+        / "per_seed_layer_update_metrics.csv"
+    )
+    rows = [
+        {"sweep": "architecture", "case": "balanced", **row}
+        for row in _typed(_csv(core_path))
+    ]
+    for case in ("early_heavy", "late_heavy"):
+        rows.extend(
+            {
+                "sweep": "architecture",
+                "case": case,
+                **row,
+            }
+            for row in _typed(
+                _csv(
+                    directories[("architecture", case)]
+                    / "update_mechanisms"
+                    / "per_seed_layer_update_metrics.csv"
+                )
             )
         )
     return rows
@@ -609,6 +651,7 @@ def run(protocol_path: str | Path) -> Path:
     performance = _performance_rows(protocol, directories)
     representation = _representation_rows(directories)
     noise = _noise_rows(directories)
+    updates = _update_rows(directories)
     performance_metrics = (
         "accuracy",
         "macro_f1",
@@ -654,6 +697,19 @@ def run(protocol_path: str | Path) -> Path:
         metrics=noise_metrics,
         group_extra=("noise_type",),
     )
+    update_metrics = (
+        "alignment",
+        "norm_ratio",
+        "alpha_star",
+        "scale_matched_bias",
+        "update_snr_linear",
+        "matched_bp_snr_linear",
+    )
+    update_summary = _summaries(
+        updates,
+        metrics=update_metrics,
+        group_extra=("layer", "rule"),
+    )
     performance_sensitivity, performance_relative = (
         _sensitivity_and_relative(
             performance_summary, metrics=performance_metrics
@@ -670,6 +726,11 @@ def run(protocol_path: str | Path) -> Path:
         noise_summary,
         metrics=noise_metrics,
         group_extra=("noise_type",),
+    )
+    update_sensitivity, update_relative = _sensitivity_and_relative(
+        update_summary,
+        metrics=update_metrics,
+        group_extra=("layer", "rule"),
     )
     interactions = []
     for sweep in ("dimension", "architecture"):
@@ -724,6 +785,39 @@ def run(protocol_path: str | Path) -> Path:
 
     compensation = _compensation(representation)
     architecture_cka = _architecture_cka(directories)
+    representation_lookup = {
+        (
+            row["case"],
+            row["seed"],
+            row["method"],
+            row["layer"],
+        ): row
+        for row in representation
+        if row["sweep"] == "architecture"
+    }
+    update_representation_join = []
+    for row in updates:
+        key = (row["case"], row["seed"], row["method"], row["layer"])
+        representation_row = representation_lookup[key]
+        update_representation_join.append(
+            {
+                "case": row["case"],
+                "seed": row["seed"],
+                "method": row["method"],
+                "layer": row["layer"],
+                "rule": row["rule"],
+                "alignment": row["alignment"],
+                "update_snr_linear": row["update_snr_linear"],
+                "winner_entropy": representation_row["winner_entropy"],
+                "winner_coverage_ratio": representation_row[
+                    "winner_coverage_ratio"
+                ],
+                "effective_rank": representation_row["effective_rank"],
+                "linear_probe_cv_accuracy": representation_row[
+                    "linear_probe_cv_accuracy"
+                ],
+            }
+        )
     _write_csv(output_dir / "performance_per_seed.csv", performance)
     _write_csv(output_dir / "performance_summary.csv", performance_summary)
     _write_csv(output_dir / "representation_per_seed_layer.csv", representation)
@@ -732,15 +826,21 @@ def run(protocol_path: str | Path) -> Path:
     )
     _write_csv(output_dir / "noise_severity_0_4_per_seed.csv", severe_noise)
     _write_csv(output_dir / "noise_severity_0_4_summary.csv", noise_summary)
+    _write_csv(output_dir / "architecture_update_per_seed.csv", updates)
+    _write_csv(output_dir / "architecture_update_summary.csv", update_summary)
     _write_csv(
         output_dir / "sensitivity.csv",
         performance_sensitivity
         + representation_sensitivity
-        + noise_sensitivity,
+        + noise_sensitivity
+        + update_sensitivity,
     )
     _write_csv(
         output_dir / "relative_to_baseline.csv",
-        performance_relative + representation_relative + noise_relative,
+        performance_relative
+        + representation_relative
+        + noise_relative
+        + update_relative,
     )
     _write_csv(output_dir / "interaction_tests.csv", interactions)
     _write_csv(
@@ -750,6 +850,10 @@ def run(protocol_path: str | Path) -> Path:
     _write_csv(output_dir / "compensation_metrics.csv", compensation)
     _write_csv(
         output_dir / "architecture_cross_case_cka.csv", architecture_cka
+    )
+    _write_csv(
+        output_dir / "architecture_update_representation_join.csv",
+        update_representation_join,
     )
     _plot_interactions(
         output_dir,
@@ -785,6 +889,11 @@ def run(protocol_path: str | Path) -> Path:
             "noise/integrity.json",
         )
     ]
+    source_files.extend(
+        directory / "update_mechanisms" / "integrity.json"
+        for (sweep, _), directory in directories.items()
+        if sweep == "architecture"
+    )
     write_json(
         output_dir,
         "integrity.json",
@@ -797,6 +906,8 @@ def run(protocol_path: str | Path) -> Path:
             "expected_representation_rows": 420,
             "severe_noise_rows": len(severe_noise),
             "expected_severe_noise_rows": 420,
+            "architecture_update_rows": len(updates),
+            "expected_architecture_update_rows": 270,
             "all_values_finite": all(
                 np.isfinite(float(row[metric]))
                 for row in performance

@@ -66,6 +66,51 @@ def test_final_bp_analysis_is_nonmutating(tmp_path: Path) -> None:
     )
 
 
+def test_final_bp_analysis_supports_asymmetric_encoder_widths(
+    tmp_path: Path,
+) -> None:
+    model = ConvAutoencoder(
+        latent_dim=4,
+        encoder_channels=[4, 7],
+        seed=3,
+    )
+    images = torch.rand(4, 1, 28, 28)
+    labels = torch.zeros(4, dtype=torch.long)
+    ids = torch.arange(4)
+    loader = DataLoader(TensorDataset(images, labels, ids), batch_size=2)
+    summary = analyze_bp_final(
+        model=model,
+        method="hybrid_hbb",
+        layer="enc2",
+        seed=3,
+        batch_ids=np.asarray([[0, 1], [2, 3]], dtype=np.int64),
+        loader=loader,
+        output_dir=tmp_path,
+        epsilon=1e-12,
+    )
+    assert summary["batch_count"] == 2
+    assert summary["analysis_optimizer_steps"] == 0
+
+
+def test_q6_update_protocols_freeze_case_paths_and_disable_core_correlations():
+    expected = {
+        "stage3_q6_update_early_heavy_v1.yaml": "early_heavy",
+        "stage3_q6_update_late_heavy_v1.yaml": "late_heavy",
+    }
+    for filename, case in expected.items():
+        protocol = yaml.safe_load(
+            (
+                ROOT / "configs" / "experiments" / filename
+            ).read_text(encoding="utf-8")
+        )
+        assert f"/architecture/{case}" in protocol[
+            "source_results_root"
+        ].replace("\\", "/")
+        assert protocol["seeds"] == [0, 1, 2, 3, 4]
+        assert protocol["data"]["batch_count"] == 50
+        assert protocol["analysis"]["exploratory_correlations"] is False
+
+
 def test_update_summary_uses_five_seed_dispersion() -> None:
     rows = []
     for seed in range(5):

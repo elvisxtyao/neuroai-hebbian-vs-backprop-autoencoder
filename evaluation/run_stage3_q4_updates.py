@@ -27,7 +27,7 @@ from evaluation.update_analysis import (
     snapshot_integrity_gate,
     update_snr,
 )
-from models import ConvAutoencoder
+from models import ConvAutoencoder, autoencoder_from_config
 from utils.checkpointing import atomic_torch_save, file_sha256, utc_now
 from utils.reproducibility import set_global_seed, state_dict_checksum
 
@@ -113,7 +113,7 @@ def train_reference_decoder(
         return read_json(summary_path)
 
     spec = config["reference_decoder"]
-    model = ConvAutoencoder(latent_dim=64, seed=seed)
+    model = autoencoder_from_config(config, seed=seed)
     model.encoder.load_state_dict(encoder_state)
     for parameter in model.encoder.parameters():
         parameter.requires_grad_(False)
@@ -567,10 +567,15 @@ def run(config_path: Path, *, stop_after_seed: int | None = None) -> Path:
     for seed in config["seeds"]:
         seed_dir = output_dir / f"seed_{seed}"
         seed_dir.mkdir(exist_ok=True)
-        initial = ConvAutoencoder(latent_dim=64, seed=seed).encoder.state_dict()
         states = {}
         source_files = {}
         hhh_dir = source_root / "runs" / f"seed_{seed}" / "full_hebbian"
+        hhh_config = yaml.safe_load(
+            (hhh_dir / "config_resolved.yaml").read_text(encoding="utf-8")
+        )
+        initial = autoencoder_from_config(
+            hhh_config, seed=seed
+        ).encoder.state_dict()
         for layer, spec in config["shared_hebbian_snapshots"].items():
             path = hhh_dir / spec["checkpoint"]
             states[f"{layer}_end"] = torch.load(
@@ -597,11 +602,9 @@ def run(config_path: Path, *, stop_after_seed: int | None = None) -> Path:
         if not snapshot_gate["gate_pass"]:
             raise RuntimeError(f"snapshot integrity failed for seed {seed}")
 
-        hhh_config = yaml.safe_load(
-            (hhh_dir / "config_resolved.yaml").read_text(encoding="utf-8")
-        )
         analysis_config = {
             **config,
+            "model": hhh_config["model"],
             "source": {
                 "seed": seed,
                 "snapshot_role": "formal_shared_hebbian_layer_end",
@@ -641,7 +644,7 @@ def run(config_path: Path, *, stop_after_seed: int | None = None) -> Path:
             resolved = yaml.safe_load(
                 (run_dir / "config_resolved.yaml").read_text(encoding="utf-8")
             )
-            model = ConvAutoencoder(latent_dim=64, seed=seed)
+            model = autoencoder_from_config(resolved, seed=seed)
             model.load_state_dict(
                 torch.load(
                     run_dir / "model_best.pt",
@@ -691,8 +694,9 @@ def run(config_path: Path, *, stop_after_seed: int | None = None) -> Path:
     summary = summarize_rows(rows)
     write_csv(output_dir / "per_seed_layer_update_metrics.csv", rows)
     write_csv(output_dir / "method_layer_update_summary.csv", summary)
-    correlations = exploratory_correlations(output_dir, rows)
-    write_csv(output_dir / "exploratory_correlations.csv", correlations)
+    if config["analysis"].get("exploratory_correlations", True):
+        correlations = exploratory_correlations(output_dir, rows)
+        write_csv(output_dir / "exploratory_correlations.csv", correlations)
     plot_summary(output_dir, summary)
     atomic_json(
         output_dir / "integrity.json",
