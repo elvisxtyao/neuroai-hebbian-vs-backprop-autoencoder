@@ -1,0 +1,81 @@
+version: stage3-q5q6-sweeps-v1
+output_dir: results/formal/phase0_v1_1/stage3_q5q6_sweeps
+seeds: [0, 1, 2, 3, 4]
+methods: [full_bp, full_hebbian, hybrid_hhb, hybrid_hbb]
+pre_freeze_test_access_policy: validation_only
+post_freeze_test_access_policy: single_evaluation_per_checkpoint
+bp_learning_rate: 0.003
+
+method_configs:
+  full_bp: configs/experiments/stage3_core/full_bp.yaml
+  full_hebbian: configs/experiments/stage3_core/full_hebbian.yaml
+  hybrid_hhb: configs/experiments/stage3_core/hybrid_hhb.yaml
+  hybrid_hbb: configs/experiments/stage3_core/hybrid_hbb.yaml
+
+dimension_cases:
+  L16:
+    latent_dim: 16
+    encoder_channels: [16, 32]
+    source: new_formal_run
+  L32:
+    latent_dim: 32
+    encoder_channels: [16, 32]
+    source: new_formal_run
+  L64:
+    latent_dim: 64
+    encoder_channels: [16, 32]
+    source: reuse_stage3_core
+  L128:
+    latent_dim: 128
+    encoder_channels: [16, 32]
+    source: new_formal_run
+
+architecture_cases:
+  early_heavy:
+    latent_dim: 64
+    encoder_channels: [64, 28]
+    expected_encoder_parameters: 104512
+    source: new_formal_run
+  balanced:
+    latent_dim: 64
+    encoder_channels: [16, 32]
+    expected_encoder_parameters: 105104
+    source: reuse_stage3_core
+  late_heavy:
+    latent_dim: 64
+    encoder_channels: [4, 33]
+    expected_encoder_parameters: 104712
+    source: new_formal_run
+
+reuse:
+  core_results_dir: results/formal/phase0_v1_1/stage3_core
+  core_case: L64_balanced
+  require_core_freeze_gate: PASS
+
+representation:
+  subset_manifest: results/formal/phase0_v1_1/stage3_q2_representation/mnist_test_representation_seed17_v1.npz
+  subset_size: 2000
+  samples_per_class: 200
+  subset_seed: 17
+
+noise:
+  noise_seed: 2026
+  gaussian: [0.0, 0.1, 0.2, 0.3, 0.4]
+  salt_pepper: [0.0, 0.1, 0.2, 0.3, 0.4]
+  pixel_masking: [0.0, 0.1, 0.2, 0.3, 0.4]
+
+statistics:
+  bootstrap_seed: 2026
+  bootstrap_resamples: 10000
+  confidence_level: 0.95
+
+stopping:
+  performance_gate: none
+  stop_only_for:
+    - nonfinite_metrics
+    - pairing_failure
+    - checksum_failure
+    - resume_failure
+    - artifact_incompleteness
+
+protocol_document: docs/stage3_formal_protocol_v1.md

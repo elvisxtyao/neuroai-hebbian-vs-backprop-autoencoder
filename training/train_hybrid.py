@@ -16,7 +16,7 @@ from torch import nn
 
 from data.mnist import build_mnist_dataloaders
 from learning_rules.hebbian import HebbianTrainer
-from models import ConvAutoencoder
+from models import ConvAutoencoder, autoencoder_from_config
 from schemas import load_config, validate_config
 from utils.checkpointing import (
     config_fingerprint,
@@ -234,13 +234,21 @@ def train_hybrid_config(
     allowed_seeds = (
         {43, 44}
         if confirmation_stage == "stage2d"
-        else ({0, 1, 2, 3, 4} if confirmation_stage == "stage3_core" else {42})
+        else (
+            {0, 1, 2, 3, 4}
+            if confirmation_stage in {"stage3_core", "stage3_sweep"}
+            else {42}
+        )
     )
     if seed not in allowed_seeds:
         stage_name = (
             "Stage 2D"
             if confirmation_stage == "stage2d"
-            else ("Stage 3" if confirmation_stage == "stage3_core" else "Stage 2C")
+            else (
+                "Stage 3"
+                if confirmation_stage in {"stage3_core", "stage3_sweep"}
+                else "Stage 2C"
+            )
         )
         raise ValueError(
             f"{stage_name} hybrid training requires one of "
@@ -256,7 +264,7 @@ def train_hybrid_config(
     run_dir = Path(run_dir)
     layer_rules = dict(config["hybrid"]["encoder_layer_rules"])
     hebbian_layers = [layer for layer in LAYERS if layer_rules[layer] == "hebbian"]
-    model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed).to(device)
+    model = autoencoder_from_config(config, seed=seed).to(device)
     hebbian = HebbianTrainer(model, config, device)
     payload: dict[str, Any] | None = None
 

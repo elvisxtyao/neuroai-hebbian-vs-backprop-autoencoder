@@ -8,17 +8,41 @@ import torch
 from torch import nn
 
 
+def _validate_encoder_channels(
+    encoder_channels: tuple[int, int] | list[int],
+) -> tuple[int, int]:
+    if len(encoder_channels) != 2:
+        raise ValueError("encoder_channels must contain exactly two values")
+    channels = tuple(int(value) for value in encoder_channels)
+    if any(value <= 0 for value in channels):
+        raise ValueError("encoder_channels must be positive")
+    return channels
+
+
 class ConvEncoder(nn.Module):
     """Three learnable convolutions mapping MNIST to ``B x L x 1 x 1``."""
 
-    def __init__(self, latent_dim: int = 64) -> None:
+    def __init__(
+        self,
+        latent_dim: int = 64,
+        *,
+        encoder_channels: tuple[int, int] | list[int] = (16, 32),
+    ) -> None:
         super().__init__()
         if latent_dim <= 0:
             raise ValueError("latent_dim must be positive")
+        hidden1, hidden2 = _validate_encoder_channels(encoder_channels)
         self.latent_dim = latent_dim
-        self.enc1 = nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1, bias=False)
-        self.enc2 = nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1, bias=False)
-        self.enc3 = nn.Conv2d(32, latent_dim, kernel_size=7, stride=1, padding=0, bias=False)
+        self.encoder_channels = (hidden1, hidden2)
+        self.enc1 = nn.Conv2d(
+            1, hidden1, kernel_size=3, stride=2, padding=1, bias=False
+        )
+        self.enc2 = nn.Conv2d(
+            hidden1, hidden2, kernel_size=3, stride=2, padding=1, bias=False
+        )
+        self.enc3 = nn.Conv2d(
+            hidden2, latent_dim, kernel_size=7, stride=1, padding=0, bias=False
+        )
         self.activation = nn.ReLU()
 
     def forward_features(self, x: torch.Tensor) -> OrderedDict[str, torch.Tensor]:
@@ -39,18 +63,25 @@ class ConvEncoder(nn.Module):
 class ConvDecoder(nn.Module):
     """Three transposed convolutions reconstructing ``B x 1 x 28 x 28``."""
 
-    def __init__(self, latent_dim: int = 64) -> None:
+    def __init__(
+        self,
+        latent_dim: int = 64,
+        *,
+        encoder_channels: tuple[int, int] | list[int] = (16, 32),
+    ) -> None:
         super().__init__()
         if latent_dim <= 0:
             raise ValueError("latent_dim must be positive")
+        hidden1, hidden2 = _validate_encoder_channels(encoder_channels)
+        self.encoder_channels = (hidden1, hidden2)
         self.dec1 = nn.ConvTranspose2d(
-            latent_dim, 32, kernel_size=7, stride=1, padding=0, bias=True
+            latent_dim, hidden2, kernel_size=7, stride=1, padding=0, bias=True
         )
         self.dec2 = nn.ConvTranspose2d(
-            32, 16, kernel_size=4, stride=2, padding=1, bias=True
+            hidden2, hidden1, kernel_size=4, stride=2, padding=1, bias=True
         )
         self.dec3 = nn.ConvTranspose2d(
-            16, 1, kernel_size=4, stride=2, padding=1, bias=True
+            hidden1, 1, kernel_size=4, stride=2, padding=1, bias=True
         )
         self.activation = nn.ReLU()
         self.output_activation = nn.Sigmoid()
@@ -67,11 +98,22 @@ class ConvDecoder(nn.Module):
 class ConvAutoencoder(nn.Module):
     """Shared forward model; learning rules live outside this module."""
 
-    def __init__(self, latent_dim: int = 64, *, seed: int | None = None) -> None:
+    def __init__(
+        self,
+        latent_dim: int = 64,
+        *,
+        encoder_channels: tuple[int, int] | list[int] = (16, 32),
+        seed: int | None = None,
+    ) -> None:
         super().__init__()
         self.latent_dim = latent_dim
-        self.encoder = ConvEncoder(latent_dim)
-        self.decoder = ConvDecoder(latent_dim)
+        self.encoder_channels = _validate_encoder_channels(encoder_channels)
+        self.encoder = ConvEncoder(
+            latent_dim, encoder_channels=self.encoder_channels
+        )
+        self.decoder = ConvDecoder(
+            latent_dim, encoder_channels=self.encoder_channels
+        )
         if seed is not None:
             self.initialize(seed)
 
@@ -106,12 +148,14 @@ class ConvAutoencoder(nn.Module):
         return self.reconstruct(x)
 
     def architecture_metadata(self) -> dict[str, object]:
+        hidden1, hidden2 = self.encoder_channels
         return {
             "architecture": "conv3_ae_v1",
+            "encoder_channels": [hidden1, hidden2],
             "latent_dim": self.latent_dim,
             "encoder_shapes": {
-                "h1": [16, 14, 14],
-                "h2": [32, 7, 7],
+                "h1": [hidden1, 14, 14],
+                "h2": [hidden2, 7, 7],
                 "z": [self.latent_dim, 1, 1],
             },
             "parameter_count": sum(parameter.numel() for parameter in self.parameters()),
@@ -123,3 +167,17 @@ class ConvAutoencoder(nn.Module):
             ),
         }
 
+
+def autoencoder_from_config(
+    config: dict[str, object], *, seed: int | None = None
+) -> ConvAutoencoder:
+    """Construct the shared model from the frozen model-config fields."""
+
+    model_config = config["model"]
+    if not isinstance(model_config, dict):
+        raise TypeError("config.model must be a mapping")
+    return ConvAutoencoder(
+        int(model_config["latent_dim"]),
+        encoder_channels=model_config["encoder_channels"],
+        seed=seed,
+    )

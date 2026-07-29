@@ -21,7 +21,7 @@ from data.mnist import build_mnist_dataloaders
 from evaluation.analyze_stage3_q1 import bootstrap_mean_ci
 from evaluation.deterministic_noise import apply_deterministic_noise
 from evaluation.metrics import classification_metrics
-from models import ConvAutoencoder, LinearProbe
+from models import ConvAutoencoder, LinearProbe, autoencoder_from_config
 from schemas import load_config
 from utils.checkpointing import file_sha256, utc_now
 from utils.reproducibility import state_dict_checksum
@@ -67,11 +67,11 @@ def tensor_sha256(tensor: torch.Tensor) -> str:
 def load_components(run_dir: Path, config: dict):
     seed = int(config["training"]["seed"])
     latent_dim = int(config["model"]["latent_dim"])
-    system = ConvAutoencoder(latent_dim, seed=seed)
+    system = autoencoder_from_config(config, seed=seed)
     system.load_state_dict(
         torch.load(run_dir / "model_best.pt", map_location="cpu", weights_only=True)
     )
-    standardized = ConvAutoencoder(latent_dim, seed=seed)
+    standardized = autoencoder_from_config(config, seed=seed)
     standardized.load_state_dict(system.state_dict())
     standardized.decoder.load_state_dict(
         torch.load(

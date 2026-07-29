@@ -105,13 +105,31 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("phase0-v1 split sizes must be 50000/10000/10000")
     if config["model"]["architecture"] != "conv3_ae_v1":
         raise ConfigError("phase0-v1 architecture must be conv3_ae_v1")
-    if config["model"]["encoder_channels"] != [16, 32]:
-        raise ConfigError("phase0-v1 hidden encoder channels must be [16, 32]")
+    encoder_channels = config["model"]["encoder_channels"]
+    if (
+        not isinstance(encoder_channels, list)
+        or len(encoder_channels) != 2
+        or any(
+            not isinstance(value, int) or isinstance(value, bool) or value <= 0
+            for value in encoder_channels
+        )
+    ):
+        raise ConfigError(
+            "model.encoder_channels must contain two positive integers"
+        )
     if config["model"]["target_clamping"] is not False:
         raise ConfigError("Target clamping is forbidden in the main experiment")
     if config["training"]["learning_rule"] not in {"bp", "hebbian", "hybrid"}:
         raise ConfigError(
             "training.learning_rule must be 'bp', 'hebbian' or 'hybrid'"
+        )
+    if encoder_channels != [16, 32] and (
+        config["training"]["learning_rule"] != "hybrid"
+        or config.get("hybrid", {}).get("confirmation_stage") != "stage3_sweep"
+    ):
+        raise ConfigError(
+            "non-balanced encoder channels are reserved for "
+            "the frozen Stage 3 sweep"
         )
     if config["training"]["learning_rule"] == "hybrid":
         hybrid = _require(config, "hybrid")
@@ -139,7 +157,11 @@ def validate_config(config: dict[str, Any]) -> None:
                 )
         confirmation_stage = hybrid.get("confirmation_stage")
         if confirmation_stage is not None:
-            if confirmation_stage not in {"stage2d", "stage3_core"}:
+            if confirmation_stage not in {
+                "stage2d",
+                "stage3_core",
+                "stage3_sweep",
+            }:
                 raise ConfigError("Unsupported hybrid confirmation stage")
             allowed_seeds = (
                 {43, 44}
@@ -147,9 +169,21 @@ def validate_config(config: dict[str, Any]) -> None:
                 else {0, 1, 2, 3, 4}
             )
             if config["training"].get("seed") not in allowed_seeds:
-                stage = "Stage 2D" if confirmation_stage == "stage2d" else "Stage 3"
+                stage = (
+                    "Stage 2D"
+                    if confirmation_stage == "stage2d"
+                    else "Stage 3"
+                )
                 raise ConfigError(
                     f"{stage} seed must be one of {sorted(allowed_seeds)}"
+                )
+            if (
+                encoder_channels != [16, 32]
+                and confirmation_stage != "stage3_sweep"
+            ):
+                raise ConfigError(
+                    "non-balanced encoder channels are reserved for "
+                    "the frozen Stage 3 sweep"
                 )
             if config["backprop"]["lr"] != 0.003:
                 raise ConfigError("Formal Hybrid runs freeze BP learning rate at 0.003")

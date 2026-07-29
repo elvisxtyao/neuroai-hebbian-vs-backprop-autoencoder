@@ -14,7 +14,7 @@ import torchvision
 from torch import nn
 
 from data.mnist import build_mnist_dataloaders
-from models import ConvAutoencoder
+from models import ConvAutoencoder, autoencoder_from_config
 from schemas import load_config, validate_config
 from utils.checkpointing import (
     file_sha256,
@@ -137,7 +137,7 @@ def train_standardized_decoder_config(
     if "test" in loaders:
         raise RuntimeError("Standardized decoder must not construct a test loader")
 
-    paired_model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed)
+    paired_model = autoencoder_from_config(config, seed=seed)
     source_state = torch.load(
         source_checkpoint, map_location="cpu", weights_only=True
     )

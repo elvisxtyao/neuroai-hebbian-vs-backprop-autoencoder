@@ -1335,16 +1335,16 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 #### P8 — Q5/Q6 dimension 与 asymmetry
 
-- [ ] `P8-DIM-01` 生成 `L=[16,32,64,128]` configs；
-- [ ] `P8-DIM-02` 验证每个 config 的 bottleneck shape；
+- [x] `P8-DIM-01` 生成 `L=[16,32,64,128]` configs；
+- [x] `P8-DIM-02` 验证每个 config 的 bottleneck shape；
 - [ ] `P8-DIM-03` 运行 BBB/HHH/HHB/HBB dimension × seeds；
 - [ ] `P8-DIM-04` 在关键 dimensions 运行 RBB/RRB matched controls；
 - [ ] `P8-DIM-05` 汇总 clean/noisy/probe/separability/effective-rank；
-- [ ] `P8-ARCH-01` 创建 early-heavy config；
-- [ ] `P8-ARCH-02` 创建 balanced config；
-- [ ] `P8-ARCH-03` 创建 late-heavy config；
-- [ ] `P8-ARCH-04` 自动计算 encoder/decoder/total parameter counts；
-- [ ] `P8-ARCH-05` 断言 encoder parameter range/mean <1%；
+- [x] `P8-ARCH-01` 创建 early-heavy config；
+- [x] `P8-ARCH-02` 创建 balanced config；
+- [x] `P8-ARCH-03` 创建 late-heavy config；
+- [x] `P8-ARCH-04` 自动计算 encoder/decoder/total parameter counts；
+- [x] `P8-ARCH-05` 断言 encoder parameter range/mean <1%；
 - [ ] `P8-ARCH-06` 运行 BBB/HHH/HHB/HBB architecture × seeds；
 - [ ] `P8-ARCH-07` 在关键 architectures 运行 RBB/RRB matched controls；
 - [ ] `P8-METRIC-01` 计算每个 metric 的 relative-to-balanced change；

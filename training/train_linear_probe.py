@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from data.mnist import build_mnist_dataloaders
 from evaluation.metrics import classification_metrics
 from evaluation.representations import extract_representations
-from models import ConvAutoencoder, LinearProbe
+from models import ConvAutoencoder, LinearProbe, autoencoder_from_config
 from schemas import load_config, validate_config
 from utils.reproducibility import set_global_seed, state_dict_checksum
 from utils.results import append_metric, remove_metric_stages, write_json
@@ -74,7 +74,7 @@ def train_linear_probe_config(
     seed = int(config["training"]["seed"])
     set_global_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed)
+    model = autoencoder_from_config(config, seed=seed)
     model.load_state_dict(torch.load(checkpoint, map_location="cpu", weights_only=True))
     model.to(device)
     for parameter in model.encoder.parameters():

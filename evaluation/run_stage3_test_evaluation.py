@@ -15,7 +15,7 @@ from torch import nn
 
 from data.mnist import build_mnist_dataloaders
 from evaluation.metrics import classification_metrics
-from models import ConvAutoencoder, LinearProbe
+from models import ConvAutoencoder, LinearProbe, autoencoder_from_config
 from schemas import load_config
 from utils.reproducibility import state_dict_checksum
 from utils.results import write_json
@@ -48,11 +48,11 @@ def require_freeze_gate(results_root: Path) -> dict[str, Any]:
 def _load_frozen_components(run_dir: Path, config: dict[str, Any], device: torch.device):
     seed = int(config["training"]["seed"])
     latent_dim = int(config["model"]["latent_dim"])
-    system = ConvAutoencoder(latent_dim, seed=seed)
+    system = autoencoder_from_config(config, seed=seed)
     system.load_state_dict(
         torch.load(run_dir / "model_best.pt", map_location="cpu", weights_only=True)
     )
-    standardized = ConvAutoencoder(latent_dim, seed=seed)
+    standardized = autoencoder_from_config(config, seed=seed)
     standardized.load_state_dict(system.state_dict())
     standardized.decoder.load_state_dict(
         torch.load(
