@@ -672,10 +672,10 @@ seed 配对初始化、数据顺序、decoder/probe 初始化和 validation sele
 
 - [x] 对核心模型矩阵 `BBB/HHH/HHB/HBB/Full Random` 运行 5 个 paired seeds；
 - [x] 保存核心矩阵 encoder、system decoder、standardized decoder 与 probe 的逐 epoch/step 指标；
-- [ ] 报告 accuracy、macro-F1、CE、两种 reconstruction MSE、AULC、
+- [x] 报告 accuracy、macro-F1、CE、两种 reconstruction MSE、AULC、
   samples-to-threshold、samples seen 和 wall-clock；
-- [ ] 分开报告 encoder、decoder 与 probe 的学习预算；
-- [ ] 计算预注册 paired differences、effect sizes 与 bootstrap 95% CI；
+- [x] 分开报告 encoder、decoder 与 probe 的学习预算；
+- [x] 计算预注册 paired differences、effect sizes 与 bootstrap 95% CI；
 - [x] 核心矩阵每个冻结 run 只在 technical gate PASS 后读取 test 一次。
 
 主要 contrasts 按以下顺序解释：
@@ -1214,7 +1214,7 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 新矩阵的已完成 seed。
 
 - [x] `P4-MATRIX-01` 生成 BBB/HHH/HHB/HBB/Full-Random seeds 0–4 manifest；
-- [ ] `P4-MATRIX-02` 生成 RBB/RRB seeds 0–4 matched-control manifest；
+- [x] `P4-MATRIX-02` 生成 RBB/RRB seeds 0–4 matched-control manifest；
 - [x] `P4-RUN-01` 完成核心矩阵全部 encoder/representation training；
 - [x] `P4-RUN-02` 完成核心矩阵所有 frozen linear probes；
 - [x] `P4-RUN-03` 保存核心矩阵各方法 system reconstruction；
@@ -1227,11 +1227,11 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [x] `P4-METRIC-02` 分开汇总核心矩阵 system/standardized reconstruction MSE；
 - [x] `P4-METRIC-03` 汇总核心矩阵 encoder/decoder/probe dataset passes、samples seen 与 wall-clock；
 - [x] `P4-METRIC-04` 计算核心矩阵 epoch reconstruction AULC；samples/wall-clock 已保存供后续曲线分析；
-- [ ] `P4-STAT-01` 输出五个预注册 paired contrasts；
-- [ ] `P4-STAT-02` 计算 mean±SD、effect size 和 paired bootstrap 95% CI；
-- [ ] `P4-FIG-01` 绘制 learning curves 与 Hebbian-depth dose plot；
+- [x] `P4-STAT-01` 输出五个预注册 paired contrasts；
+- [x] `P4-STAT-02` 计算 mean±SD、effect size 和 paired bootstrap 95% CI；
+- [x] `P4-FIG-01` 绘制 learning curves 与 Hebbian-depth dose plot；
 - [x] `P4-TABLE-01` 生成核心 clean performance 与双 reconstruction 主表；
-- [x] `P4-NOTE-01` 写出核心 Q1 结论、限制及 Hybrid 非纯 Hebbian声明；RBB/RRB 结论仍待完成。
+- [x] `P4-NOTE-01` 写出完整 Q1 结论、限制、Hybrid 非纯 Hebbian 声明与 RBB/RRB matched-prefix attribution。
 
 #### P5 — Q2 layerwise representation
 
