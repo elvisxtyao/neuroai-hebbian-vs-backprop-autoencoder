@@ -1,0 +1,24 @@
+version: stage3-q3-noise-v1
+source_protocol: docs/stage3_formal_protocol_v1.md
+source_results_root: results/formal/phase0_v1_1/stage3_core
+output_dir: results/formal/phase0_v1_1/stage3_q3_noise
+seeds: [0, 1, 2, 3, 4]
+methods:
+  full_bp: BBB
+  full_hebbian: HHH
+  hybrid_hhb: HHB
+  hybrid_hbb: HBB
+data:
+  split: official_test
+  root: data/raw
+  batch_size: 128
+noise:
+  seed: 2026
+  types: [gaussian, salt_pepper, pixel_masking]
+  severities: [0.0, 0.1, 0.2, 0.3, 0.4]
+  salt_probability: 0.5
+  reconstruction_target: clean_image
+statistics:
+  bootstrap_seed: 2026
+  bootstrap_resamples: 10000
+  confidence_level: 0.95
