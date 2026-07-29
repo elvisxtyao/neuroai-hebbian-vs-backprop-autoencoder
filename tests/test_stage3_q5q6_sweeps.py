@@ -8,6 +8,10 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from models import ConvAutoencoder, autoencoder_from_config
 from evaluation.run_stage3_q5q6_test import _summarize
+from evaluation.analyze_stage3_q5q6 import (
+    _interaction_test,
+    _sensitivity_and_relative,
+)
 from schemas import ConfigError, validate_config
 from training.run_stage3_q5q6_sweeps import (
     METHODS,
@@ -244,3 +248,54 @@ def test_sweep_test_summary_uses_paired_seed_differences():
         ]
         == [1.0] * 5
     )
+
+
+def test_sensitivity_is_relative_to_frozen_baseline():
+    summary = [
+        {
+            "sweep": "architecture",
+            "case": case,
+            "method": "HHH",
+            "accuracy_mean": value,
+        }
+        for case, value in (
+            ("early_heavy", 0.6),
+            ("balanced", 0.8),
+            ("late_heavy", 0.7),
+        )
+    ]
+    sensitivity, relative = _sensitivity_and_relative(
+        summary, metrics=("accuracy",)
+    )
+    assert sensitivity[0]["baseline_case"] == "balanced"
+    assert sensitivity[0]["sensitivity"] == pytest.approx(0.25)
+    indexed = {row["case"]: row for row in relative}
+    assert indexed["early_heavy"]["relative_change"] == pytest.approx(-0.25)
+
+
+def test_interaction_test_detects_method_specific_case_response():
+    rows = []
+    for seed in SEEDS:
+        for case_index, case in enumerate(
+            ("early_heavy", "balanced", "late_heavy")
+        ):
+            for method_index, method in enumerate(
+                ("BBB", "HHH", "HHB", "HBB")
+            ):
+                rows.append(
+                    {
+                        "sweep": "architecture",
+                        "case": case,
+                        "seed": seed,
+                        "method": method,
+                        "metric": (
+                            0.01 * seed
+                            + 0.1 * case_index
+                            + 0.05 * method_index
+                            + 0.2 * case_index * method_index
+                        ),
+                    }
+                )
+    result = _interaction_test(rows, "metric")
+    assert result["numerator_df"] == 6
+    assert result["p_value"] < 1e-6
