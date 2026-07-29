@@ -1328,10 +1328,10 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 - [x] `P7-METRIC-05` 分别计算 Hebbian/BP SNR；
 - [x] `P7-METRIC-06` 按 layer 与 snapshot 汇总不确定性；
 - [x] `P7-FIG-01` 绘制 alignment/norm/bias/SNR panels；
-- [ ] `P7-CORR-01` 与 accuracy/separability/robustness 做探索性相关分析；
+- [x] `P7-CORR-01` 与 accuracy/separability/robustness 做探索性相关分析；
 - [x] `P7-NOTE-01` 写出 seed-42 failure-case Q4 结果并避免因果措辞。
-- [ ] `P7-HYBRID-01` 在正式 paired seeds 上分析 HHB/HBB rule boundaries；
-- [ ] `P7-HYBRID-02` 与 BBB/HHH matched snapshots 做逐层比较；
+- [x] `P7-HYBRID-01` 在正式 paired seeds 上分析 HHB/HBB rule boundaries；
+- [x] `P7-HYBRID-02` 与 BBB/HHH matched snapshots 做逐层比较；
 
 #### P8 — Q5/Q6 dimension 与 asymmetry
 
