@@ -14,7 +14,10 @@ $resultsRoot = "D:\Microlearning\results\formal\phase0_v1_1\stage3_q5q6_sweeps"
 $logRoot = "D:\Microlearning\results"
 $statusPath = Join-Path $logRoot "stage3_remaining_orchestrator_status.json"
 $analysisSourceCommit = (
-    & git -C $analysisRoot rev-parse HEAD
+    & git `
+        -c "safe.directory=$($analysisRoot.Replace('\', '/'))" `
+        -C $analysisRoot `
+        rev-parse HEAD
 ).Trim()
 
 function Write-Status {
