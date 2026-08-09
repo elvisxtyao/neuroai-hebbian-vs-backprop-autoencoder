@@ -1,3 +1,4 @@
+import csv
 from copy import deepcopy
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from evaluation.analyze_stage3_q5q6 import (
     _interaction_test,
     _join_updates_to_representations,
     _sensitivity_and_relative,
+    _write_csv,
 )
 from schemas import ConfigError, validate_config
 from training.run_stage3_q5q6_sweeps import (
@@ -331,3 +333,21 @@ def test_update_representation_join_maps_encoder_to_activation_layer():
     assert joined[0]["layer"] == "enc2"
     assert joined[0]["representation_layer"] == "h2"
     assert joined[0]["effective_rank"] == 2.0
+
+
+def test_write_csv_supports_heterogeneous_aggregate_rows(tmp_path):
+    path = tmp_path / "heterogeneous.csv"
+    _write_csv(
+        path,
+        [
+            {"domain": "performance", "metric": "accuracy"},
+            {"domain": "representation", "layer": "z"},
+            {"domain": "noise", "noise_type": "gaussian"},
+        ],
+    )
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert list(rows[0]) == ["domain", "metric", "layer", "noise_type"]
+    assert rows[0]["layer"] == ""
+    assert rows[1]["layer"] == "z"
+    assert rows[2]["noise_type"] == "gaussian"

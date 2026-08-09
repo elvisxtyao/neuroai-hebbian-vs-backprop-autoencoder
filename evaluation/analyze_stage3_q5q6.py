@@ -48,8 +48,14 @@ def _csv(path: Path) -> list[dict[str, str]]:
 def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         raise ValueError(f"Cannot write empty table: {path}")
+    # Some aggregate tables intentionally concatenate rows from different
+    # metric domains (performance, representation, noise, and updates).  Use
+    # the union of their fields while preserving first-seen column order.
+    fieldnames = list(
+        dict.fromkeys(key for row in rows for key in row)
+    )
     with path.open("x", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
