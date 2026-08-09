@@ -16,7 +16,7 @@ from torch import nn
 
 from data.mnist import build_mnist_dataloaders
 from learning_rules import build_trainer
-from models import ConvAutoencoder
+from models import ConvAutoencoder, autoencoder_from_config
 from schemas import load_config, validate_config
 from utils.checkpointing import (
     config_fingerprint,
@@ -580,7 +580,7 @@ def train_config(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if loaders is None:
         loaders = build_mnist_dataloaders(config, seed=seed, include_test=False)
-    model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed)
+    model = autoencoder_from_config(config, seed=seed)
     trainer = build_trainer(model, config, device)
 
     resume_payload = None

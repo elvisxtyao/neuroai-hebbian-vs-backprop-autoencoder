@@ -105,12 +105,104 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("phase0-v1 split sizes must be 50000/10000/10000")
     if config["model"]["architecture"] != "conv3_ae_v1":
         raise ConfigError("phase0-v1 architecture must be conv3_ae_v1")
-    if config["model"]["encoder_channels"] != [16, 32]:
-        raise ConfigError("phase0-v1 hidden encoder channels must be [16, 32]")
+    encoder_channels = config["model"]["encoder_channels"]
+    if (
+        not isinstance(encoder_channels, list)
+        or len(encoder_channels) != 2
+        or any(
+            not isinstance(value, int) or isinstance(value, bool) or value <= 0
+            for value in encoder_channels
+        )
+    ):
+        raise ConfigError(
+            "model.encoder_channels must contain two positive integers"
+        )
     if config["model"]["target_clamping"] is not False:
         raise ConfigError("Target clamping is forbidden in the main experiment")
-    if config["training"]["learning_rule"] not in {"bp", "hebbian"}:
-        raise ConfigError("training.learning_rule must be 'bp' or 'hebbian'")
+    if config["training"]["learning_rule"] not in {"bp", "hebbian", "hybrid"}:
+        raise ConfigError(
+            "training.learning_rule must be 'bp', 'hebbian' or 'hybrid'"
+        )
+    if encoder_channels != [16, 32] and (
+        config["training"]["learning_rule"] != "hybrid"
+        or config.get("hybrid", {}).get("confirmation_stage") != "stage3_sweep"
+    ):
+        raise ConfigError(
+            "non-balanced encoder channels are reserved for "
+            "the frozen Stage 3 sweep"
+        )
+    if config["training"]["learning_rule"] == "hybrid":
+        hybrid = _require(config, "hybrid")
+        layer_rules = hybrid.get("encoder_layer_rules")
+        if not isinstance(layer_rules, dict) or set(layer_rules) != {
+            "enc1",
+            "enc2",
+            "enc3",
+        }:
+            raise ConfigError(
+                "hybrid.encoder_layer_rules must define enc1/enc2/enc3"
+            )
+        if not set(layer_rules.values()).issubset({"hebbian", "bp", "frozen"}):
+            raise ConfigError(
+                "hybrid layer rules must be hebbian, bp or frozen"
+            )
+        seen_bp = False
+        for layer in ("enc1", "enc2", "enc3"):
+            rule = layer_rules[layer]
+            if rule == "bp":
+                seen_bp = True
+            elif rule == "hebbian" and seen_bp:
+                raise ConfigError(
+                    "hybrid Hebbian layers must precede BP layers"
+                )
+        confirmation_stage = hybrid.get("confirmation_stage")
+        if confirmation_stage is not None:
+            if confirmation_stage not in {
+                "stage2d",
+                "stage3_core",
+                "stage3_sweep",
+            }:
+                raise ConfigError("Unsupported hybrid confirmation stage")
+            allowed_seeds = (
+                {43, 44}
+                if confirmation_stage == "stage2d"
+                else {0, 1, 2, 3, 4}
+            )
+            if config["training"].get("seed") not in allowed_seeds:
+                stage = (
+                    "Stage 2D"
+                    if confirmation_stage == "stage2d"
+                    else "Stage 3"
+                )
+                raise ConfigError(
+                    f"{stage} seed must be one of {sorted(allowed_seeds)}"
+                )
+            if (
+                encoder_channels != [16, 32]
+                and confirmation_stage != "stage3_sweep"
+            ):
+                raise ConfigError(
+                    "non-balanced encoder channels are reserved for "
+                    "the frozen Stage 3 sweep"
+                )
+            if config["backprop"]["lr"] != 0.003:
+                raise ConfigError("Formal Hybrid runs freeze BP learning rate at 0.003")
+            if config["hebbian"]["lr"] != 0.0005:
+                raise ConfigError("Formal Hybrid runs freeze Hebbian learning rate at 0.0005")
+            if config["hebbian"]["winner_fraction"] != 0.10:
+                raise ConfigError("Formal Hybrid runs freeze winner_fraction at 0.10")
+            standardized = _require(config, "standardized_decoder")
+            expected_standardized = {
+                "optimizer": "adam",
+                "lr": 0.003,
+                "betas": [0.9, 0.999],
+                "weight_decay": 0.0,
+                "epochs": 10,
+                "loss": "mse_pixel_mean",
+                "validation_selection": "min_reconstruction_mse",
+            }
+            if standardized != expected_standardized:
+                raise ConfigError("Formal standardized-decoder protocol changed")
     if config["training"]["paired_seeds"] != [0, 1, 2, 3, 4]:
         raise ConfigError("phase0-v1 paired seeds must be [0,1,2,3,4]")
     if config["data"]["batch_size"] != config["training"]["batch_size"]:
@@ -134,6 +226,11 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ConfigError("hebbian.competition_epsilon must be positive")
     if not isinstance(config["hebbian"].get("center_inputs", False), bool):
         raise ConfigError("hebbian.center_inputs must be boolean")
+    update_centering = config["hebbian"].get("update_centering", "none")
+    if update_centering not in {"none", "output_filters"}:
+        raise ConfigError(
+            "hebbian.update_centering must be none or output_filters"
+        )
 
     if config["version"] == "phase0-v1.1":
         protocol = _require(config, "protocol")

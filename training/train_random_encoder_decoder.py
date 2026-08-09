@@ -22,7 +22,7 @@ from evaluation.compare_reconstructions import (
     reconstruct_selected,
     select_stratified_samples,
 )
-from models import ConvAutoencoder
+from models import ConvAutoencoder, autoencoder_from_config
 from schemas import load_config, validate_config
 from utils.checkpointing import (
     config_fingerprint,
@@ -63,7 +63,7 @@ def _validation_loss(model, loader, criterion, device) -> tuple[float, int]:
 
 
 def _load_model(path: Path, config: dict, device) -> ConvAutoencoder:
-    model = ConvAutoencoder(config["model"]["latent_dim"])
+    model = autoencoder_from_config(config)
     model.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
     return model.to(device).eval()
 
@@ -129,7 +129,7 @@ def _analyze(
         map_location="cpu",
         weights_only=False,
     )
-    initial_model = ConvAutoencoder(config["model"]["latent_dim"])
+    initial_model = autoencoder_from_config(config)
     initial_model.load_state_dict(initial_payload["model_state_dict"])
     initial_model = initial_model.to(device).eval()
     models: dict[str, ConvAutoencoder] = {
@@ -237,7 +237,7 @@ def train_random_decoder_config(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if loaders is None:
         loaders = build_mnist_dataloaders(config, seed=seed, download=False)
-    model = ConvAutoencoder(config["model"]["latent_dim"], seed=seed).to(device)
+    model = autoencoder_from_config(config, seed=seed).to(device)
     for parameter in model.encoder.parameters():
         parameter.requires_grad_(False)
     for parameter in model.decoder.parameters():

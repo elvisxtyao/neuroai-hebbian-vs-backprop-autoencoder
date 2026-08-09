@@ -1,0 +1,10 @@
+extends: common.yaml
+
+hybrid:
+  method_id: hybrid_hhb
+  display_name: Hybrid-HHB
+  candidate_status: confirmed_rank_repair_unresolved_reconstruction
+  encoder_layer_rules:
+    enc1: hebbian
+    enc2: hebbian
+    enc3: bp

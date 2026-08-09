@@ -1,6 +1,9 @@
-# NeuroAI BP–Hebbian Shared Skeleton
+# Comparing Backpropagation, Hebbian Learning, and Minimal Hybrid Credit Assignment
 
-Shared Phase 0 framework for comparing backpropagation and explicit local Hebbian learning in a 3-layer convolutional autoencoder on MNIST.
+Shared three-layer convolutional-autoencoder framework for comparing Full BP,
+Full Hebbian, Hybrid-HHB/Hybrid-HBB, and matched random-prefix controls on
+MNIST. The three-layer encoder is held fixed while the number of
+Hebbian-trained layers changes from 0 to 3.
 
 The parent settings are in [PHASE0_STANDARD_V1.md](PHASE0_STANDARD_V1.md).
 Formal experiments use the versioned
@@ -16,7 +19,9 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
   formal experiment override, source snapshot, test policy, and artifact naming.
 - [environment/phase0_v1_1_environment.md](environment/phase0_v1_1_environment.md):
   exact CPU runtime, deterministic flags, split hash, dependencies, and test evidence.
-- [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): research questions, formulas, WBS, and acceptance criteria.
+- [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md): expanded Full
+  BP/Full Hebbian/Hybrid research questions, formal model matrix,
+  reconstruction controls, WBS, and acceptance criteria.
 - [docs/tutorial_migration.md](docs/tutorial_migration.md): source provenance and notebook-to-module migration boundary.
 - [docs/phase0_team_confirmation.md](docs/phase0_team_confirmation.md): pending BP teammate compliance evidence.
 - [docs/validation_tuning.md](docs/validation_tuning.md): formal seed-42 validation-only search and frozen configs.
@@ -34,6 +39,29 @@ is in [HEBBIAN_PROJECT_PLAN.md](HEBBIAN_PROJECT_PLAN.md).
 - [docs/q4_update_mechanism_seed42.md](docs/q4_update_mechanism_seed42.md):
   completed seed-42 frozen-snapshot Q4 tooling gate, update definitions,
   integrity evidence, results, and single-failure-case limitations.
+- [docs/output_filter_centering_mechanism.md](docs/output_filter_centering_mechanism.md):
+  notebook audit and the finite validation-only output-filter update-centering
+  experiment; the sole candidate failed both frozen gates.
+- [docs/hebbian_failure_case_protocol_addendum.md](docs/hebbian_failure_case_protocol_addendum.md):
+  Branch-D restrictions after common-mode removal failed to repair the model.
+- [docs/hybrid_depth_ablation_protocol.md](docs/hybrid_depth_ablation_protocol.md):
+  preregistered validation-only Hybrid-HHB/Hybrid-HBB depth-ablation contract.
+- [docs/hybrid_depth_ablation_results.md](docs/hybrid_depth_ablation_results.md):
+  completed seed-42 depth-ablation metrics, Outcome D and candidate decision.
+- [docs/hybrid_hhb_confirmation_protocol.md](docs/hybrid_hhb_confirmation_protocol.md):
+  immutable Stage 2D seeds 43/44 confirmation gates, paired references, and
+  system-versus-standardized reconstruction contract.
+- [docs/hybrid_hhb_confirmation_results.md](docs/hybrid_hhb_confirmation_results.md):
+  completed two-seed validation result. HHB passed the accuracy and
+  representation gates in both seeds, but seed 43 failed the standardized
+  reconstruction gate; this historical decision is preserved by Stage 3 v1.
+- [docs/stage3_formal_protocol_v1.md](docs/stage3_formal_protocol_v1.md):
+  approved formal five-seed matrix. HHB enters as a rank-repair condition with
+  unresolved reconstruction stability; standardized reconstruction is a
+  measured outcome rather than an entry gate.
+- [docs/stage3_formal_core_results.md](docs/stage3_formal_core_results.md):
+  completed five-seed core matrix, technical freeze gate, one-time test table,
+  paired contrasts, learning budgets and remaining matched-control limits.
 
 Run directories, checkpoints, generated figures, and run-specific reports are
 local-only artifacts excluded by `.gitignore`. Reproducible protocols and
@@ -43,7 +71,7 @@ Formal runs must use `configs/formal/`, live below
 `results/formal/phase0_v1_1/`, and start from the immutable Git ref
 `phase0-v1.1-formal`. Existing `results/` runs remain preliminary.
 
-## Current seed-0 baseline
+## Historical seed-0 baseline
 
 Both runs use the same deterministic MNIST split, autoencoder architecture,
 initial model state and frozen linear-probe protocol.
@@ -59,10 +87,14 @@ seed-0 run also shows winner concentration at depth: the final active-neuron
 ratios are 100%, 46.88% and 20.31% for `enc1`, `enc2` and `enc3`. These are
 single-seed development results rather than final multi-seed conclusions.
 
-The Hebbian rule trains the encoder only. Its reconstruction decoder and
+The Full Hebbian rule trains the encoder only. Its reconstruction decoder and
 classification probe are trained with backpropagation after the encoder is
-frozen. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for current conclusions,
-limitations, and remaining gates.
+frozen. Hybrid-HHB and Hybrid-HBB additionally train an encoder BP suffix.
+Future reconstruction comparisons therefore report both the decoder produced
+by the actual system and a standardized decoder retrained from paired
+initialization after freezing the whole encoder. See
+[PROJECT_STATUS.md](PROJECT_STATUS.md) for current conclusions, limitations,
+and remaining gates.
 
 ## Setup
 
@@ -85,6 +117,34 @@ The smoke test uses synthetic inputs and does not download MNIST.
 
 The immutable Stage 0 full-suite record is
 `verification/phase0_v1_1/pytest_full.log`.
+
+## Stage 3 formal core matrix
+
+Stage 3 first runs validation-only representation training, the frozen linear
+probe and the paired standardized decoder. Running a selected seed is the
+recommended recoverable unit:
+
+```powershell
+python -m training.run_stage3_formal_core `
+  --config configs/experiments/stage3_formal_core_v1.yaml `
+  --seed 0
+```
+
+Omit `--seed` only when intentionally running the complete five-seed matrix.
+The pre-test freeze gate is written only after all 25 method/seed combinations
+are complete. This command does not construct the official test loader.
+
+The Stage 3 implementation test record is
+`verification/phase0_v1_1/stage3_formal_core_implementation_pytest.log`.
+The completed formal results are summarized in
+`docs/stage3_formal_core_results.md`. The one-time test evaluator is guarded by
+the saved technical freeze gate and refuses to run again when its output
+directory already exists:
+
+```powershell
+python -m evaluation.run_stage3_test_evaluation `
+  --results-root results/formal/phase0_v1_1/stage3_core
+```
 
 ## Stage 1 representation-health gate
 
@@ -130,6 +190,26 @@ python -m evaluation.run_q4_tooling `
 
 The immutable test record is
 `verification/phase0_v1_1/q4_tooling_pytest.log` (`62 passed in 16.70s`).
+
+The notebook-inspired output-filter update-centering candidate was then tested
+once at seed 42 without test-set access. It reduced validation accuracy from
+`0.9063` to `0.1944`, did not improve effective rank or winner coverage, and
+made the `enc3` update anti-aligned with the BP reference. It is rejected and
+does not replace the original Oja + WTA baseline. Reproduce the bounded run and
+comparison with:
+
+```powershell
+python -m training.run_stage1b `
+  --config configs/tuning/output_filter_centering_v1.yaml
+python -m evaluation.run_q4_tooling `
+  --config configs/experiments/q4_output_filter_centering_seed42_v1.yaml
+python -m evaluation.compare_output_filter_centering `
+  --config configs/experiments/output_filter_centering_comparison_v1.yaml
+```
+
+The corresponding full-suite record is
+`verification/phase0_v1_1/output_filter_centering_pytest.log`
+(`70 passed in 27.06s`).
 
 ## Generate the fixed MNIST split
 

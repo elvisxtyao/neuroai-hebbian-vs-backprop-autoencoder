@@ -12,6 +12,19 @@ from torch import nn
 from .base import RepresentationTrainer, images_from_batch
 
 
+def center_output_filter_updates(update: torch.Tensor) -> torch.Tensor:
+    """Remove the update direction shared across output filters.
+
+    Conv2d weights use ``[out_channels, in_channels, kernel_h, kernel_w]``.
+    Centering dimension 0 therefore reproduces the notebook's linear-layer
+    ``grad_weight - grad_weight.mean(axis=0)`` operation at filter level.
+    """
+
+    if update.ndim != 4:
+        raise ValueError("Conv2d update must be a four-dimensional tensor")
+    return update - update.mean(dim=0, keepdim=True)
+
+
 @dataclass(frozen=True)
 class HebbianBatchDiagnostics:
     update_norm: float
@@ -74,6 +87,7 @@ class CompetitiveOjaConv2d:
         competition_power: float = 1.0,
         competition_epsilon: float = 1e-6,
         center_inputs: bool = False,
+        update_centering: str = "none",
     ) -> None:
         if learning_rate < 0:
             raise ValueError("learning_rate must be non-negative")
@@ -88,6 +102,10 @@ class CompetitiveOjaConv2d:
             raise ValueError("competition_power must be positive")
         if competition_epsilon <= 0:
             raise ValueError("competition_epsilon must be positive")
+        if update_centering not in {"none", "output_filters"}:
+            raise ValueError(
+                "update_centering must be none or output_filters"
+            )
         self.learning_rate = learning_rate
         self.winner_fraction = winner_fraction
         self.normalization_epsilon = normalization_epsilon
@@ -95,6 +113,7 @@ class CompetitiveOjaConv2d:
         self.competition_power = competition_power
         self.competition_epsilon = competition_epsilon
         self.center_inputs = center_inputs
+        self.update_centering = update_centering
 
     def _competition_scores(self, post_activity: torch.Tensor) -> torch.Tensor:
         if self.competition_mode == "raw":
@@ -164,6 +183,13 @@ class CompetitiveOjaConv2d:
         oja_coefficient = winning_flat.square().sum(dim=(0, 2)) / denominator
         oja_term = oja_coefficient.view(-1, 1, 1, 1) * layer.weight
         delta_weight = hebbian_term - oja_term
+        if delta_weight.shape[0] != layer.out_channels:
+            raise RuntimeError("Conv2d output-filter dimension is not axis 0")
+        if self.update_centering == "output_filters":
+            # Center the complete raw Oja candidate before learning-rate
+            # scaling. ``apply_local_update`` remains responsible for scaling
+            # and the unchanged per-filter L2 normalization.
+            delta_weight = center_output_filter_updates(delta_weight)
 
         positive_winners = winner_mask & (post_activity > 0)
         winner_counts = positive_winners.sum(dim=(0, 2, 3)).detach().cpu()
@@ -216,6 +242,7 @@ class HebbianTrainer(RepresentationTrainer):
                     hebbian.get("competition_epsilon", 1e-6)
                 ),
                 center_inputs=bool(hebbian.get("center_inputs", False)),
+                update_centering=hebbian.get("update_centering", "none"),
             )
             for layer_name in self.layer_names
         }

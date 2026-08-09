@@ -6,6 +6,7 @@ from learning_rules.hebbian import (
     CompetitiveOjaConv2d,
     HebbianTrainer,
     assess_competition,
+    center_output_filter_updates,
 )
 from models import ConvAutoencoder
 from schemas import load_config
@@ -165,6 +166,70 @@ def test_centered_local_patches_remove_constant_input_component():
 
     torch.testing.assert_close(raw_delta, torch.tensor([[[[1.875]]]]))
     torch.testing.assert_close(centered_delta, torch.tensor([[[[-0.125]]]]))
+
+
+def test_output_filter_centering_removes_identical_updates():
+    common = torch.tensor([[[1.0, -2.0], [3.0, 4.0]]])
+    updates = common.unsqueeze(0).repeat(4, 1, 1, 1)
+
+    centered = center_output_filter_updates(updates)
+
+    torch.testing.assert_close(centered, torch.zeros_like(centered))
+
+
+def test_output_filter_centering_preserves_filter_specific_residuals():
+    common = torch.tensor([[[[5.0]]]])
+    residuals = torch.tensor([[[[-2.0]]], [[[0.5]]], [[[1.5]]]])
+    updates = common + residuals
+
+    centered = center_output_filter_updates(updates)
+
+    torch.testing.assert_close(centered, residuals)
+
+
+def test_output_filter_centered_update_has_zero_filter_mean():
+    generator = torch.Generator().manual_seed(812)
+    updates = torch.randn(7, 3, 2, 2, generator=generator)
+
+    centered = center_output_filter_updates(updates)
+
+    torch.testing.assert_close(
+        centered.mean(dim=0),
+        torch.zeros_like(centered[0]),
+        atol=1e-7,
+        rtol=0,
+    )
+
+
+def test_zero_output_filter_update_stays_finite_and_zero():
+    centered = center_output_filter_updates(torch.zeros(5, 2, 3, 3))
+
+    assert torch.isfinite(centered).all()
+    assert torch.count_nonzero(centered) == 0
+
+
+def test_output_filter_centered_compute_is_non_mutating_and_centers_axis_zero():
+    generator = torch.Generator().manual_seed(913)
+    layer = nn.Conv2d(2, 5, kernel_size=1, bias=False)
+    inputs = torch.rand(6, 2, 3, 3, generator=generator)
+    pre = layer(inputs)
+    before = layer.weight.detach().clone()
+    rule = CompetitiveOjaConv2d(
+        learning_rate=0.001,
+        winner_fraction=0.4,
+        update_centering="output_filters",
+    )
+
+    delta, _ = rule.compute_local_update(layer, pre, inputs=inputs)
+
+    assert torch.equal(layer.weight, before)
+    assert delta.shape[0] == layer.out_channels
+    torch.testing.assert_close(
+        delta.mean(dim=0),
+        torch.zeros_like(delta[0]),
+        atol=1e-7,
+        rtol=0,
+    )
 
 
 def test_competition_collapse_detector_covers_balanced_and_collapsed_cases():

@@ -121,6 +121,28 @@ def test_hebbian_layerwise_and_decoder_resume_matches_uninterrupted(tmp_path):
     assert (resumed / "checkpoints" / "decoder_epoch_001.pt").exists()
 
 
+def test_output_filter_centered_hebbian_resume_matches_uninterrupted(tmp_path):
+    config = _config("hebbian")
+    config["hebbian"]["update_centering"] = "output_filters"
+    full = train_config(config, loaders=_loaders(), run_root=tmp_path / "full")
+    interrupted = train_config(
+        config,
+        loaders=_loaders(),
+        run_root=tmp_path / "resumed",
+        stop_after_global_epoch=2,
+    )
+
+    resumed = train_config(config, loaders=_loaders(), resume_run_dir=interrupted)
+
+    assert read_run_status(resumed)["status"] == "completed"
+    assert _model_checksum(full / "model_last.pt") == _model_checksum(
+        resumed / "model_last.pt"
+    )
+    assert _scientific_metrics(_metric_rows(full)) == _scientific_metrics(
+        _metric_rows(resumed)
+    )
+
+
 def test_decoder_optimizer_and_rng_resume_match_uninterrupted(tmp_path):
     config = _config("hebbian")
     config["training"]["decoder_epochs"] = 2

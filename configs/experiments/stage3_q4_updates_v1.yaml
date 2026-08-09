@@ -1,0 +1,44 @@
+version: stage3-q4-updates-v1
+source_results_root: results/formal/phase0_v1_1/stage3_core
+output_dir: results/formal/phase0_v1_1/stage3_q4_updates
+seeds: [0, 1, 2, 3, 4]
+data:
+  root: data/raw
+  split_manifest: data/splits/mnist_split_v1.npz
+  batch_manifest: data/splits/mnist_q4_update_batches_seed31415_v1.npz
+  batch_seed: 31415
+  batch_count: 50
+  batch_size: 128
+shared_hebbian_snapshots:
+  enc1:
+    source_method: full_hebbian
+    shared_methods: [full_hebbian, hybrid_hhb, hybrid_hbb]
+    checkpoint: encoder_enc1_end.pt
+  enc2:
+    source_method: full_hebbian
+    shared_methods: [full_hebbian, hybrid_hhb]
+    checkpoint: encoder_enc2_end.pt
+  enc3:
+    source_method: full_hebbian
+    shared_methods: [full_hebbian]
+    checkpoint: encoder_enc3_end.pt
+bp_final_layers:
+  full_bp: [enc1, enc2, enc3]
+  hybrid_hhb: [enc3]
+  hybrid_hbb: [enc2, enc3]
+reference_decoder:
+  epochs: 10
+  optimizer: adam
+  lr: 0.003
+  betas: [0.9, 0.999]
+  weight_decay: 0.0
+  reconstruction_loss: mse_pixel_mean
+  validation_selection: minimum_mse
+analysis:
+  epsilon: 1.0e-12
+  save_update_tensors: true
+  optimizer_steps: 0
+  include_optimizer_state_in_bp_reference: false
+statistics:
+  bootstrap_seed: 2026
+  bootstrap_resamples: 10000
