@@ -29,6 +29,11 @@ LABELS = {
 }
 METHOD_LABELS = tuple(LABELS.values())
 LAYERS = ("h1", "h2", "z")
+UPDATE_TO_REPRESENTATION_LAYER = {
+    "enc1": "h1",
+    "enc2": "h2",
+    "enc3": "z",
+}
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -595,6 +600,53 @@ def _architecture_cka(
     return output
 
 
+def _join_updates_to_representations(
+    updates: list[dict[str, Any]],
+    representation: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    representation_lookup = {
+        (
+            row["case"],
+            row["seed"],
+            row["method"],
+            row["layer"],
+        ): row
+        for row in representation
+        if row["sweep"] == "architecture"
+    }
+    joined = []
+    for row in updates:
+        representation_layer = UPDATE_TO_REPRESENTATION_LAYER[row["layer"]]
+        key = (
+            row["case"],
+            row["seed"],
+            row["method"],
+            representation_layer,
+        )
+        representation_row = representation_lookup[key]
+        joined.append(
+            {
+                "case": row["case"],
+                "seed": row["seed"],
+                "method": row["method"],
+                "layer": row["layer"],
+                "representation_layer": representation_layer,
+                "rule": row["rule"],
+                "alignment": row["alignment"],
+                "update_snr_linear": row["update_snr_linear"],
+                "winner_entropy": representation_row["winner_entropy"],
+                "winner_coverage_ratio": representation_row[
+                    "winner_coverage_ratio"
+                ],
+                "effective_rank": representation_row["effective_rank"],
+                "linear_probe_cv_accuracy": representation_row[
+                    "linear_probe_cv_accuracy"
+                ],
+            }
+        )
+    return joined
+
+
 def _plot_interactions(
     output_dir: Path,
     summary: list[dict[str, Any]],
@@ -785,39 +837,9 @@ def run(protocol_path: str | Path) -> Path:
 
     compensation = _compensation(representation)
     architecture_cka = _architecture_cka(directories)
-    representation_lookup = {
-        (
-            row["case"],
-            row["seed"],
-            row["method"],
-            row["layer"],
-        ): row
-        for row in representation
-        if row["sweep"] == "architecture"
-    }
-    update_representation_join = []
-    for row in updates:
-        key = (row["case"], row["seed"], row["method"], row["layer"])
-        representation_row = representation_lookup[key]
-        update_representation_join.append(
-            {
-                "case": row["case"],
-                "seed": row["seed"],
-                "method": row["method"],
-                "layer": row["layer"],
-                "rule": row["rule"],
-                "alignment": row["alignment"],
-                "update_snr_linear": row["update_snr_linear"],
-                "winner_entropy": representation_row["winner_entropy"],
-                "winner_coverage_ratio": representation_row[
-                    "winner_coverage_ratio"
-                ],
-                "effective_rank": representation_row["effective_rank"],
-                "linear_probe_cv_accuracy": representation_row[
-                    "linear_probe_cv_accuracy"
-                ],
-            }
-        )
+    update_representation_join = _join_updates_to_representations(
+        updates, representation
+    )
     _write_csv(output_dir / "performance_per_seed.csv", performance)
     _write_csv(output_dir / "performance_summary.csv", performance_summary)
     _write_csv(output_dir / "representation_per_seed_layer.csv", representation)

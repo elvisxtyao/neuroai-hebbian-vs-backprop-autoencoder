@@ -10,6 +10,7 @@ from models import ConvAutoencoder, autoencoder_from_config
 from evaluation.run_stage3_q5q6_test import _summarize
 from evaluation.analyze_stage3_q5q6 import (
     _interaction_test,
+    _join_updates_to_representations,
     _sensitivity_and_relative,
 )
 from schemas import ConfigError, validate_config
@@ -299,3 +300,34 @@ def test_interaction_test_detects_method_specific_case_response():
     result = _interaction_test(rows, "metric")
     assert result["numerator_df"] == 6
     assert result["p_value"] < 1e-6
+
+
+def test_update_representation_join_maps_encoder_to_activation_layer():
+    updates = [
+        {
+            "case": "early_heavy",
+            "seed": 0,
+            "method": "HHH",
+            "layer": "enc2",
+            "rule": "hebbian_effective",
+            "alignment": 0.1,
+            "update_snr_linear": 0.2,
+        }
+    ]
+    representation = [
+        {
+            "sweep": "architecture",
+            "case": "early_heavy",
+            "seed": 0,
+            "method": "HHH",
+            "layer": "h2",
+            "winner_entropy": 0.3,
+            "winner_coverage_ratio": 0.4,
+            "effective_rank": 2.0,
+            "linear_probe_cv_accuracy": 0.8,
+        }
+    ]
+    joined = _join_updates_to_representations(updates, representation)
+    assert joined[0]["layer"] == "enc2"
+    assert joined[0]["representation_layer"] == "h2"
+    assert joined[0]["effective_rank"] == 2.0
