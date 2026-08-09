@@ -146,6 +146,22 @@ python -m evaluation.run_stage3_test_evaluation `
   --results-root results/formal/phase0_v1_1/stage3_core
 ```
 
+## Stage 3 Q5/Q6 formal sweeps
+
+The frozen dimension (`L=16,32,64,128`) and matched-encoder-parameter width
+(early-heavy, balanced, late-heavy) sweeps are complete for
+BBB/HHH/HHB/HBB × seeds 0–4. L64/balanced reuses the accepted core; completed
+test evaluations are never rerun. The accepted aggregate includes both
+reconstruction protocols, training cost, deterministic-noise robustness,
+h1/h2/z geometry, sensitivity, interactions, CKA, Hybrid compensation, and
+architecture-specific frozen-snapshot update metrics.
+
+The formal outcome is summarized in `docs/stage3_q5q6_results.md`. Local raw
+artifacts are under
+`results/formal/phase0_v1_1/stage3_q5q6_sweeps/`, and the final verification
+records are `verification/phase0_v1_1/stage3_final_junit.xml` and
+`verification/phase0_v1_1/stage3_final_pytest.log` (138 passed).
+
 ## Stage 1 representation-health gate
 
 The gate uses a fixed, class-balanced 2,000-image validation subset and compares
