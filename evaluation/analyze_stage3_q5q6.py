@@ -121,6 +121,32 @@ def _require_complete(protocol: dict[str, Any]) -> dict[tuple[str, str], Path]:
     return directories
 
 
+def _training_cost_fields(run_dir: Path) -> dict[str, float | int]:
+    system = _json(run_dir / "run_status.json")
+    standardized = _json(
+        run_dir / "standardized_decoder" / "run_status.json"
+    )
+    for name, status in (("system", system), ("standardized", standardized)):
+        if status.get("status") != "completed":
+            raise RuntimeError(f"Incomplete {name} training status: {run_dir}")
+        if int(status.get("test_samples_accessed", -1)) != 0:
+            raise RuntimeError(f"Training status accessed test data: {run_dir}")
+    system_samples = int(system["samples_seen"])
+    standardized_samples = int(standardized["samples_seen"])
+    system_wall_time = float(system["wall_time_sec"])
+    standardized_wall_time = float(standardized["wall_time_sec"])
+    return {
+        "system_training_samples_seen": system_samples,
+        "system_training_wall_time_sec": system_wall_time,
+        "standardized_decoder_samples_seen": standardized_samples,
+        "standardized_decoder_wall_time_sec": standardized_wall_time,
+        "total_training_samples_seen": system_samples + standardized_samples,
+        "total_training_wall_time_sec": (
+            system_wall_time + standardized_wall_time
+        ),
+    }
+
+
 def _performance_rows(
     protocol: dict[str, Any],
     directories: dict[tuple[str, str], Path],
@@ -140,8 +166,12 @@ def _performance_rows(
         if row["method_id"] in METHODS
     ]
     rows = []
+    core_runs = core_path.parents[1] / "runs"
     for sweep, case in (("dimension", "L64"), ("architecture", "balanced")):
         for row in core:
+            costs = _training_cost_fields(
+                core_runs / f"seed_{row['seed']}" / str(row["method_id"])
+            )
             rows.append(
                 {
                     "sweep": sweep,
@@ -159,12 +189,19 @@ def _performance_rows(
                             "standardized_reconstruction_mse",
                         )
                     },
+                    **costs,
                 }
             )
     for (sweep, case), directory in directories.items():
         for row in _typed(
             _csv(directory / "test_evaluation" / "per_run_metrics.csv")
         ):
+            costs = _training_cost_fields(
+                directory
+                / "runs"
+                / f"seed_{row['seed']}"
+                / str(row["method_id"])
+            )
             rows.append(
                 {
                     "sweep": sweep,
@@ -182,6 +219,7 @@ def _performance_rows(
                             "standardized_reconstruction_mse",
                         )
                     },
+                    **costs,
                 }
             )
     return rows
@@ -716,6 +754,12 @@ def run(protocol_path: str | Path) -> Path:
         "classification_ce",
         "system_reconstruction_mse",
         "standardized_reconstruction_mse",
+        "system_training_samples_seen",
+        "system_training_wall_time_sec",
+        "standardized_decoder_samples_seen",
+        "standardized_decoder_wall_time_sec",
+        "total_training_samples_seen",
+        "total_training_wall_time_sec",
     )
     performance_summary = _summaries(
         performance, metrics=performance_metrics

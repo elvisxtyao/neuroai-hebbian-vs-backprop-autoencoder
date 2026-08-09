@@ -13,6 +13,7 @@ from evaluation.analyze_stage3_q5q6 import (
     _interaction_test,
     _join_updates_to_representations,
     _sensitivity_and_relative,
+    _training_cost_fields,
     _write_csv,
 )
 from schemas import ConfigError, validate_config
@@ -351,3 +352,26 @@ def test_write_csv_supports_heterogeneous_aggregate_rows(tmp_path):
     assert rows[0]["layer"] == ""
     assert rows[1]["layer"] == "z"
     assert rows[2]["noise_type"] == "gaussian"
+
+
+def test_training_cost_fields_combine_system_and_standardized_decoder(
+    tmp_path,
+):
+    run_dir = tmp_path / "run"
+    standardized_dir = run_dir / "standardized_decoder"
+    standardized_dir.mkdir(parents=True)
+    (run_dir / "run_status.json").write_text(
+        '{"status":"completed","test_samples_accessed":0,'
+        '"samples_seen":1500000,"wall_time_sec":12.5}',
+        encoding="utf-8",
+    )
+    (standardized_dir / "run_status.json").write_text(
+        '{"status":"completed","test_samples_accessed":0,'
+        '"samples_seen":500000,"wall_time_sec":3.5}',
+        encoding="utf-8",
+    )
+    result = _training_cost_fields(run_dir)
+    assert result["system_training_samples_seen"] == 1_500_000
+    assert result["standardized_decoder_samples_seen"] == 500_000
+    assert result["total_training_samples_seen"] == 2_000_000
+    assert result["total_training_wall_time_sec"] == 16.0
