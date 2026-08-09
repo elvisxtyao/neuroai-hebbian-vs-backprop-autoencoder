@@ -1,10 +1,14 @@
 param(
-    [int]$DimensionProcessId = 7560
+    [int]$DimensionProcessId = 0,
+    [string]$TrainingRoot = (
+        "D:\Microlearning\results\worktrees\" +
+        "stage3-q5q6-a924932-resume"
+    )
 )
 
 $ErrorActionPreference = "Stop"
 $python = "D:\Microlearning\.venv\Scripts\python.exe"
-$trainingRoot = "C:\Users\86136\AppData\Local\Temp\microlearning-stage3-q5q6-a924932"
+$trainingRoot = $TrainingRoot
 $analysisRoot = "D:\Microlearning"
 $resultsRoot = "D:\Microlearning\results\formal\phase0_v1_1\stage3_q5q6_sweeps"
 $logRoot = "D:\Microlearning\results"
@@ -35,15 +39,61 @@ function Invoke-FormalPython {
     $stdout = Join-Path $logRoot "$LogName.stdout.log"
     $stderr = Join-Path $logRoot "$LogName.stderr.log"
     Push-Location $WorkingDirectory
+    $previousErrorAction = $ErrorActionPreference
     try {
+        # Windows PowerShell 5.1 promotes native stderr to an ErrorRecord when
+        # ErrorActionPreference is Stop. Scientific libraries legitimately
+        # emit warnings on stderr, so only the native exit code is a failure.
+        $ErrorActionPreference = "Continue"
         & $python -u @Arguments 1> $stdout 2> $stderr
-        if ($LASTEXITCODE -ne 0) {
-            throw "Command failed ($LASTEXITCODE): $($Arguments -join ' ')"
-        }
+        $exitCode = $LASTEXITCODE
     }
     finally {
+        $ErrorActionPreference = $previousErrorAction
         Pop-Location
     }
+    if ($exitCode -ne 0) {
+        throw (
+            "Command failed ($exitCode): " +
+            ($Arguments -join " ")
+        )
+    }
+}
+
+function Test-JsonField {
+    param(
+        [string]$Path,
+        [string]$Field,
+        $Expected
+    )
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $false
+    }
+    $record = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    return $record.$Field -eq $Expected
+}
+
+function Move-IncompleteOutput {
+    param(
+        [string]$Path,
+        [string]$Stage
+    )
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+    $resolvedRoot = [IO.Path]::GetFullPath($resultsRoot)
+    $resolvedPath = [IO.Path]::GetFullPath($Path)
+    if (-not $resolvedPath.StartsWith(
+        $resolvedRoot + [IO.Path]::DirectorySeparatorChar,
+        [StringComparison]::OrdinalIgnoreCase
+    )) {
+        throw "Refusing to quarantine output outside results root: $Path"
+    }
+    $recoveryRoot = Join-Path $resultsRoot "_recovery"
+    New-Item -ItemType Directory -Path $recoveryRoot -Force | Out-Null
+    $timestamp = [DateTimeOffset]::UtcNow.ToString("yyyyMMddTHHmmssfffZ")
+    $destination = Join-Path $recoveryRoot "${Stage}_${timestamp}"
+    Move-Item -LiteralPath $resolvedPath -Destination $destination
 }
 
 function Assert-GatePass {
@@ -59,7 +109,10 @@ function Assert-GatePass {
 
 try {
     Write-Status -Status "running" -Stage "wait_dimension"
-    if (Get-Process -Id $DimensionProcessId -ErrorAction SilentlyContinue) {
+    if (
+        $DimensionProcessId -gt 0 -and
+        (Get-Process -Id $DimensionProcessId -ErrorAction SilentlyContinue)
+    ) {
         Wait-Process -Id $DimensionProcessId
     }
     foreach ($case in @("L16", "L32", "L128")) {
@@ -95,61 +148,114 @@ try {
         Write-Status `
             -Status "running" `
             -Stage "postfreeze_${sweep}_${case}_test"
-        Invoke-FormalPython `
-            -WorkingDirectory $trainingRoot `
-            -Arguments @(
-                "-m", "evaluation.run_stage3_q5q6_test",
-                "--sweep", $sweep,
-                "--case", $case
-            ) `
-            -LogName "stage3_${sweep}_${case}_test"
+        $caseRoot = Join-Path $resultsRoot "$sweep\$case"
+        $testRoot = Join-Path $caseRoot "test_evaluation"
+        $testComplete = Test-JsonField `
+            -Path (Join-Path $testRoot "summary.json") `
+            -Field "records_complete" `
+            -Expected $true
+        if (-not $testComplete) {
+            Move-IncompleteOutput `
+                -Path $testRoot `
+                -Stage "${sweep}_${case}_test"
+            Invoke-FormalPython `
+                -WorkingDirectory $trainingRoot `
+                -Arguments @(
+                    "-m", "evaluation.run_stage3_q5q6_test",
+                    "--sweep", $sweep,
+                    "--case", $case
+                ) `
+                -LogName "stage3_${sweep}_${case}_test"
+        }
 
         Write-Status `
             -Status "running" `
             -Stage "postfreeze_${sweep}_${case}_representation"
-        Invoke-FormalPython `
-            -WorkingDirectory $trainingRoot `
-            -Arguments @(
-                "-m", "evaluation.run_stage3_q5q6_representation",
-                "--sweep", $sweep,
-                "--case", $case
-            ) `
-            -LogName "stage3_${sweep}_${case}_representation"
+        $representationRoot = Join-Path $caseRoot "representation"
+        $representationComplete = Test-JsonField `
+            -Path (Join-Path $representationRoot "integrity.json") `
+            -Field "record_count" `
+            -Expected 20
+        if (-not $representationComplete) {
+            Move-IncompleteOutput `
+                -Path $representationRoot `
+                -Stage "${sweep}_${case}_representation"
+            Invoke-FormalPython `
+                -WorkingDirectory $trainingRoot `
+                -Arguments @(
+                    "-m", "evaluation.run_stage3_q5q6_representation",
+                    "--sweep", $sweep,
+                    "--case", $case
+                ) `
+                -LogName "stage3_${sweep}_${case}_representation"
+        }
 
         Write-Status `
             -Status "running" `
             -Stage "postfreeze_${sweep}_${case}_noise"
-        Invoke-FormalPython `
-            -WorkingDirectory $trainingRoot `
-            -Arguments @(
-                "-m", "evaluation.run_stage3_q5q6_noise",
-                "--sweep", $sweep,
-                "--case", $case
-            ) `
-            -LogName "stage3_${sweep}_${case}_noise"
+        $noiseRoot = Join-Path $caseRoot "noise"
+        $noiseComplete = Test-JsonField `
+            -Path (Join-Path $noiseRoot "integrity.json") `
+            -Field "checkpoint_count" `
+            -Expected 20
+        if (-not $noiseComplete) {
+            Move-IncompleteOutput `
+                -Path $noiseRoot `
+                -Stage "${sweep}_${case}_noise"
+            Invoke-FormalPython `
+                -WorkingDirectory $trainingRoot `
+                -Arguments @(
+                    "-m", "evaluation.run_stage3_q5q6_noise",
+                    "--sweep", $sweep,
+                    "--case", $case
+                ) `
+                -LogName "stage3_${sweep}_${case}_noise"
+        }
     }
 
     foreach ($case in @("early_heavy", "late_heavy")) {
         Write-Status `
             -Status "running" `
             -Stage "architecture_${case}_updates"
-        Invoke-FormalPython `
-            -WorkingDirectory $analysisRoot `
-            -Arguments @(
-                "-m", "evaluation.run_stage3_q4_updates",
-                "--config",
-                "configs/experiments/stage3_q6_update_${case}_v1.yaml"
-            ) `
-            -LogName "stage3_architecture_${case}_updates"
+        $updateRoot = Join-Path `
+            $resultsRoot `
+            "architecture\$case\update_mechanisms"
+        $updateComplete = Test-JsonField `
+            -Path (Join-Path $updateRoot "integrity.json") `
+            -Field "formal_update_rows" `
+            -Expected 90
+        if (-not $updateComplete) {
+            Move-IncompleteOutput `
+                -Path $updateRoot `
+                -Stage "architecture_${case}_updates"
+            Invoke-FormalPython `
+                -WorkingDirectory $analysisRoot `
+                -Arguments @(
+                    "-m", "evaluation.run_stage3_q4_updates",
+                    "--config",
+                    "configs/experiments/stage3_q6_update_${case}_v1.yaml"
+                ) `
+                -LogName "stage3_architecture_${case}_updates"
+        }
     }
 
     Write-Status -Status "running" -Stage "aggregate_analysis"
-    Invoke-FormalPython `
-        -WorkingDirectory $analysisRoot `
-        -Arguments @(
-            "-m", "evaluation.analyze_stage3_q5q6"
-        ) `
-        -LogName "stage3_q5q6_aggregate"
+    $analysisRootPath = Join-Path $resultsRoot "analysis"
+    $analysisComplete = Test-JsonField `
+        -Path (Join-Path $analysisRootPath "integrity.json") `
+        -Field "all_values_finite" `
+        -Expected $true
+    if (-not $analysisComplete) {
+        Move-IncompleteOutput `
+            -Path $analysisRootPath `
+            -Stage "aggregate_analysis"
+        Invoke-FormalPython `
+            -WorkingDirectory $analysisRoot `
+            -Arguments @(
+                "-m", "evaluation.analyze_stage3_q5q6"
+            ) `
+            -LogName "stage3_q5q6_aggregate"
+    }
 
     Write-Status -Status "running" -Stage "final_tests"
     Invoke-FormalPython `
