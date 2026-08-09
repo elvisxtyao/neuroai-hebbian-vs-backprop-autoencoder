@@ -13,6 +13,9 @@ $analysisRoot = "D:\Microlearning"
 $resultsRoot = "D:\Microlearning\results\formal\phase0_v1_1\stage3_q5q6_sweeps"
 $logRoot = "D:\Microlearning\results"
 $statusPath = Join-Path $logRoot "stage3_remaining_orchestrator_status.json"
+$analysisSourceCommit = (
+    & git -C $analysisRoot rev-parse HEAD
+).Trim()
 
 function Write-Status {
     param(
@@ -26,7 +29,7 @@ function Write-Status {
         message = $Message
         updated_at = [DateTimeOffset]::UtcNow.ToString("o")
         training_source_commit = "a924932685fd634d0bd054c6171b66859c1c74a2"
-        analysis_source_commit = "f30574b217ed404ca073a644bdd22d55cd5a45f9"
+        analysis_source_commit = $analysisSourceCommit
     } | ConvertTo-Json | Set-Content -LiteralPath $statusPath -Encoding utf8
 }
 
