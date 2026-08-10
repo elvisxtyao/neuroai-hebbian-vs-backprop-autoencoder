@@ -42,6 +42,7 @@ in `PHASE0_STANDARD_V1_1_ADDENDUM.md`.
 | `docs/hybrid_hhb_confirmation_results.md` | Completed Stage 2D paired results, gate table, integrity evidence and failed confirmation decision | Preserve the seed-43 reconstruction failure and zero-test boundary |
 | `docs/stage3_formal_protocol_v1.md` | Approved Stage 3 five-seed protocol and revised HHB research role | Keep HHB wording limited to rank repair; standardized reconstruction is an outcome, not an entry gate |
 | `docs/stage3_formal_core_results.md` | Completed five-seed core matrix, technical gate, one-time test results, budgets and limitations | Preserve the 25-condition matrix and prohibit Hebbian-prefix value claims until RBB/RRB |
+| `release/v1.0-final/manifest.json` | Phase 1 compact-evidence freeze, relative-path provenance, row-count contracts and release inventory | Derived from accepted aggregate artifacts only; never substitute recovery, exploratory or raw checkpoint outputs |
 | `README.md` | Repository entry point and reproducible commands | Keep concise; link to the documents above |
 
 Run-specific reports are retained locally only. Root `*_REPORT.md`,
@@ -72,6 +73,7 @@ so the repository does not contain broken links to private run records.
 | Stage 3 / Q1 complete matrix and matched-prefix attribution | **Complete** | Core five methods plus RBB/RRB × seeds 0–4; 35 system/probe/standardized-decoder records; both freeze gates PASS; one-time test complete; five paired contrasts, effect sizes, bootstrap CIs, budgets and figures; 101 tests | None; Q1 supports small classification value for Hebbian prefixes at L64/balanced but no standardized-reconstruction advantage over matched random prefixes |
 | Phase 8 / Q5–Q6: dimension/asymmetry | **Complete — formal five-seed sweeps and mechanism analysis** | BBB/HHH/HHB/HBB × seeds 0–4 for `L=[16,32,64,128]` and early/balanced/late widths; 100 new system/probe/standardized-decoder records plus reused L64/balanced core; five new freeze gates PASS; 100 one-time test records; 300 layer rows; 1,300 noise rows; early/late Q4 snapshots; interactions, sensitivity, CKA, figures, training cost and 138-test final suite | None for frozen MNIST Q5/Q6; matched-prefix value attribution remains restricted to the preregistered L64/balanced RBB/RRB controls; Phase 9 extensions are optional |
 | Final statistical/protocol audit | **Complete — PASS** | Stage 2D post-confirmation re-scoping confirmed; paired seeds/CI/contrast roles/test timeline audited; late-heavy seed 4 retained; 135 standardized-decoder configs matched; Q1 samples-seen curve and Q3 curve AUC derived artifact-only; 142/142 tests passed; zero test-access increment | None; preserve primary/secondary/exploratory wording in the paper |
+| v1.0-final release Phase 1 | **Complete — compact evidence frozen; awaiting review** | Release manifest, artifact registry, SHA-256 inventory, 43 accepted source CSV/JSON copies plus a 135-config hash/index table; artifact-only verifier; no dataset/checkpoint load, training, model evaluation or test-access increment | Phase 2 figures must not start until the Phase 1 review is accepted; GitHub authentication and licensing remain deferred to Phase 5 |
 | Phase 9: extensions | Optional / not started | Scope listed | Requires a new frozen protocol; the core MNIST matrix is complete |
 
 ## 4. Phase 0 evidence
@@ -294,12 +296,13 @@ new frozen-configuration Q1 runs.
 
 ## 9. Immediate next actions
 
-The frozen MNIST Q1–Q6 experiment program is complete. Before presentation or
-paper submission, use the accepted aggregate tables and figures to prepare the
-final narrative and preserve the current source/artifact hashes. Phase 9
-experiments (CIFAR-10, non-stationary data, noisy training, alternate Hebbian
-rules, or a local decoder) are optional extensions and require a new protocol;
-they must not alter or be mixed into the completed v1 results.
+The frozen MNIST Q1–Q6 experiment program is complete. Release Phase 1 has now
+frozen a compact, tracked evidence bundle from accepted aggregate tables only.
+Stop for review before Phase 2: do not generate the six final figures until the
+artifact registry, checksums, governance history and exclusions are accepted.
+Phase 9 experiments (CIFAR-10, non-stationary data, noisy training, alternate
+Hebbian rules, or a local decoder) remain optional extensions requiring a new
+protocol; they must not alter or be mixed into the completed v1 results.
 
 Tutorial provenance and teammate confirmation remain useful archival items,
 but they are not open scientific gates for Q1–Q6.
@@ -333,3 +336,4 @@ but they are not open scientific gates for Q1–Q6.
 | 2026-07-29 | Completed Stage 3 formal core: all 25 validation-only conditions and standardized decoders/probes, technical freeze gate PASS, then 25 one-time frozen test evaluations; HHB repaired classification but not the standardized reconstruction gap | `docs/stage3_formal_core_results.md`, local `results/formal/phase0_v1_1/stage3_core/` artifacts |
 | 2026-08-09 | Completed formal Q5/Q6 dimension and matched-encoder-parameter width sweeps: five new case gates PASS, all one-time test/representation/noise/update outputs complete, aggregate integrity PASS, training costs recorded, and 138/138 final tests passed | `docs/stage3_q5q6_results.md`, `configs/experiments/stage3_q5q6_sweeps_v1.yaml`, local `results/formal/phase0_v1_1/stage3_q5q6_sweeps/` artifacts |
 | 2026-08-10 | Final artifact-only audit PASS: confirmed Stage 2D→Stage 3 post-confirmation amendment, added Q1 samples-seen curves and Q3 whole-severity AUC/paired CIs, retained late-heavy seed 4, verified all 135 standardized-decoder configs, and passed 142/142 tests; no training, checkpoint/data load or new test access | `docs/final_statistical_protocol_audit.md`, updated Q1/Q3 reports, immutable final-audit test logs, local `stage3_final_audit_supplement/` artifacts |
+| 2026-08-10 | v1.0-final Phase 1 compact-evidence freeze completed on `codex/final-release`: accepted aggregate CSV/JSON records copied under a relative-path manifest with SHA-256 checksums, 135 standardized-decoder config hashes indexed, evidence classes/exclusions recorded, and raw/ignored artifacts preserved | `release/v1.0-final/`, `scripts/build_final_release.py`, `scripts/verify_final_release.py`, `tests/test_final_release_bundle.py` |

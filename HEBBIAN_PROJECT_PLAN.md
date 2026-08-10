@@ -1004,6 +1004,16 @@ paired BBB 为 `1.5688×`，超过冻结上限 `1.25×`；seed 44 的比率为
 `COMPLETED — CONFIRMATION FAILED`，不追加第三个 seed，且不批准正式
 Phase 4/Stage 3。完整结果见 `docs/hybrid_hhb_confirmation_results.md`。
 
+> **Historical supersession note (2026-08-10):** 上述 Stage 2D 协议、阈值、
+> conjunctive decision rule 与 `CONFIRMATION FAILED` 结果保持原样，并继续作为
+> Stage 2D 的权威历史记录。2026-07-28 后续批准的
+> `docs/stage3_formal_protocol_v1.md` 是在该失败之后作出的独立、版本化 research
+> re-scoping：它把 standardized-decoder reconstruction 从 Stage 3 entry gate
+> 改为正式 outcome，并仅以“rank-repair candidate with unresolved reconstruction
+> stability”的窄化角色纳入 HHB。该决定不追溯性地把 Stage 2D 改为通过，也不修改
+> 原门禁、seed 或阈值；本计划中仍保留的 Stage 2D-pass 前置条目应按原始历史门禁
+> 阅读，后续 Stage 3 工作的授权则以该独立 v1 protocol amendment 为准。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension

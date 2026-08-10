@@ -1,0 +1,148 @@
+{
+  "completed_at_utc": "2026-07-29T07:40:19.661416+00:00",
+  "decision": "PASS",
+  "global_checks": {
+    "all_25_artifacts_complete": true,
+    "all_five_seeds_pass": true,
+    "all_metrics_finite": true,
+    "protocol_source_matches_runs": true,
+    "same_source_commit_across_matrix": true,
+    "zero_test_access": true
+  },
+  "per_seed": {
+    "0": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "five_methods_complete": true,
+        "frozen_layers_unchanged": true,
+        "hebbian_enc1_prefix_paired": true,
+        "hebbian_enc2_prefix_paired": true,
+        "same_clean_source_commit": true,
+        "same_initial_model": true,
+        "same_probe_initialization": true,
+        "same_split": true,
+        "same_standardized_decoder_initialization": true,
+        "same_system_decoder_initialization": true,
+        "standardized_encoders_unchanged": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS",
+      "prefix_hashes": {
+        "hbb_enc1": "fc964547a008a7621333ededa9dd89c5a432c0282fcccd619a966220536612f0",
+        "hhb_enc1": "fc964547a008a7621333ededa9dd89c5a432c0282fcccd619a966220536612f0",
+        "hhb_enc2": "256053c9f11229c3e54677f8e26b37e1c3be6a6fe83d836d682680bd4f901069",
+        "hhh_enc1": "fc964547a008a7621333ededa9dd89c5a432c0282fcccd619a966220536612f0",
+        "hhh_enc2": "256053c9f11229c3e54677f8e26b37e1c3be6a6fe83d836d682680bd4f901069"
+      }
+    },
+    "1": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "five_methods_complete": true,
+        "frozen_layers_unchanged": true,
+        "hebbian_enc1_prefix_paired": true,
+        "hebbian_enc2_prefix_paired": true,
+        "same_clean_source_commit": true,
+        "same_initial_model": true,
+        "same_probe_initialization": true,
+        "same_split": true,
+        "same_standardized_decoder_initialization": true,
+        "same_system_decoder_initialization": true,
+        "standardized_encoders_unchanged": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS",
+      "prefix_hashes": {
+        "hbb_enc1": "f25ccd624a01111fb63aff991b0bca692970caa9888ca09dc7a2d96d4e0d45e1",
+        "hhb_enc1": "f25ccd624a01111fb63aff991b0bca692970caa9888ca09dc7a2d96d4e0d45e1",
+        "hhb_enc2": "48b71434493d4b8c002333464d0f02cfaa8d3e369e753f9d59d909d9c125d14a",
+        "hhh_enc1": "f25ccd624a01111fb63aff991b0bca692970caa9888ca09dc7a2d96d4e0d45e1",
+        "hhh_enc2": "48b71434493d4b8c002333464d0f02cfaa8d3e369e753f9d59d909d9c125d14a"
+      }
+    },
+    "2": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "five_methods_complete": true,
+        "frozen_layers_unchanged": true,
+        "hebbian_enc1_prefix_paired": true,
+        "hebbian_enc2_prefix_paired": true,
+        "same_clean_source_commit": true,
+        "same_initial_model": true,
+        "same_probe_initialization": true,
+        "same_split": true,
+        "same_standardized_decoder_initialization": true,
+        "same_system_decoder_initialization": true,
+        "standardized_encoders_unchanged": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS",
+      "prefix_hashes": {
+        "hbb_enc1": "5f3775566c70a0097ff4aeedee4249e18682237ebe3d33136b578995960aef5d",
+        "hhb_enc1": "5f3775566c70a0097ff4aeedee4249e18682237ebe3d33136b578995960aef5d",
+        "hhb_enc2": "906f62ecabe951855d75d1d53f656020b961f767e98c18040aea57ccefb2f73b",
+        "hhh_enc1": "5f3775566c70a0097ff4aeedee4249e18682237ebe3d33136b578995960aef5d",
+        "hhh_enc2": "906f62ecabe951855d75d1d53f656020b961f767e98c18040aea57ccefb2f73b"
+      }
+    },
+    "3": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "five_methods_complete": true,
+        "frozen_layers_unchanged": true,
+        "hebbian_enc1_prefix_paired": true,
+        "hebbian_enc2_prefix_paired": true,
+        "same_clean_source_commit": true,
+        "same_initial_model": true,
+        "same_probe_initialization": true,
+        "same_split": true,
+        "same_standardized_decoder_initialization": true,
+        "same_system_decoder_initialization": true,
+        "standardized_encoders_unchanged": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS",
+      "prefix_hashes": {
+        "hbb_enc1": "f8ac6c1272c607e05010ef08535190bb41f6633cd8a8872c8b7fa423975cfb01",
+        "hhb_enc1": "f8ac6c1272c607e05010ef08535190bb41f6633cd8a8872c8b7fa423975cfb01",
+        "hhb_enc2": "205ee80e4f85209a4f2c30539774ced7d8f3b58632faa7ed19eda7d390989759",
+        "hhh_enc1": "f8ac6c1272c607e05010ef08535190bb41f6633cd8a8872c8b7fa423975cfb01",
+        "hhh_enc2": "205ee80e4f85209a4f2c30539774ced7d8f3b58632faa7ed19eda7d390989759"
+      }
+    },
+    "4": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "five_methods_complete": true,
+        "frozen_layers_unchanged": true,
+        "hebbian_enc1_prefix_paired": true,
+        "hebbian_enc2_prefix_paired": true,
+        "same_clean_source_commit": true,
+        "same_initial_model": true,
+        "same_probe_initialization": true,
+        "same_split": true,
+        "same_standardized_decoder_initialization": true,
+        "same_system_decoder_initialization": true,
+        "standardized_encoders_unchanged": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS",
+      "prefix_hashes": {
+        "hbb_enc1": "1c87af1560758d371f5e1fb4213f9a5a11c49f3034dd677e08803d47346e7c91",
+        "hhb_enc1": "1c87af1560758d371f5e1fb4213f9a5a11c49f3034dd677e08803d47346e7c91",
+        "hhb_enc2": "5ce2c44291d65626e8b83584d3799986e9c893537a6837142fa98600b5882416",
+        "hhh_enc1": "1c87af1560758d371f5e1fb4213f9a5a11c49f3034dd677e08803d47346e7c91",
+        "hhh_enc2": "5ce2c44291d65626e8b83584d3799986e9c893537a6837142fa98600b5882416"
+      }
+    }
+  },
+  "performance_gate_applied": false,
+  "schema_version": "stage3-core-freeze-gate-v1",
+  "standardized_reconstruction_is_outcome": true,
+  "test_samples_accessed": 0
+}

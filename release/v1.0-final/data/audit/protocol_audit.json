@@ -1,0 +1,164 @@
+{
+  "completed_at_utc": "2026-08-10T10:36:47.986820+00:00",
+  "confidence_intervals": {
+    "bootstrap_seed": 2026,
+    "confidence_level": 0.95,
+    "decision": "PASS",
+    "method": "nonparametric bootstrap of seed-level values/differences",
+    "resamples": 10000,
+    "small_n_caveat": "n=5; intervals are descriptive"
+  },
+  "contrast_roles": {
+    "descriptive_lower_bound": [
+      "learned methods-Full Random"
+    ],
+    "exploratory": [
+      "Q4 cross-outcome correlations",
+      "post-hoc robustness curve AUC supplement",
+      "unadjusted interaction p-values outside frozen primary contrasts"
+    ],
+    "primary": [
+      "HHB-HHH",
+      "HBB-HHB",
+      "BBB-HHB"
+    ],
+    "protocol_mandated_secondary": [
+      "HBB-RBB",
+      "HHB-RRB"
+    ]
+  },
+  "late_heavy_seed4": {
+    "decision": "PASS_RETAIN_AS_FORMAL_OUTCOME",
+    "exclusion_or_retry_allowed": false,
+    "four_finite_test_rows": true,
+    "freeze_checks": {
+      "artifacts_complete": true,
+      "finite_metrics": true,
+      "four_methods_complete": true,
+      "frozen_layers_unchanged": true,
+      "hebbian_enc1_prefix_paired": true,
+      "hebbian_enc2_prefix_paired": true,
+      "same_clean_source_commit": true,
+      "same_initial_model": true,
+      "same_probe_initialization": true,
+      "same_split": true,
+      "same_standardized_decoder_initialization": true,
+      "same_system_decoder_initialization": true,
+      "standardized_encoders_unchanged": true,
+      "zero_test_access": true
+    },
+    "test_rows": [
+      {
+        "accuracy": 0.6446,
+        "method_id": "full_bp",
+        "standardized_reconstruction_mse": 0.046555436184941505
+      },
+      {
+        "accuracy": 0.8898,
+        "method_id": "full_hebbian",
+        "standardized_reconstruction_mse": 0.021918127363555286
+      },
+      {
+        "accuracy": 0.338,
+        "method_id": "hybrid_hhb",
+        "standardized_reconstruction_mse": 0.05865503096288564
+      },
+      {
+        "accuracy": 0.833,
+        "method_id": "hybrid_hbb",
+        "standardized_reconstruction_mse": 0.029602864864894322
+      }
+    ]
+  },
+  "overall_decision": "PASS",
+  "paired_seeds": {
+    "decision": "PASS",
+    "paired_unit": "seed",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "schema_version": "stage3-final-statistical-protocol-audit-v1",
+  "stage2d_to_stage3": {
+    "amendment_is_preregistered_success": false,
+    "decision": "PASS_POST_CONFIRMATION_RESCOPING_RECORDED",
+    "history_preserved": true,
+    "stage2d_confirmation_decision": "FAIL",
+    "stage2d_test_samples_accessed": 0,
+    "stage3_amendment_approved_date": "2026-07-28"
+  },
+  "standardized_decoder_fairness": {
+    "config_audit": {
+      "all_configs_match": true,
+      "config_count": 135,
+      "expected_config_count": 135,
+      "frozen_standardized_decoder_config": {
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "epochs": 10,
+        "loss": "mse_pixel_mean",
+        "lr": 0.003,
+        "optimizer": "adam",
+        "validation_selection": "min_reconstruction_mse",
+        "weight_decay": 0.0
+      }
+    },
+    "decision": "PASS",
+    "encoder_frozen_and_unchanged": true,
+    "paired_initialization": true,
+    "same_optimizer_data_epochs_validation_selection": true,
+    "system_and_standardized_outcomes_reported_separately": true
+  },
+  "test_usage": {
+    "core_freeze_completed_at_utc": "2026-07-29T07:40:19.661416+00:00",
+    "core_test_completed_at_utc": "2026-07-29T07:47:39.643774+00:00",
+    "decision": "PASS",
+    "q1_aggregation_test_access_increment": 0,
+    "q3_completed_at_utc": "2026-07-29T10:54:43.114006+00:00",
+    "q5q6_case_timeline": [
+      {
+        "case": "dimension/L16",
+        "freeze_gate": "PASS",
+        "prefreeze_test_samples": 0,
+        "test_completed_at_utc": "2026-08-09T10:03:22.090902+00:00",
+        "test_records_complete": true
+      },
+      {
+        "case": "dimension/L32",
+        "freeze_gate": "PASS",
+        "prefreeze_test_samples": 0,
+        "test_completed_at_utc": "2026-08-09T10:37:15.266687+00:00",
+        "test_records_complete": true
+      },
+      {
+        "case": "dimension/L128",
+        "freeze_gate": "PASS",
+        "prefreeze_test_samples": 0,
+        "test_completed_at_utc": "2026-08-09T11:10:25.618167+00:00",
+        "test_records_complete": true
+      },
+      {
+        "case": "architecture/early_heavy",
+        "freeze_gate": "PASS",
+        "prefreeze_test_samples": 0,
+        "test_completed_at_utc": "2026-08-09T11:41:58.900769+00:00",
+        "test_records_complete": true
+      },
+      {
+        "case": "architecture/late_heavy",
+        "freeze_gate": "PASS",
+        "prefreeze_test_samples": 0,
+        "test_completed_at_utc": "2026-08-09T12:37:00.385819+00:00",
+        "test_records_complete": true
+      }
+    ],
+    "stage2d_validation_only": true,
+    "supplement_test_access_increment": 0
+  }
+}

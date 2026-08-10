@@ -1,0 +1,97 @@
+{
+  "completed_at_utc": "2026-07-29T09:28:03.247006+00:00",
+  "decision": "PASS",
+  "global_checks": {
+    "all_10_artifacts_complete": true,
+    "all_five_seeds_pass": true,
+    "all_metrics_finite": true,
+    "protocol_source_matches_runs": true,
+    "same_clean_source_commit": true,
+    "zero_test_access": true
+  },
+  "per_seed": {
+    "0": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "frozen_prefixes_unchanged": true,
+        "paired_core_initialization": true,
+        "paired_probe": true,
+        "paired_split": true,
+        "paired_standardized_decoder": true,
+        "paired_system_decoder": true,
+        "standardized_encoders_unchanged": true,
+        "two_methods_complete": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS"
+    },
+    "1": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "frozen_prefixes_unchanged": true,
+        "paired_core_initialization": true,
+        "paired_probe": true,
+        "paired_split": true,
+        "paired_standardized_decoder": true,
+        "paired_system_decoder": true,
+        "standardized_encoders_unchanged": true,
+        "two_methods_complete": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS"
+    },
+    "2": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "frozen_prefixes_unchanged": true,
+        "paired_core_initialization": true,
+        "paired_probe": true,
+        "paired_split": true,
+        "paired_standardized_decoder": true,
+        "paired_system_decoder": true,
+        "standardized_encoders_unchanged": true,
+        "two_methods_complete": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS"
+    },
+    "3": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "frozen_prefixes_unchanged": true,
+        "paired_core_initialization": true,
+        "paired_probe": true,
+        "paired_split": true,
+        "paired_standardized_decoder": true,
+        "paired_system_decoder": true,
+        "standardized_encoders_unchanged": true,
+        "two_methods_complete": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS"
+    },
+    "4": {
+      "checks": {
+        "artifacts_complete": true,
+        "finite_metrics": true,
+        "frozen_prefixes_unchanged": true,
+        "paired_core_initialization": true,
+        "paired_probe": true,
+        "paired_split": true,
+        "paired_standardized_decoder": true,
+        "paired_system_decoder": true,
+        "standardized_encoders_unchanged": true,
+        "two_methods_complete": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS"
+    }
+  },
+  "performance_gate_applied": false,
+  "schema_version": "stage3-matched-controls-freeze-gate-v1",
+  "test_samples_accessed": 0
+}
