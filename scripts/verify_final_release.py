@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RELEASE = ROOT / "release" / "v1.0-final"
 FORBIDDEN_PARTS = {"_recovery", "recovery", "checkpoints", "representations", "embeddings"}
 FORBIDDEN_SUFFIXES = {".pt", ".pth", ".npz", ".npy", ".log"}
+RELEASE_METADATA_FILES = {"RELEASE_NOTES.md"}
 
 
 def sha256(path: Path) -> str:
@@ -68,7 +69,9 @@ def verify(release_root: Path = DEFAULT_RELEASE) -> dict[str, Any]:
     actual_files = {
         path.relative_to(release_root).as_posix()
         for path in release_root.rglob("*")
-        if path.is_file() and path.name != "checksums.sha256"
+        if path.is_file()
+        and path.name != "checksums.sha256"
+        and path.relative_to(release_root).as_posix() not in RELEASE_METADATA_FILES
     }
     if actual_files != set(expected_checksums):
         raise ValueError("Bundle file set does not match checksums.sha256")

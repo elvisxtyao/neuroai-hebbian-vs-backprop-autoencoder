@@ -7,7 +7,7 @@
   },
   "builder": {
     "path": "scripts/plot_final_figures.py",
-    "sha256": "f0c8ef0868cdcc3ecf5ae46df81f57471c00a7045fb148ebbddf070cd8367a56"
+    "sha256": "7c4176135a18d1b7605613b3513096f67777dd22b299bd10ac9084a9a8d73716"
   },
   "figures": {
     "fig1_performance": {
@@ -142,8 +142,8 @@
     "fig5_robustness.png": "6738af28da155967dbc7d31fb572bac236dc4a35edb3df4a1ef7902b6ba5fae3",
     "fig6_dimension_architecture.pdf": "1a4c836bab585bbf990bf60e6f22eeb6df9f3a86c3a7e09b3ebc746bdf8e0a17",
     "fig6_dimension_architecture.png": "4bf1792436bacb4e3d811fbfdd6b8cb08dda171ccae9c9639c1dd7734d2c2901",
-    "method_design.pdf": "4ab45ff4fbadfb1d0ccf5176d990dc692ac82723b99b47f7dd3ba9d602d11724",
-    "method_design.png": "a48b6157cd118929fa960e3bfd13589bc0ec65c39a426c6d5b085f8ebef7b3d3",
+    "method_design.pdf": "dfc310258cb6b0386e75e511da2667df8a0affa751ada62545eb0e7b21e58c8e",
+    "method_design.png": "b64a5ab1831140659ba3597d574d3c98fe41f904aebf6493e62395baa0f3f36d",
     "plotted_values/fig1_per_seed.csv": "82ba6adb0ec4dc4c583a747ff8205b424e457349150d4cc8647e28bc9543c692",
     "plotted_values/fig1_summary.csv": "c5c7d888294fff5385bfe7263c1c8aa43d9b02f61861ab98b52670827b069481",
     "plotted_values/fig2_paired_seed_effects.csv": "04783dc90d5907e80a481c032e12e07fff7061710c7f05bb956c4885c4ef2c1a",

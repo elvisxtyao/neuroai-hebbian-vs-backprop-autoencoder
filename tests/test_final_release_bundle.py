@@ -16,6 +16,14 @@ def test_committed_compact_release_bundle_passes():
     assert result["test_access_increment"] == 0
 
 
+def test_release_notes_are_metadata_outside_frozen_evidence_checksums():
+    notes = DEFAULT_RELEASE / "RELEASE_NOTES.md"
+    if notes.exists():
+        checked = (DEFAULT_RELEASE / "checksums.sha256").read_text(encoding="utf-8")
+        assert "RELEASE_NOTES.md" not in checked
+        assert verify(DEFAULT_RELEASE)["decision"] == "PASS"
+
+
 def test_compact_bundle_contains_no_windows_absolute_paths():
     for path in DEFAULT_RELEASE.rglob("*"):
         if path.is_file() and path.suffix in {".csv", ".json"}:

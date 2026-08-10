@@ -683,7 +683,7 @@ def figure6(output: Path, values: Path) -> dict[str, object]:
 def method_design(output: Path) -> dict[str, object]:
     fig, ax = plt.subplots(figsize=(10.2, 4.0), constrained_layout=True)
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 4.1)
+    ax.set_ylim(-0.16, 4.1)
     ax.axis("off")
     methods = [
         ("BBB", ["BP", "BP", "BP"]),
@@ -712,9 +712,18 @@ def method_design(output: Path) -> dict[str, object]:
         ax.add_patch(FancyArrowPatch((7.4, y), (8.05, y), arrowstyle="-|>", mutation_scale=8, color="#777777", linewidth=0.8))
         probe = FancyBboxPatch((8.05, y - 0.22), 1.45, 0.44, boxstyle="round,pad=0.04", facecolor="#E8F4EA", edgecolor="#238B45", linewidth=1)
         ax.add_patch(probe)
-        ax.text(8.775, y, "Frozen probe", ha="center", va="center", fontsize=7.5)
+        ax.text(8.775, y, "Frozen linear\nprobe", ha="center", va="center", fontsize=7.5)
     ax.text(1.65, 3.98, "Encoder learning-rule allocation", fontsize=9, fontweight="bold", ha="left")
     ax.text(6.15, 3.98, "Shared evaluation path", fontsize=9, fontweight="bold", ha="left")
+    ax.text(
+        0.35,
+        -0.08,
+        "Full Random: frozen random Enc1-Enc3; overall lower-bound condition (not a prefix-matched control).",
+        fontsize=7.2,
+        color="#555555",
+        ha="left",
+        va="center",
+    )
     save_figure(fig, output, "method_design")
     return {"sources": [], "design_only": True, "formal_hero_figure": False}
 

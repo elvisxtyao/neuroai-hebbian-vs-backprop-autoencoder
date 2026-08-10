@@ -2,7 +2,7 @@
 
 ## Figure 1 - Performance and reconstruction tradeoff
 
-MNIST held-out test classification and reconstruction outcomes for BBB, HBB, HHB, HHH, and Random. Open markers are the five formal seeds (0-4; statistical unit: seed); filled markers are method means; whiskers are the frozen 95% nonparametric bootstrap confidence intervals (10,000 resamples, bootstrap seed 2026). Reconstruction errors are shown on logarithmic axes for the common standardized BP decoder (B) and each method's system decoder (C). HHB has the highest mean accuracy (0.9199, 95% CI 0.9177-0.9222), whereas HHH has lower mean accuracy and substantially higher reconstruction error. Small accuracy differences should be read together with their seed-level dispersion and intervals.
+MNIST held-out test classification and reconstruction outcomes for BBB, HBB, HHB, HHH, and Random. Open markers are the five formal seeds (0-4; statistical unit: seed); filled markers are method means; whiskers are the frozen 95% nonparametric bootstrap confidence intervals (10,000 resamples, bootstrap seed 2026). Panel A uses a zoomed accuracy axis (0.76-0.93) to make the method differences visible. Reconstruction errors are shown on logarithmic axes for the common standardized BP decoder (B) and each method's system decoder (C). HHB has the highest mean accuracy (0.9199, 95% CI 0.9177-0.9222), whereas HHH has lower mean accuracy and substantially higher reconstruction error. Small accuracy differences should be read together with their seed-level dispersion and intervals.
 
 ## Figure 2 - Prefix value and training cost
 
@@ -10,7 +10,7 @@ MNIST held-out test classification and reconstruction outcomes for BBB, HBB, HHB
 
 ## Figure 3 - Layerwise representation structure
 
-Effective rank (A) and frozen linear-probe cross-validation accuracy (B) across h1, h2, and z for BBB, HBB, HHB, and HHH. Faint lines and points are the five formal seeds (statistical unit: seed); heavy lines are method means; whiskers are +/- one sample standard deviation as stored in the frozen Q2 summary. At z, mean effective rank is 20.27 for BBB, 19.45 for HBB, 11.54 for HHB, and 1.016 for HHH. The rank collapse of fully local HHH is therefore visible even though its frozen-probe accuracy remains above chance. Effective rank is a diversity/geometry metric, not a direct measure of semantic information. The linear probe is an evaluation instrument on frozen representations, not end-to-end model selection.
+Effective rank (A) and frozen linear probe cross-validation accuracy (B) across h1, h2, and z for BBB, HBB, HHB, and HHH. Faint lines and points are the five formal seeds (statistical unit: seed); heavy lines are method means; whiskers are +/- one sample standard deviation as stored in the frozen Q2 summary. At z, mean effective rank is 20.27 for BBB, 19.45 for HBB, 11.54 for HHB, and 1.016 for HHH. The rank collapse of fully local HHH is therefore visible even though its frozen linear probe accuracy remains above chance. Effective rank is a diversity/geometry metric, not a direct measure of semantic information. The linear probe is an evaluation instrument on frozen representations, not end-to-end model selection.
 
 ## Figure 4 - Depth-dependent local-update mechanism
 
@@ -26,4 +26,4 @@ MNIST held-out test classification accuracy (A, B) and z-layer effective rank (C
 
 ## Method design schematic (not a formal hero figure)
 
-Learning-rule allocation for BBB, HBB, HHB, HHH, RBB, and RRB. Each method uses the shared BP decoder and frozen-probe evaluation path; only the encoder layer rules differ. The schematic is a design aid, contains no measured values, and is not counted among the six formal figures.
+Learning-rule allocation for BBB, HBB, HHB, HHH, RBB, and RRB. Each method uses the shared BP decoder and frozen linear probe evaluation path; only the encoder layer rules differ. Full Random freezes all three encoder layers at their random initialization and serves as an overall lower-bound condition, not a prefix-matched control. The schematic is a design aid, contains no measured values, and is not counted among the six formal figures.
