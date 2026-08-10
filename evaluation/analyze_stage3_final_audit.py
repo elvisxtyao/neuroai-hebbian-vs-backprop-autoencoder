@@ -17,6 +17,7 @@ from typing import Any, Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
+import yaml
 
 from evaluation.analyze_stage3_q1 import (
     METHOD_ORDER,
@@ -283,6 +284,51 @@ def _iso(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
+def standardized_decoder_config_audit() -> dict[str, Any]:
+    run_roots = [CORE_ROOT / "runs", CONTROLS_ROOT / "runs"]
+    run_roots.extend(
+        SWEEP_ROOT / sweep / case / "runs"
+        for sweep, cases in (
+            ("dimension", ("L16", "L32", "L128")),
+            ("architecture", ("early_heavy", "late_heavy")),
+        )
+        for case in cases
+    )
+    paths = sorted(
+        path
+        for run_root in run_roots
+        for path in run_root.glob("seed_*/*/config_resolved.yaml")
+    )
+    expected_standardized = {
+        "optimizer": "adam",
+        "lr": 0.003,
+        "betas": [0.9, 0.999],
+        "weight_decay": 0.0,
+        "epochs": 10,
+        "loss": "mse_pixel_mean",
+        "validation_selection": "min_reconstruction_mse",
+    }
+    checks = []
+    for path in paths:
+        config = yaml.safe_load(path.read_text(encoding="utf-8"))
+        checks.append(
+            config["standardized_decoder"] == expected_standardized
+            and config["data"]["split_manifest"]
+            == "data/splits/mnist_split_v1.npz"
+            and int(config["data"]["batch_size"]) == 128
+            and int(config["training"]["decoder_epochs"]) == 10
+            and config["training"]["reconstruction_loss"] == "mse_pixel_mean"
+            and config["protocol"]["test_access_policy"]
+            == "validation_select_then_single_test_evaluation"
+        )
+    return {
+        "config_count": len(paths),
+        "expected_config_count": 135,
+        "all_configs_match": len(paths) == 135 and all(checks),
+        "frozen_standardized_decoder_config": expected_standardized,
+    }
+
+
 def protocol_audit() -> dict[str, Any]:
     stage2d = _json(ROOT / "results" / "hybrid_hhb_confirmation" / "confirmation_decision.json")
     protocol_text = (ROOT / "docs" / "stage3_formal_protocol_v1.md").read_text(
@@ -346,6 +392,7 @@ def protocol_audit() -> dict[str, Any]:
         and row["standardized_encoder_unchanged"]
         for row in controls["records"].values()
     )
+    config_fairness = standardized_decoder_config_audit()
     late_metrics = (
         "accuracy",
         "macro_f1",
@@ -384,7 +431,12 @@ def protocol_audit() -> dict[str, Any]:
         and late_finite
         and late_test["records_complete"]
     )
-    fairness_pass = core_fairness and control_fairness and sweep_fairness
+    fairness_pass = (
+        core_fairness
+        and control_fairness
+        and sweep_fairness
+        and config_fairness["all_configs_match"]
+    )
     return {
         "schema_version": "stage3-final-statistical-protocol-audit-v1",
         "completed_at_utc": utc_now(),
@@ -454,7 +506,10 @@ def protocol_audit() -> dict[str, Any]:
             "decision": "PASS" if fairness_pass else "FAIL",
             "paired_initialization": True,
             "encoder_frozen_and_unchanged": fairness_pass,
-            "same_optimizer_data_epochs_validation_selection": True,
+            "same_optimizer_data_epochs_validation_selection": config_fairness[
+                "all_configs_match"
+            ],
+            "config_audit": config_fairness,
             "system_and_standardized_outcomes_reported_separately": True,
         },
     }

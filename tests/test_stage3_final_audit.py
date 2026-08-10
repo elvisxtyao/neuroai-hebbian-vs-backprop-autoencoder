@@ -5,6 +5,7 @@ import pytest
 from evaluation.analyze_stage3_final_audit import (
     normalized_trapezoid_auc,
     q3_curve_auc_rows,
+    standardized_decoder_config_audit,
     summarize_q3_auc,
 )
 
@@ -87,3 +88,9 @@ def test_q3_auc_contrasts_bootstrap_seed_level_paired_differences():
     assert selected["mean_paired_difference"] == pytest.approx(-0.1)
     assert selected["ci_low"] == pytest.approx(-0.1)
     assert selected["ci_high"] == pytest.approx(-0.1)
+
+
+def test_formal_standardized_decoder_configs_are_identical():
+    audit = standardized_decoder_config_audit()
+    assert audit["config_count"] == 135
+    assert audit["all_configs_match"] is True
