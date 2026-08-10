@@ -1,0 +1,175 @@
+{
+  "audited_source_commit": "5f2da4fe5b4e47ba91e8f3edb9e22a57cdbf1701",
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "resamples": 10000,
+    "seed": 2026
+  },
+  "builder": {
+    "path": "scripts/plot_final_figures.py",
+    "sha256": "f0c8ef0868cdcc3ecf5ae46df81f57471c00a7045fb148ebbddf070cd8367a56"
+  },
+  "figures": {
+    "fig1_performance": {
+      "plotted_rows": [
+        25,
+        5
+      ],
+      "source_hashes": {
+        "data/q1/method_summary.csv": "ac34cb8f978b612717f5784913c400adf4c91fab083f0052356d81a095f841d0",
+        "data/q1/per_seed_complete.csv": "4177a5bd4c7c7f212ff342578be6073f5f34ec42a8485d41784c05c11df07294"
+      },
+      "sources": [
+        "data/q1/per_seed_complete.csv",
+        "data/q1/method_summary.csv"
+      ]
+    },
+    "fig2_prefix_value_training_cost": {
+      "interpolation_performed": false,
+      "plotted_rows": [
+        10,
+        2,
+        200,
+        40,
+        20
+      ],
+      "source_hashes": {
+        "data/audit/q1_samples_seen_curve_per_seed.csv": "902217f0510d3097a3033f1b70e9f20696a4ad4d9c60c716dda6b2cd85f1f849",
+        "data/audit/q1_samples_seen_curve_summary.csv": "6f9394a10061d862ca3b8fdec44a618cf688a9067abbd9e9a24d0b49ef1c6eb1",
+        "data/q1/paired_contrasts.csv": "60ff6c5dee1172c595e1bcbd3146b4e80786a35571139de83e542f68c25d7555",
+        "data/q1/per_seed_complete.csv": "4177a5bd4c7c7f212ff342578be6073f5f34ec42a8485d41784c05c11df07294"
+      },
+      "sources": [
+        "data/q1/per_seed_complete.csv",
+        "data/q1/paired_contrasts.csv",
+        "data/audit/q1_samples_seen_curve_per_seed.csv",
+        "data/audit/q1_samples_seen_curve_summary.csv"
+      ],
+      "trajectory_complete": true
+    },
+    "fig3_layerwise_representation": {
+      "plotted_rows": [
+        60,
+        12
+      ],
+      "source_hashes": {
+        "data/q2/method_layer_summary.csv": "19d7317e29d6d07aa586e1388d99a467143a3d609fdc0ad20a7621c8628552a6",
+        "data/q2/per_seed_layer_metrics.csv": "57928f55fc0cd2e80ef263235dbbe88ea2f6102871b3f7231995eb405ef361aa"
+      },
+      "sources": [
+        "data/q2/per_seed_layer_metrics.csv",
+        "data/q2/method_layer_summary.csv"
+      ],
+      "uncertainty": "mean +/- sample SD"
+    },
+    "fig4_update_mechanism": {
+      "canonical_path": "HHH hebbian_effective only; shared HBB/HHB prefix duplicates omitted",
+      "plotted_rows": [
+        15,
+        3
+      ],
+      "source_hashes": {
+        "data/q4/method_layer_update_summary.csv": "13c24a944119fdcbe904c5cd2094090a9d1c16d3a8ab1e98d4ed30715f4ceb25",
+        "data/q4/per_seed_layer_update_metrics.csv": "0ec163387a12515584b7f9fc050527805501e69be29d99e962a593200ddee3dd"
+      },
+      "sources": [
+        "data/q4/per_seed_layer_update_metrics.csv",
+        "data/q4/method_layer_update_summary.csv"
+      ],
+      "uncertainty": "mean +/- sample SD"
+    },
+    "fig5_robustness": {
+      "clean_rows_reused_at_severity_zero": true,
+      "plotted_rows": [
+        300,
+        60
+      ],
+      "source_hashes": {
+        "data/q3/condition_summary.csv": "ea027d78c91460f71a239266caec213bc7ee6267ebe27aa66d8e25322f90f91f",
+        "data/q3/per_seed_condition_metrics.csv": "340bbc36f0901cfef9e100293ac0a83a801c98f7c653e05ee701d16dc35b743d"
+      },
+      "sources": [
+        "data/q3/per_seed_condition_metrics.csv",
+        "data/q3/condition_summary.csv"
+      ]
+    },
+    "fig6_dimension_architecture": {
+      "interpretation": "descriptive variability; no interaction proof",
+      "late_heavy_seed4_rows": 4,
+      "plotted_rows": [
+        140,
+        28,
+        140,
+        28
+      ],
+      "source_hashes": {
+        "data/q5q6/performance_per_seed.csv": "500de723a18513f7b65f8025d2f119ed64db1387b97b8c9530c3abbd383ae8dd",
+        "data/q5q6/performance_summary.csv": "59e8d5f7b964eb81d483920c184c3c5f71fb4e476e585cab21c05b211130b70c",
+        "data/q5q6/representation_per_seed_layer.csv": "9f85f074eb94ca95ee9226423810b2080f2e6b631790c35eca149e3d73c7e80b",
+        "data/q5q6/representation_summary.csv": "ac244a23eceb35af1b62f37399e67e8c211c2e8dd35f6b338a636cc73197bb5f"
+      },
+      "sources": [
+        "data/q5q6/performance_per_seed.csv",
+        "data/q5q6/performance_summary.csv",
+        "data/q5q6/representation_per_seed_layer.csv",
+        "data/q5q6/representation_summary.csv"
+      ]
+    },
+    "method_design": {
+      "design_only": true,
+      "formal_hero_figure": false,
+      "source_hashes": {},
+      "sources": []
+    }
+  },
+  "formal_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "generated_file_hashes": {
+    "fig1_performance.pdf": "499b68f65032ae429d8a500bc1d7e5a6a3b0f1e64034fcf10a3c3228e217305f",
+    "fig1_performance.png": "7b70a7c4830d99e4e16edbafa793acdeaaf379ac7258390611373ca0322ac200",
+    "fig2_prefix_value_training_cost.pdf": "72e4cca56f80f6b46cd364e75092477eb3a19aa982fc8b8e51626abcffe9b417",
+    "fig2_prefix_value_training_cost.png": "1e43e1d04095c4a26bcbf58675d6ef763db85b10914d24faf7e8e6f80837d40e",
+    "fig3_layerwise_representation.pdf": "962aff97ce36e188f11f5d6aae3d35386a149b8924e89a6c81b85b696310a587",
+    "fig3_layerwise_representation.png": "6d67330a6ffab738d2ef64b26be9214ee5dcb18c42b713df523dc507b4bb2fec",
+    "fig4_update_mechanism.pdf": "dcdea2413c0a1d1ac0e6c07a3a8f15abe214892e2a07f91c3f8a5fbb38599558",
+    "fig4_update_mechanism.png": "2d3e4feb7d2d60d12cafa8008e2fe2dab9d900a126e4bfabee08883b8ebe9da9",
+    "fig5_robustness.pdf": "c0861e82c0cb5834242995b569ca0d3bb841f20f011fdb77e1f6324022845901",
+    "fig5_robustness.png": "6738af28da155967dbc7d31fb572bac236dc4a35edb3df4a1ef7902b6ba5fae3",
+    "fig6_dimension_architecture.pdf": "1a4c836bab585bbf990bf60e6f22eeb6df9f3a86c3a7e09b3ebc746bdf8e0a17",
+    "fig6_dimension_architecture.png": "4bf1792436bacb4e3d811fbfdd6b8cb08dda171ccae9c9639c1dd7734d2c2901",
+    "method_design.pdf": "4ab45ff4fbadfb1d0ccf5176d990dc692ac82723b99b47f7dd3ba9d602d11724",
+    "method_design.png": "a48b6157cd118929fa960e3bfd13589bc0ec65c39a426c6d5b085f8ebef7b3d3",
+    "plotted_values/fig1_per_seed.csv": "82ba6adb0ec4dc4c583a747ff8205b424e457349150d4cc8647e28bc9543c692",
+    "plotted_values/fig1_summary.csv": "c5c7d888294fff5385bfe7263c1c8aa43d9b02f61861ab98b52670827b069481",
+    "plotted_values/fig2_paired_seed_effects.csv": "04783dc90d5907e80a481c032e12e07fff7061710c7f05bb956c4885c4ef2c1a",
+    "plotted_values/fig2_paired_summary.csv": "a2521df705b71bd86d2f88eb963e2dbe96ce36e2ebe404867bf09ce42b4314fe",
+    "plotted_values/fig2_samples_seen_per_seed.csv": "d677119ced4f665db39ecc62ee329dbc43ff57ea15bc0068bd76b08615c35f4e",
+    "plotted_values/fig2_samples_seen_summary.csv": "71ae4f9fd36aae810c58d02f17bc80e20a5da42cd9621edec832eafd6704c5bc",
+    "plotted_values/fig2_training_cost_per_seed.csv": "cf7cfb5b040e093641255588a57a4cf86f14016d85c0d5d6b8a1beced7150a2b",
+    "plotted_values/fig3_per_seed.csv": "a7dc616957a41fbfce246184e81db22c944075c465e9a2ab60086ee91bc0dfe7",
+    "plotted_values/fig3_summary.csv": "cf8cae197f6d3ba6897d6264b58e52e9c28fa9d5f15de5c8d9b33ea845f081c6",
+    "plotted_values/fig4_per_seed.csv": "981b3299406b41b4a0989e4c4b329a3be4dc5f64636a7d7c35bac76827ebf329",
+    "plotted_values/fig4_summary.csv": "50b808f95a1ca439ba05413aa43531cb4296bb44e892531b6d530462dc76e3cf",
+    "plotted_values/fig5_per_seed_curves.csv": "fd314cd4468457fc180ab54c7648e7a27b3d4070b6cb8d8685c0f82e8470c91c",
+    "plotted_values/fig5_summary_curves.csv": "45087c5a207185a7124e937740884a3b3784110b0533915ab2f66396a46f4c05",
+    "plotted_values/fig6_per_seed_performance.csv": "4bb49620e3977f2294e4e7e352f696f3298a53b8431e8651ea87d7a328f0984c",
+    "plotted_values/fig6_per_seed_z_rank.csv": "1303082e7a65cf14ab3670284e52e3f9be58c5e2a46ded23bdb07fa24c2a1a19",
+    "plotted_values/fig6_summary_performance.csv": "66d9c3abf5380dd62715c5af6c3405b0539730bddf5edb334d8942b724800ece",
+    "plotted_values/fig6_summary_z_rank.csv": "41ef429f4b41e4a04ac84e439032ba910814e1bba78fe2828e9a49cef2453286"
+  },
+  "release_id": "v1.0-final",
+  "scientific_actions": {
+    "checkpoints_loaded": false,
+    "datasets_loaded": false,
+    "interpolation_performed": false,
+    "model_evaluation_performed": false,
+    "test_access_increment": 0,
+    "training_performed": false
+  },
+  "statistical_unit": "paired seed"
+}
