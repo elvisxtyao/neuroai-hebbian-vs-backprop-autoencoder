@@ -162,6 +162,15 @@ artifacts are under
 records are `verification/phase0_v1_1/stage3_final_junit.xml` and
 `verification/phase0_v1_1/stage3_final_pytest.log` (138 passed).
 
+The final artifact-only check is documented in
+`docs/final_statistical_protocol_audit.md`. It explicitly records the
+Stage 2D→Stage 3 decision as a post-confirmation protocol re-scoping, adds the
+Q1 samples-seen-axis curve and Q3 whole-severity AUC, verifies late-heavy seed
+4 and all 135 standardized-decoder configs, and performs no new training or
+test evaluation. Its final immutable verification records are
+`verification/phase0_v1_1/stage3_final_audit_junit.xml` and
+`verification/phase0_v1_1/stage3_final_audit_pytest.log` (142 passed).
+
 ## Stage 1 representation-health gate
 
 The gate uses a fixed, class-balanced 2,000-image validation subset and compares

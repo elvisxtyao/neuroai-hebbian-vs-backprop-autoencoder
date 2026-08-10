@@ -79,6 +79,51 @@ HBB's standardized-MSE increase is also lower than HHB under Gaussian by
 `−0.02142 [−0.02629, −0.01678]`. Under masking its increase is slightly larger
 by `+0.00116 [+0.00067, +0.00164]`, although its absolute accuracy is higher.
 
+## Whole-severity robustness AUC supplement
+
+The original analysis already contains all five severity points. The final
+artifact-only audit summarizes each seed-level curve with the normalized
+trapezoidal AUC
+
+```text
+AUC(M) = integral from 0 to 0.4 of M(severity) / 0.4.
+```
+
+Accuracy AUC is higher-is-better. Absolute-degradation AUC is lower-is-better.
+This AUC was requested after completion of the frozen Q3 evaluation, so it is
+reported as a **supplementary/exploratory summary**, not relabelled as a
+preregistered primary endpoint.
+
+| Noise | Method | Accuracy AUC (mean ± SD) | Degradation AUC | Bootstrap 95% CI |
+|---|---|---:|---:|---:|
+| Gaussian | BBB | 0.7909 ± 0.0316 | 0.1250 | [0.1011, 0.1536] |
+| Gaussian | HHH | 0.6350 ± 0.0487 | 0.2591 | [0.2153, 0.2964] |
+| Gaussian | HHB | 0.7503 ± 0.0383 | 0.1696 | [0.1369, 0.1941] |
+| Gaussian | HBB | **0.8366 ± 0.0099** | **0.0798** | [0.0717, 0.0864] |
+| Salt-and-pepper | BBB | 0.5806 ± 0.0677 | 0.3353 | [0.2817, 0.3847] |
+| Salt-and-pepper | HHH | 0.5256 ± 0.0437 | 0.3685 | [0.3261, 0.4037] |
+| Salt-and-pepper | HHB | **0.6026 ± 0.0240** | 0.3172 | [0.2964, 0.3372] |
+| Salt-and-pepper | HBB | 0.5992 ± 0.0785 | **0.3172** | [0.2531, 0.3734] |
+| Pixel masking | BBB | 0.8917 ± 0.0050 | 0.0241 | [0.0201, 0.0273] |
+| Pixel masking | HHH | 0.8586 ± 0.0091 | 0.0355 | [0.0339, 0.0374] |
+| Pixel masking | HHB | 0.8870 ± 0.0042 | 0.0329 | [0.0296, 0.0359] |
+| Pixel masking | HBB | **0.8925 ± 0.0034** | **0.0239** | [0.0216, 0.0267] |
+
+Paired degradation-AUC differences use the same five paired seeds and the same
+10,000-resample bootstrap (seed 2026). Negative differences favor the left
+method.
+
+| Contrast | Gaussian | Salt-and-pepper | Pixel masking |
+|---|---:|---:|---:|
+| HHB − HHH | −0.0895 [−0.1323, −0.0414] | −0.0512 [−0.0970, −0.0062] | −0.0027 [−0.0059, −0.0004] |
+| HBB − HHB | −0.0898 [−0.1156, −0.0524] | −0.0001 [−0.0738, +0.0603] | −0.0090 [−0.0137, −0.0046] |
+| BBB − HHB | −0.0446 [−0.0883, −0.0010] | +0.0180 [−0.0411, +0.0641] | −0.0087 [−0.0139, −0.0036] |
+
+The curve summary strengthens the Gaussian and masking conclusions. Across the
+whole salt-and-pepper curve, HHB and HBB have essentially identical mean
+degradation AUC and their paired interval crosses zero; the severity-0.4 HBB
+advantage must therefore not be generalized to every severity.
+
 ## Interpreting representation cosine
 
 HHH has the numerically highest clean–noisy z cosine (`≈0.9996–0.9999`) while
@@ -134,7 +179,13 @@ Local formal root:
 - accuracy, representation-cosine, prediction-JS, and dual-reconstruction
   severity figures in `figures/`.
 
+Whole-curve supplemental tables are stored in
+`results/formal/phase0_v1_1/stage3_final_audit_supplement/`:
+
+- `q3_curve_auc_per_seed.csv`;
+- `q3_curve_auc_summary.csv`;
+- `q3_curve_auc_paired_contrasts.csv`.
+
 Implementation validation:
 `verification/phase0_v1_1/stage3_q3_implementation_junit.xml` (`117/117`
 tests).
-
