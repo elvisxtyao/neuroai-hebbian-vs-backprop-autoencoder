@@ -1,6 +1,6 @@
 # Tutorial and Notebook Migration Record
 
-Last updated: 2026-07-25
+Last updated: 2026-08-11
 
 ## 1. Purpose
 
@@ -18,17 +18,27 @@ version them.
 |---|---|---|---|---:|---|---|
 | `SRC-BP-NB-001` | `NeuroAI_Project.ipynb` | Teammate/reference Phase 0 BP notebook | `AE4E7F61DDC1F59D62AAE341461BDA8144195FFDEB07DDA10BE5FA4D74E7C308` | 23,574 bytes | 2026-07-21 | Verified local file; upstream URL/version not recorded |
 | `SRC-PLAN-001` | Initial Hebbian project-planning brief (`pasted-text.txt`) | Planning source, not executable tutorial | `2CFCE328088A0F5D852165669967C00A27980B668F3E853C44DC9AAC4A3FF593` | 21,168 bytes | 2026-07-21 | Verified attachment |
-| `SRC-HEBB-TUTORIAL-001` | `Microlearning.ipynb` | Neuromatch teaching source for custom-autograd Hebbian updates and update-comparison concepts | `7D4437AF298A81B128106EF0236AA00D4D9A8108E6199799CFD90026B603ECA3` | 7,426,114 bytes | 2026-07-25 | Verified user-supplied local file; upstream URL/version and sharing terms not recorded |
+| `SRC-HEBB-TUTORIAL-001` | `Microlearning.ipynb` | Neuromatch teaching source for custom-autograd Hebbian updates and update-comparison concepts | `7D4437AF298A81B128106EF0236AA00D4D9A8108E6199799CFD90026B603ECA3` | 7,426,114 bytes | 2026-07-25 | Verified local artifact; official upstream source and BSD 3-Clause software license resolved 2026-08-11 |
 
-### Remaining provenance information for `SRC-HEBB-TUTORIAL-001`
+### Resolved upstream provenance for `SRC-HEBB-TUTORIAL-001`
 
-- author/title where known;
-- upstream URL, commit, or release where available;
-- license or sharing restriction if known.
+- Official repository: `neuromatch/NeuroAI_Course`.
+- Official source: `projects/project-notebooks/Microlearning.ipynb`, pinned at
+  commit `f8cdef10d7463ff626b8c6555a29a0fd918b9fd4` (2026-07-17).
+- Pinned-source SHA-256 as fetched for this audit:
+  `4EECBFEB2EA037D9F8B1024159E4B238F5963D5A51B5355FF1B109F9A2ECB896`.
+- Software license: `LICENSE-CODE.md`, BSD 3-Clause, copyright 2020 Neuromatch
+  Academy. Fetched license SHA-256:
+  `20651B355EC5E6ABAD136A6CF9DAE86E2672777B7C6436AF09EA1096B66EA308`.
+- Required attribution and disclaimer are retained in
+  `THIRD_PARTY_NOTICES.md`.
 
-The local artifact and the audited cells can now be cited by hash. The project
-must still avoid claims about its upstream release or reuse license until those
-details are supplied.
+The previously audited local artifact remains identified by its original hash
+and size. It is not byte-identical to the later pinned official file, so this
+record does not claim byte identity. The relevant custom-autograd,
+update-centering, cosine-similarity, and SNR semantics are present in the
+official source and were compared directly with the three local destination
+files during the release audit.
 
 ## 3. Verified BP notebook contents
 
@@ -83,6 +93,26 @@ recorded in `docs/output_filter_centering_mechanism.md`.
 | Notebook data split | Do not inherit; use the saved stratified Phase 0 manifest | `data/splits/mnist_split_v1.npz` | Implemented |
 | Notebook output as official result | Prohibited; notebooks may demonstrate only | Validated YAML + module CLI + saved run directory | Enforced by policy |
 
+### 5.1 Release provenance classification
+
+- `learning_rules/hebbian.py` is predominantly an independently implemented
+  convolutional competitive Oja/WTA rule. Its optional output-filter centering
+  operation adapts the notebook's output-unit update-centering expression to a
+  Conv2d tensor, and the upstream one-line expression is quoted in the local
+  docstring. This narrow portion is covered by the Neuromatch BSD notice.
+- `evaluation/update_analysis.py` independently implements frozen-state update
+  alignment, scale-matched relative bias, norm ratios, and a power-based
+  across-batch SNR. These are conceptually informed by the notebook's update
+  comparison, cosine, and variability sections; no upstream code portion or
+  multi-line implementation was copied.
+- `evaluation/run_q4_tooling.py` is independent project-specific orchestration
+  for frozen snapshots, matched reconstruction gradients, fixed batches,
+  integrity gates, and artifact provenance. No upstream code portion was
+  copied.
+- The notebook's `HebbianFunction`, custom-autograd training path, target
+  clamping, MLP implementation, plotting helpers, and dataset logic are not
+  present in these project files.
+
 ## 6. Prohibited migrations
 
 The following must not enter Q1–Q6 main experiments:
@@ -105,6 +135,7 @@ The following must not enter Q1–Q6 main experiments:
 - [x] Official experiment-entry policy recorded.
 - [x] Supplied Hebbian tutorial filename, local hash, size, and access date recorded.
 - [x] Active update-centering axis and distinction from the commented Oja branch audited.
-- [ ] Original source license/sharing status checked where available.
+- [x] Original source license/sharing status checked against the official
+  Neuromatch repository and retained in `THIRD_PARTY_NOTICES.md`.
 
-The remaining license/sharing item cannot be inferred from the local file.
+The Neuromatch software-provenance item is resolved for public release.

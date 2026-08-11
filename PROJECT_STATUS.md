@@ -99,18 +99,24 @@ so the repository does not contain broken links to private run records.
 - The canonical formal source ref is `phase0-v1.1-formal`; environment and
   full-suite test evidence are tracked under `environment/` and `verification/`.
 
-### Pending external evidence
+### External provenance and confirmation evidence
 
-- The supplied Hebbian notebook is now locally verified by filename, size,
-  access date, and SHA-256. Its upstream URL/version and license or sharing
-  terms remain unknown.
-- Written confirmation from the BP teammate that their implementation is
-  `phase0-v1 compliant` has not been attached.
+- The supplied Hebbian notebook is locally verified by filename, size, access
+  date, and SHA-256. Its official Neuromatch upstream source is pinned at
+  `f8cdef10`, and the relevant software is BSD 3-Clause licensed. Required
+  attribution is retained in `THIRD_PARTY_NOTICES.md`.
+- The repository owner confirms that the six Phase 0 BP/reference destination
+  files listed in `docs/tutorial_migration.md` were written entirely by the
+  owner. They contain no teammate-authored source code and require no teammate
+  redistribution or relicensing permission.
+- Written BP-team confirmation of `phase0-v1` protocol compliance has not been
+  attached. This is an archival external-compliance item, not an ownership or
+  licensing gate.
 
-These remaining fields are tracked in `docs/tutorial_migration.md` and
-`docs/phase0_team_confirmation.md`. They must not be inferred or self-certified
-by the Hebbian implementation. They do not authorize protocol drift and are
-not blockers for the local canonical source freeze.
+The source-provenance resolution is tracked in `docs/tutorial_migration.md`.
+The remaining compliance confirmation is tracked in
+`docs/phase0_team_confirmation.md`; it does not authorize protocol drift and is
+not a release ownership or redistribution blocker.
 
 ## 5. Phase 1 implementation status
 
@@ -304,8 +310,9 @@ Phase 9 experiments (CIFAR-10, non-stationary data, noisy training, alternate
 Hebbian rules, or a local decoder) remain optional extensions requiring a new
 protocol; they must not alter or be mixed into the completed v1 results.
 
-Tutorial provenance and teammate confirmation remain useful archival items,
-but they are not open scientific gates for Q1–Q6.
+Tutorial software provenance is resolved for release. BP teammate confirmation
+remains a useful archival compliance item, but it is neither an ownership gate
+nor an open scientific gate for Q1–Q6.
 
 ## 10. Status change log
 
@@ -337,3 +344,4 @@ but they are not open scientific gates for Q1–Q6.
 | 2026-08-09 | Completed formal Q5/Q6 dimension and matched-encoder-parameter width sweeps: five new case gates PASS, all one-time test/representation/noise/update outputs complete, aggregate integrity PASS, training costs recorded, and 138/138 final tests passed | `docs/stage3_q5q6_results.md`, `configs/experiments/stage3_q5q6_sweeps_v1.yaml`, local `results/formal/phase0_v1_1/stage3_q5q6_sweeps/` artifacts |
 | 2026-08-10 | Final artifact-only audit PASS: confirmed Stage 2D→Stage 3 post-confirmation amendment, added Q1 samples-seen curves and Q3 whole-severity AUC/paired CIs, retained late-heavy seed 4, verified all 135 standardized-decoder configs, and passed 142/142 tests; no training, checkpoint/data load or new test access | `docs/final_statistical_protocol_audit.md`, updated Q1/Q3 reports, immutable final-audit test logs, local `stage3_final_audit_supplement/` artifacts |
 | 2026-08-10 | v1.0-final Phase 1 compact-evidence freeze completed on `codex/final-release`: accepted aggregate CSV/JSON records copied under a relative-path manifest with SHA-256 checksums, 135 standardized-decoder config hashes indexed, evidence classes/exclusions recorded, and raw/ignored artifacts preserved | `release/v1.0-final/`, `scripts/build_final_release.py`, `scripts/verify_final_release.py`, `tests/test_final_release_bundle.py` |
+| 2026-08-11 | Public-release license provenance resolved: six Phase 0 BP/reference files confirmed owner-authored; the official Neuromatch Microlearning source and BSD 3-Clause license pinned; narrow adaptation scope documented; MIT license and complete third-party notice added | `LICENSE`, `THIRD_PARTY_NOTICES.md`, `docs/tutorial_migration.md`, `docs/final/FINAL_RELEASE_AUDIT.md` |

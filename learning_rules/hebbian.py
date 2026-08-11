@@ -15,6 +15,9 @@ from .base import RepresentationTrainer, images_from_batch
 def center_output_filter_updates(update: torch.Tensor) -> torch.Tensor:
     """Remove the update direction shared across output filters.
 
+    This optional operation is a BSD-3-Clause adaptation of the Neuromatch
+    Microlearning update-centering expression; see ``THIRD_PARTY_NOTICES.md``.
+
     Conv2d weights use ``[out_channels, in_channels, kernel_h, kernel_w]``.
     Centering dimension 0 therefore reproduces the notebook's linear-layer
     ``grad_weight - grad_weight.mean(axis=0)`` operation at filter level.

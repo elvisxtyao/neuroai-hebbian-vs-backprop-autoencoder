@@ -27,8 +27,10 @@ ARCHIVE_ROOT = PurePosixPath("v1.0-final-evidence")
 
 DOCUMENTS = (
     "FINAL_REPORT.md",
+    "LICENSE",
     "RESULTS_SUMMARY.md",
     "REPRODUCIBILITY.md",
+    "THIRD_PARTY_NOTICES.md",
     "project_demo.ipynb",
 )
 DIRECTORIES = (

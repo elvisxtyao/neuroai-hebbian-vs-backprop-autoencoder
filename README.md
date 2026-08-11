@@ -87,3 +87,11 @@ The study uses MNIST, one local competitive rule, one three-layer ConvAE family,
 ## Project Context
 
 This work originated as a NeuroAI research project and developed into a frozen study of layerwise credit assignment, representation compression, and hybrid local/global learning. The release preserves negative results and governance history, including the failed Stage 2D confirmation and the later independently documented Stage 3 re-scoping.
+
+## License
+
+Original project code is released under the [MIT License](LICENSE). The
+output-filter update-centering adaptation from the Neuromatch Academy NeuroAI
+Course remains subject to its BSD 3-Clause notice; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Neuromatch Academy does not
+endorse this project.
