@@ -6,7 +6,7 @@ Training source commit: `3c422aa4a0bd6f8e65ce0b1f45a8b001239c965d`
 
 Evaluator commit: `4595ac340e785df489ff295fdf42adca9d23403c`
 
-Protocol: `docs/stage3_formal_protocol_v1.md`
+Protocol: `docs/protocols/stage3_formal_protocol_v1.md`
 
 ## Scope and decision
 

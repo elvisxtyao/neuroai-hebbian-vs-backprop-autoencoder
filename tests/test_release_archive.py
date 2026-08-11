@@ -56,7 +56,7 @@ def test_repository_license_and_third_party_notice_are_complete():
     license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
     notice = (ROOT / "THIRD_PARTY_NOTICES.md").read_text(encoding="utf-8")
     audit = (ROOT / "docs/final/FINAL_RELEASE_AUDIT.md").read_text(encoding="utf-8")
-    migration = (ROOT / "docs/tutorial_migration.md").read_text(encoding="utf-8")
+    migration = (ROOT / "docs/history/tutorial_migration.md").read_text(encoding="utf-8")
     assert license_text.startswith("MIT License\n")
     assert "Copyright (c) 2026 Xiaotian Yao" in license_text
     for required in (

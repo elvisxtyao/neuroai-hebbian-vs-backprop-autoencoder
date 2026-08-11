@@ -4,14 +4,14 @@
 release/v1.0-final/** text eol=crlf
 
 # Hash-protected governance, figure-source, and plotted-value files use LF.
-HEBBIAN_PROJECT_PLAN.md text eol=lf
-PHASE0_STANDARD_V1.md text eol=lf
-PHASE0_STANDARD_V1_1_ADDENDUM.md text eol=lf
-PROJECT_STATUS.md text eol=lf
-docs/final_statistical_protocol_audit.md text eol=lf
-docs/hybrid_hhb_confirmation_protocol.md text eol=lf
-docs/hybrid_hhb_confirmation_results.md text eol=lf
-docs/stage3_formal_protocol_v1.md text eol=lf
+docs/history/HEBBIAN_PROJECT_PLAN.md text eol=lf
+docs/history/PROJECT_STATUS.md text eol=lf
+docs/protocols/PHASE0_STANDARD_V1.md text eol=lf
+docs/protocols/PHASE0_STANDARD_V1_1_ADDENDUM.md text eol=lf
+docs/audits/final_statistical_protocol_audit.md text eol=lf
+docs/confirmation/hybrid_hhb_confirmation_protocol.md text eol=lf
+docs/confirmation/hybrid_hhb_confirmation_results.md text eol=lf
+docs/protocols/stage3_formal_protocol_v1.md text eol=lf
 scripts/plot_final_figures.py text eol=lf
 figures/final/plotted_values/** text eol=lf
 

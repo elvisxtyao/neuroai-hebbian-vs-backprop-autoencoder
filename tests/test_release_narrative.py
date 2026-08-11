@@ -37,6 +37,15 @@ def test_required_narrative_files_and_local_links_exist():
             assert target.exists(), f"Broken local link in {path}: {target}"
 
 
+def test_documentation_index_and_all_document_links_exist():
+    index = ROOT / "docs/README.md"
+    assert index.is_file()
+    paths = [index, *sorted((ROOT / "docs").rglob("*.md"))]
+    for path in paths:
+        for target in _local_markdown_targets(path):
+            assert target.exists(), f"Broken local link in {path}: {target}"
+
+
 def test_headline_numbers_match_compact_frozen_tables():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     report = (ROOT / "FINAL_REPORT.md").read_text(encoding="utf-8")

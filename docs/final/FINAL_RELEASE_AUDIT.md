@@ -110,7 +110,7 @@ The source comparison used the official Neuromatch Academy NeuroAI Course
 `f8cdef10d7463ff626b8c6555a29a0fd918b9fd4`. The official repository states
 that software elements are BSD 3-Clause licensed. The fetched source and
 license SHA-256 values, local-source distinction, and comparison boundary are
-recorded in `docs/tutorial_migration.md`.
+recorded in `docs/history/tutorial_migration.md`.
 
 No `HebbianFunction`, custom-autograd path, target-clamping path, upstream MLP,
 training loop, plotting helper, or dataset code was copied into the three local

@@ -5,7 +5,7 @@ __pycache__/
 .agents/
 ae/
 data/raw/
-results/
+/results/
 *.pt
 *.pth
 *.zip
