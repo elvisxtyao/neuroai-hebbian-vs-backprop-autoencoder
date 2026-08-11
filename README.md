@@ -1,5 +1,7 @@
 # Where Does Hebbian Learning Help?
 
+[Final report](FINAL_REPORT.md) · [Results summary](RESULTS_SUMMARY.md) · [Reproduce the release](REPRODUCIBILITY.md) · [Documentation index](docs/README.md) · [GitHub release](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/releases/tag/v1.0-final)
+
 This repository studies a focused credit-assignment question: **how far can local Hebbian learning be stacked into a hierarchical encoder before global backpropagation becomes necessary?** In a three-layer convolutional autoencoder on MNIST, it compares full BP, a competitive Oja/WTA Hebbian rule, and two hybrid allocations that introduce BP at different encoder depths. The formal release uses five paired seeds and separates classification, reconstruction, representation geometry, robustness, and update mechanism.
 
 ## Key Finding
@@ -64,21 +66,26 @@ configs/                        Frozen experiment configurations
 results/                        Ignored local full archive; not distributed in the compact GitHub release
 release/v1.0-final/             Compact accepted evidence and integrity metadata
 figures/final/                  Publication figures and plotted-value provenance
-docs/final/                     Figure audit and full captions
-docs/                           Protocols, amendments, and frozen result reports
+docs/protocols/                 Frozen protocols and amendments
+docs/results/                   Formal and diagnostic result reports
+docs/confirmation/              Frozen Stage 2D protocol and failed confirmation
+docs/audits/                    Statistical, representation, and mechanism audits
+docs/history/                   Project governance and development history
+docs/final/                     Release audit, figure audit, and full captions
 scripts/                        Release verification and artifact-only plotting
 tests/                          Unit, release-bundle, and figure validation tests
 ```
 
 ## Documentation
 
+- [Documentation index](docs/README.md)
 - [Final research report](FINAL_REPORT.md)
 - [Compact numerical results](RESULTS_SUMMARY.md)
 - [Reproducibility guide](REPRODUCIBILITY.md) and [artifact-only project demo](project_demo.ipynb)
 - [Figure captions](docs/final/FIGURE_CAPTIONS.md) and [figure audit](docs/final/FIGURE_AUDIT.md)
 - [Compact evidence manifest](release/v1.0-final/manifest.json) and [artifact registry](release/v1.0-final/artifact_registry.csv)
-- [Stage 3 formal protocol](docs/stage3_formal_protocol_v1.md) and [final statistical audit](docs/final_statistical_protocol_audit.md)
-- [Project status](PROJECT_STATUS.md) and [historical research plan](HEBBIAN_PROJECT_PLAN.md)
+- [Stage 3 formal protocol](docs/protocols/stage3_formal_protocol_v1.md) and [final statistical audit](docs/audits/final_statistical_protocol_audit.md)
+- [Project status](docs/history/PROJECT_STATUS.md) and [historical research plan](docs/history/HEBBIAN_PROJECT_PLAN.md)
 
 ## Scope and Limitations
 

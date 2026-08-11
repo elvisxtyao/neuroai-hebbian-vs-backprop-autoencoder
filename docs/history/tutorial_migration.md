@@ -74,7 +74,7 @@ The notebook operation is not equivalent to the repository's centered-input
 patch option: the former centers an already formed update across output units,
 whereas the latter changes the presynaptic patches before correlation. The
 bounded convolutional migration and its negative validation result are
-recorded in `docs/output_filter_centering_mechanism.md`.
+recorded in `docs/audits/output_filter_centering_mechanism.md`.
 
 ## 5. Migration map
 

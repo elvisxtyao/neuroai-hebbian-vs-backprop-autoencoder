@@ -181,7 +181,7 @@ python -m evaluation.analyze_stage3_q5q6 --config configs/experiments/stage3_q5q
 python -m evaluation.analyze_stage3_final_audit --output-dir results/formal/phase0_v1_1/stage3_final_audit_supplement
 ```
 
-The per-case Q5/Q6 post-freeze commands are defined in `evaluation/run_stage3_q5q6_test.py`, `evaluation/run_stage3_q5q6_representation.py`, and `evaluation/run_stage3_q5q6_noise.py`. Historical execution must follow `docs/stage3_formal_protocol_v1.md` and `docs/stage3_q5q6_sweep_protocol.md`; the abbreviated command list above does not override their gates.
+The per-case Q5/Q6 post-freeze commands are defined in `evaluation/run_stage3_q5q6_test.py`, `evaluation/run_stage3_q5q6_representation.py`, and `evaluation/run_stage3_q5q6_noise.py`. Historical execution must follow `docs/protocols/stage3_formal_protocol_v1.md` and `docs/protocols/stage3_q5q6_sweep_protocol.md`; the abbreviated command list above does not override their gates.
 
 ### Standardized decoder protocol
 
@@ -194,4 +194,4 @@ For each completed encoder, freeze the encoder, initialize a new decoder from th
 - Actual runtime depends on hardware, filesystem, and library versions.
 - The project records deterministic seeds, environment versions, split identities, configs, checkpoints, and freeze gates. It does **not** promise bitwise-identical training across different hardware or library stacks.
 
-For scientific interpretation and governance chronology, see [FINAL_REPORT.md](FINAL_REPORT.md), [RESULTS_SUMMARY.md](RESULTS_SUMMARY.md), and the [final statistical audit](docs/final_statistical_protocol_audit.md).
+For scientific interpretation and governance chronology, see [FINAL_REPORT.md](FINAL_REPORT.md), [RESULTS_SUMMARY.md](RESULTS_SUMMARY.md), and the [final statistical audit](docs/audits/final_statistical_protocol_audit.md).

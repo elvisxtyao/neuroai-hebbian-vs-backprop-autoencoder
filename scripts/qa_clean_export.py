@@ -73,6 +73,18 @@ def _exportable_files() -> list[PurePosixPath]:
         for raw in completed.stdout.split(b"\0")
         if raw
     ]
+    deleted = subprocess.run(
+        ["git", "ls-files", "-z", "--deleted"],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        check=True,
+    )
+    deleted_paths = {
+        PurePosixPath(raw.decode("utf-8"))
+        for raw in deleted.stdout.split(b"\0")
+        if raw
+    }
+    paths = [path for path in paths if path not in deleted_paths]
     forbidden = [path for path in paths if path.parts and path.parts[0] == "results"]
     if forbidden:
         raise ValueError(f"Clean export unexpectedly includes results/: {forbidden[:3]}")

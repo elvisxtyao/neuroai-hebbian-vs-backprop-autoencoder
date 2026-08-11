@@ -24,6 +24,29 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "release" / "v1.0-final"
 FORMAL_ROOT = Path("results/formal/phase0_v1_1")
 
+# Keep the v1.0 manifest's historical logical paths stable while allowing the
+# public repository to present governance records under docs/.
+FROZEN_GOVERNANCE_PATHS = {
+    "HEBBIAN_PROJECT_PLAN.md": "docs/history/HEBBIAN_PROJECT_PLAN.md",
+    "PROJECT_STATUS.md": "docs/history/PROJECT_STATUS.md",
+    "PHASE0_STANDARD_V1.md": "docs/protocols/PHASE0_STANDARD_V1.md",
+    "PHASE0_STANDARD_V1_1_ADDENDUM.md": (
+        "docs/protocols/PHASE0_STANDARD_V1_1_ADDENDUM.md"
+    ),
+    "docs/hybrid_hhb_confirmation_protocol.md": (
+        "docs/confirmation/hybrid_hhb_confirmation_protocol.md"
+    ),
+    "docs/hybrid_hhb_confirmation_results.md": (
+        "docs/confirmation/hybrid_hhb_confirmation_results.md"
+    ),
+    "docs/stage3_formal_protocol_v1.md": (
+        "docs/protocols/stage3_formal_protocol_v1.md"
+    ),
+    "docs/final_statistical_protocol_audit.md": (
+        "docs/audits/final_statistical_protocol_audit.md"
+    ),
+}
+
 FORBIDDEN_SOURCE_PARTS = {
     "_recovery",
     "recovery",
@@ -531,17 +554,8 @@ def build(output: Path = DEFAULT_OUTPUT, repo_root: Path = ROOT) -> Path:
             "preliminary Stage 1B presentation figures",
         ],
         "governance_document_hashes": {
-            relative: sha256(repo_root / relative)
-            for relative in (
-                "HEBBIAN_PROJECT_PLAN.md",
-                "PROJECT_STATUS.md",
-                "PHASE0_STANDARD_V1.md",
-                "PHASE0_STANDARD_V1_1_ADDENDUM.md",
-                "docs/hybrid_hhb_confirmation_protocol.md",
-                "docs/hybrid_hhb_confirmation_results.md",
-                "docs/stage3_formal_protocol_v1.md",
-                "docs/final_statistical_protocol_audit.md",
-            )
+            logical: sha256(repo_root / current)
+            for logical, current in FROZEN_GOVERNANCE_PATHS.items()
         },
     }
     (output / "manifest.json").write_text(

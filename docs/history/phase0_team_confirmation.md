@@ -12,7 +12,7 @@ must not mark this confirmation complete on behalf of the BP teammate.
 
 ## 2. Message to send to the BP teammate
 
-Please review `PHASE0_STANDARD_V1.md` and confirm the following for the BP
+Please review `docs/protocols/PHASE0_STANDARD_V1.md` and confirm the following for the BP
 baseline commit/run:
 
 - [ ] It uses the shared `ConvAutoencoder` rather than a copied model class.

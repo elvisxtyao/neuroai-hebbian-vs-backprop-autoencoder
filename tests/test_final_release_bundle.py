@@ -5,8 +5,15 @@ import shutil
 
 import pytest
 
-from scripts.build_final_release import build, validate_source_path
+from scripts.build_final_release import (
+    FROZEN_GOVERNANCE_PATHS as BUILDER_GOVERNANCE_PATHS,
+    build,
+    validate_source_path,
+)
 from scripts.verify_final_release import DEFAULT_RELEASE, verify
+from scripts.verify_local_archive import (
+    FROZEN_GOVERNANCE_PATHS as VERIFIER_GOVERNANCE_PATHS,
+)
 
 
 def test_committed_compact_release_bundle_passes():
@@ -39,6 +46,16 @@ def test_compact_tables_have_frozen_counts_methods_and_seeds():
         == 270
     )
     assert verify(DEFAULT_RELEASE)["formal_seeds"] == [0, 1, 2, 3, 4]
+
+
+def test_reorganized_governance_documents_preserve_frozen_logical_paths():
+    manifest = json.loads((DEFAULT_RELEASE / "manifest.json").read_text(encoding="utf-8"))
+    expected = manifest["governance_document_hashes"]
+    assert BUILDER_GOVERNANCE_PATHS == VERIFIER_GOVERNANCE_PATHS
+    assert set(BUILDER_GOVERNANCE_PATHS) == set(expected)
+    for current in BUILDER_GOVERNANCE_PATHS.values():
+        path = DEFAULT_RELEASE.parents[1] / current
+        assert path.is_file(), current
 
 
 def test_builder_refuses_to_overwrite_output(tmp_path):

@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import stat
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,31 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RELEASE = ROOT / "release" / "v1.0-final"
+FROZEN_GOVERNANCE_COMMIT = "bfee8f369db0eac4955f4084f20ff62c447aa377"
+
+# The frozen v1.0 manifest records paths from the audited source commit. These
+# aliases preserve those logical identifiers after the public documentation was
+# grouped under docs/ without changing any frozen hash or release metadata.
+FROZEN_GOVERNANCE_PATHS = {
+    "HEBBIAN_PROJECT_PLAN.md": "docs/history/HEBBIAN_PROJECT_PLAN.md",
+    "PROJECT_STATUS.md": "docs/history/PROJECT_STATUS.md",
+    "PHASE0_STANDARD_V1.md": "docs/protocols/PHASE0_STANDARD_V1.md",
+    "PHASE0_STANDARD_V1_1_ADDENDUM.md": (
+        "docs/protocols/PHASE0_STANDARD_V1_1_ADDENDUM.md"
+    ),
+    "docs/hybrid_hhb_confirmation_protocol.md": (
+        "docs/confirmation/hybrid_hhb_confirmation_protocol.md"
+    ),
+    "docs/hybrid_hhb_confirmation_results.md": (
+        "docs/confirmation/hybrid_hhb_confirmation_results.md"
+    ),
+    "docs/stage3_formal_protocol_v1.md": (
+        "docs/protocols/stage3_formal_protocol_v1.md"
+    ),
+    "docs/final_statistical_protocol_audit.md": (
+        "docs/audits/final_statistical_protocol_audit.md"
+    ),
+}
 
 
 def sha256(path: Path) -> str:
@@ -29,6 +55,29 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _historical_governance_sha256(
+    repository_root: Path,
+    logical_path: str,
+) -> str | None:
+    """Hash the Phase 1 governance blob when a later archival note changed it."""
+
+    completed = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repository_root),
+            "show",
+            f"{FROZEN_GOVERNANCE_COMMIT}:{logical_path}",
+        ],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    if completed.returncode != 0:
+        return None
+    return hashlib.sha256(completed.stdout).hexdigest()
 
 
 def _inventory(root: Path) -> dict[str, int]:
@@ -113,8 +162,12 @@ def verify_local_archive(
             raise ValueError(f"Resolved config fingerprint mismatch: {record['logical_source']}")
 
     for relative, expected in manifest["governance_document_hashes"].items():
-        path = repository_root / relative
-        if not path.is_file() or sha256(path) != expected:
+        path = repository_root / FROZEN_GOVERNANCE_PATHS.get(relative, relative)
+        current_matches = path.is_file() and sha256(path) == expected
+        historical_matches = (
+            _historical_governance_sha256(repository_root, relative) == expected
+        )
+        if not current_matches and not historical_matches:
             raise ValueError(f"Governance document fingerprint mismatch: {relative}")
 
     frozen_inventory = manifest["local_raw_inventory_at_freeze"]
