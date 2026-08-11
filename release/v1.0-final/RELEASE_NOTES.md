@@ -35,7 +35,7 @@ python scripts/plot_final_figures.py --output figures/rebuilt-v1.0-final
 
 Detailed clean-export instructions are provided in `REPRODUCIBILITY.md`, and the executed artifact-only walkthrough is available as `project_demo.ipynb`. No scientific retraining or model evaluation is required to verify the compact evidence, rebuild the figures, or execute the demo.
 
-## Known Limitations
+## Limitations
 
 - MNIST only; one competitive Oja/WTA-style Hebbian rule; one three-layer ConvAE family.
 - Five paired formal seeds and limited latent-dimension/channel-allocation sweeps.
@@ -44,7 +44,7 @@ Detailed clean-export instructions are provided in `REPRODUCIBILITY.md`, and the
 - Q4 update alignment is an objective-specific association, not direct causal evidence or a universal endorsement of the BP direction.
 - HHB's larger architecture variability is descriptive; the overall method×architecture accuracy interaction is non-significant.
 
-## Governance Note
+## Governance
 
 Stage 2D ended as **CONFIRMATION FAILED** because seed 43 failed the preregistered standardized-decoder reconstruction criterion (HHB/BBB MSE ratio 1.5688 versus the required maximum 1.25). Stage 2D nevertheless supported classification stability and z-rank repair. Its threshold and outcome were not retrospectively changed.
 
