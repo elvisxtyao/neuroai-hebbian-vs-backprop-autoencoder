@@ -10,6 +10,7 @@ NARRATIVE_FILES = [
     ROOT / "FINAL_REPORT.md",
     ROOT / "RESULTS_SUMMARY.md",
     ROOT / "README.md",
+    ROOT / "REPRODUCIBILITY.md",
     ROOT / "release/v1.0-final/RELEASE_NOTES.md",
     ROOT / "docs/final/FIGURE_CAPTIONS.md",
 ]

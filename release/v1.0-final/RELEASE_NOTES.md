@@ -33,7 +33,7 @@ The final figures can be regenerated from compact frozen tables only:
 python scripts/plot_final_figures.py --output figures/rebuilt-v1.0-final
 ```
 
-Detailed clean-export instructions and the artifact-only demonstration notebook are not part of this Phase 3 narrative update; they will be added during the subsequent reproducibility phase before publication. No scientific retraining or model evaluation is required to verify the compact evidence or rebuild the figures.
+Detailed clean-export instructions are provided in `REPRODUCIBILITY.md`, and the executed artifact-only walkthrough is available as `project_demo.ipynb`. No scientific retraining or model evaluation is required to verify the compact evidence, rebuild the figures, or execute the demo.
 
 ## Known Limitations
 

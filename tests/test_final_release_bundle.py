@@ -5,7 +5,7 @@ import shutil
 
 import pytest
 
-from scripts.build_final_release import build, validate_source_path, validate_source_tables
+from scripts.build_final_release import build, validate_source_path
 from scripts.verify_final_release import DEFAULT_RELEASE, verify
 
 
@@ -31,10 +31,14 @@ def test_compact_bundle_contains_no_windows_absolute_paths():
             assert ":\\\\" not in text
 
 
-def test_formal_source_tables_have_frozen_counts_methods_and_seeds():
-    counts = validate_source_tables()
-    assert counts["data/q1/per_seed_complete.csv"] == 35
-    assert counts["data/q5q6/architecture_update_per_seed.csv"] == 270
+def test_compact_tables_have_frozen_counts_methods_and_seeds():
+    manifest = json.loads((DEFAULT_RELEASE / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["row_expectations"]["data/q1/per_seed_complete.csv"] == 35
+    assert (
+        manifest["row_expectations"]["data/q5q6/architecture_update_per_seed.csv"]
+        == 270
+    )
+    assert verify(DEFAULT_RELEASE)["formal_seeds"] == [0, 1, 2, 3, 4]
 
 
 def test_builder_refuses_to_overwrite_output(tmp_path):
@@ -76,4 +80,26 @@ def test_verifier_rejects_governance_reclassification(tmp_path):
     manifest["scientific_actions"]["training_performed"] = True
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="forbidden scientific action"):
+        verify(copied)
+
+
+def test_verifier_rejects_manifest_schema_change(tmp_path):
+    copied = tmp_path / "release"
+    shutil.copytree(DEFAULT_RELEASE, copied)
+    manifest_path = copied / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = "unexpected-schema"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="manifest schema"):
+        verify(copied)
+
+
+def test_verifier_rejects_formal_seed_change(tmp_path):
+    copied = tmp_path / "release"
+    shutil.copytree(DEFAULT_RELEASE, copied)
+    manifest_path = copied / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["formal_seeds"] = [0, 1, 2, 3]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="formal seed"):
         verify(copied)

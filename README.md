@@ -17,7 +17,7 @@ Under this tested architecture and rule, shallow Hebbian learning remains useful
 - **RBB/RRB:** frozen random-prefix controls matched to HBB/HHB depth.
 - **Random:** fully random encoder, used only as an overall lower bound.
 
-All methods use a BP decoder and a frozen linear probe evaluation path. HHB and HBB are hybrid models, not pure Hebbian models. Formal inference uses paired seeds `[0, 1, 2, 3, 4]` and frozen 95% bootstrap intervals.
+All methods use a BP decoder and a frozen linear probe evaluation path. HHB and HBB are hybrid models, not pure Hebbian models. Formal inference uses five paired seeds `[0, 1, 2, 3, 4]`; seed is the statistical unit, and uncertainty is reported with frozen 95% bootstrap confidence intervals.
 
 ## Main Results
 
@@ -53,7 +53,7 @@ The repository separates three reproducibility tiers:
 2. **Figure regeneration:** `scripts/plot_final_figures.py --output figures/rebuilt-v1.0-final` rebuilds the final figures only from the compact frozen tables into a new directory. It does not train or evaluate a model.
 3. **Full research archive:** protocols, configurations, training/evaluation code, and frozen formal outputs retain the original research lineage. Large checkpoints and raw arrays are intentionally excluded from the compact release bundle.
 
-Detailed clean-export instructions and the lightweight artifact-only notebook are reserved for the reproducibility phase and are not part of this narrative update.
+See the [reproducibility guide](REPRODUCIBILITY.md) for exact commands and the executed [artifact-only project demo](project_demo.ipynb) for a 3–5 minute walkthrough.
 
 ## Repository Structure
 
@@ -61,7 +61,7 @@ Detailed clean-export instructions and the lightweight artifact-only notebook ar
 ae/, learning_rules/, models/   Model and learning-rule implementation
 training/, evaluation/          Training and evaluation infrastructure
 configs/                        Frozen experiment configurations
-results/                        Formal, confirmation, diagnostic, and exploratory outputs
+results/                        Ignored local full archive; not distributed in the compact GitHub release
 release/v1.0-final/             Compact accepted evidence and integrity metadata
 figures/final/                  Publication figures and plotted-value provenance
 docs/final/                     Figure audit and full captions
@@ -74,6 +74,7 @@ tests/                          Unit, release-bundle, and figure validation test
 
 - [Final research report](FINAL_REPORT.md)
 - [Compact numerical results](RESULTS_SUMMARY.md)
+- [Reproducibility guide](REPRODUCIBILITY.md) and [artifact-only project demo](project_demo.ipynb)
 - [Figure captions](docs/final/FIGURE_CAPTIONS.md) and [figure audit](docs/final/FIGURE_AUDIT.md)
 - [Compact evidence manifest](release/v1.0-final/manifest.json) and [artifact registry](release/v1.0-final/artifact_registry.csv)
 - [Stage 3 formal protocol](docs/stage3_formal_protocol_v1.md) and [final statistical audit](docs/final_statistical_protocol_audit.md)
