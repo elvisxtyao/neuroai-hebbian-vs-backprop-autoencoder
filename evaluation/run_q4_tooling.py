@@ -32,7 +32,7 @@ from evaluation.update_analysis import (
     update_snr,
 )
 from learning_rules.hebbian import CompetitiveOjaConv2d
-from models import ConvAutoencoder
+from models import ConvAutoencoder, autoencoder_from_config
 from utils.checkpointing import file_sha256, utc_now
 from utils.reproducibility import (
     git_provenance,
@@ -42,6 +42,14 @@ from utils.reproducibility import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def analysis_model_from_run_config(
+    run_config: dict[str, Any], *, seed: int
+) -> ConvAutoencoder:
+    """Construct the exact forward architecture used by a source run."""
+
+    return autoencoder_from_config(run_config, seed=seed)
 
 
 def _resolve(path: str | Path) -> Path:
@@ -383,8 +391,8 @@ def _analyze_pair(
         raise RuntimeError(f"Incomplete Q4 pair directory requires inspection: {pair_dir}")
     pair_dir.mkdir(parents=True, exist_ok=True)
 
-    model = ConvAutoencoder(
-        latent_dim=int(run_config["model"]["latent_dim"]),
+    model = analysis_model_from_run_config(
+        run_config,
         seed=int(config["source"]["seed"]),
     )
     model.encoder.load_state_dict(encoder_state)
@@ -750,8 +758,8 @@ def run_q4_tooling(config_path: str | Path) -> Path:
             raise RuntimeError("Source run seed differs from Q4 config")
         if run_config["model"]["target_clamping"]:
             raise RuntimeError("Source model target clamping must be false")
-        initial_model = ConvAutoencoder(
-            latent_dim=int(run_config["model"]["latent_dim"]),
+        initial_model = analysis_model_from_run_config(
+            run_config,
             seed=int(config["source"]["seed"]),
         )
         initial_state = {

@@ -12,6 +12,7 @@ from evaluation.run_stage3_q4_updates import (
     analyze_bp_final,
     summarize_rows,
 )
+from evaluation.run_q4_tooling import analysis_model_from_run_config
 from models import ConvAutoencoder
 
 
@@ -90,6 +91,22 @@ def test_final_bp_analysis_supports_asymmetric_encoder_widths(
     )
     assert summary["batch_count"] == 2
     assert summary["analysis_optimizer_steps"] == 0
+
+
+def test_pair_analysis_factory_preserves_asymmetric_source_widths() -> None:
+    run_config = {
+        "model": {
+            "latent_dim": 11,
+            "encoder_channels": [4, 7],
+        }
+    }
+    model = analysis_model_from_run_config(run_config, seed=3)
+    features = model.encode(
+        torch.zeros(2, 1, 28, 28), return_all_layers=True
+    )
+    assert tuple(features["h1"].shape[1:]) == (4, 14, 14)
+    assert tuple(features["h2"].shape[1:]) == (7, 7, 7)
+    assert tuple(features["z"].shape[1:]) == (11, 1, 1)
 
 
 def test_q6_update_protocols_freeze_case_paths_and_disable_core_correlations():

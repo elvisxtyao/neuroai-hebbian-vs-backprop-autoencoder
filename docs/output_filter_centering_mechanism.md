@@ -30,8 +30,8 @@ configuration.
 
 ## 2. Notebook audit
 
-Source notebook:
-`C:\Users\86136\Desktop\NeuroAI\Project\Microlearning.ipynb`
+Source notebook: local historical teaching notebook (not distributed in this
+repository). Its content identity is preserved by the checksum below.
 
 SHA-256:
 `7d4437af298a81b128106ef0236aa00d4d9a8108e6199799cfd90026b603eca3`

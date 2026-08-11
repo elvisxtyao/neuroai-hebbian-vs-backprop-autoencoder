@@ -29,6 +29,11 @@ LABELS = {
 }
 METHOD_LABELS = tuple(LABELS.values())
 LAYERS = ("h1", "h2", "z")
+UPDATE_TO_REPRESENTATION_LAYER = {
+    "enc1": "h1",
+    "enc2": "h2",
+    "enc3": "z",
+}
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -43,8 +48,14 @@ def _csv(path: Path) -> list[dict[str, str]]:
 def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         raise ValueError(f"Cannot write empty table: {path}")
+    # Some aggregate tables intentionally concatenate rows from different
+    # metric domains (performance, representation, noise, and updates).  Use
+    # the union of their fields while preserving first-seen column order.
+    fieldnames = list(
+        dict.fromkeys(key for row in rows for key in row)
+    )
     with path.open("x", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
 
@@ -110,6 +121,32 @@ def _require_complete(protocol: dict[str, Any]) -> dict[tuple[str, str], Path]:
     return directories
 
 
+def _training_cost_fields(run_dir: Path) -> dict[str, float | int]:
+    system = _json(run_dir / "run_status.json")
+    standardized = _json(
+        run_dir / "standardized_decoder" / "run_status.json"
+    )
+    for name, status in (("system", system), ("standardized", standardized)):
+        if status.get("status") != "completed":
+            raise RuntimeError(f"Incomplete {name} training status: {run_dir}")
+        if int(status.get("test_samples_accessed", -1)) != 0:
+            raise RuntimeError(f"Training status accessed test data: {run_dir}")
+    system_samples = int(system["samples_seen"])
+    standardized_samples = int(standardized["samples_seen"])
+    system_wall_time = float(system["wall_time_sec"])
+    standardized_wall_time = float(standardized["wall_time_sec"])
+    return {
+        "system_training_samples_seen": system_samples,
+        "system_training_wall_time_sec": system_wall_time,
+        "standardized_decoder_samples_seen": standardized_samples,
+        "standardized_decoder_wall_time_sec": standardized_wall_time,
+        "total_training_samples_seen": system_samples + standardized_samples,
+        "total_training_wall_time_sec": (
+            system_wall_time + standardized_wall_time
+        ),
+    }
+
+
 def _performance_rows(
     protocol: dict[str, Any],
     directories: dict[tuple[str, str], Path],
@@ -129,8 +166,12 @@ def _performance_rows(
         if row["method_id"] in METHODS
     ]
     rows = []
+    core_runs = core_path.parents[1] / "runs"
     for sweep, case in (("dimension", "L64"), ("architecture", "balanced")):
         for row in core:
+            costs = _training_cost_fields(
+                core_runs / f"seed_{row['seed']}" / str(row["method_id"])
+            )
             rows.append(
                 {
                     "sweep": sweep,
@@ -148,12 +189,19 @@ def _performance_rows(
                             "standardized_reconstruction_mse",
                         )
                     },
+                    **costs,
                 }
             )
     for (sweep, case), directory in directories.items():
         for row in _typed(
             _csv(directory / "test_evaluation" / "per_run_metrics.csv")
         ):
+            costs = _training_cost_fields(
+                directory
+                / "runs"
+                / f"seed_{row['seed']}"
+                / str(row["method_id"])
+            )
             rows.append(
                 {
                     "sweep": sweep,
@@ -171,6 +219,7 @@ def _performance_rows(
                             "standardized_reconstruction_mse",
                         )
                     },
+                    **costs,
                 }
             )
     return rows
@@ -595,6 +644,53 @@ def _architecture_cka(
     return output
 
 
+def _join_updates_to_representations(
+    updates: list[dict[str, Any]],
+    representation: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    representation_lookup = {
+        (
+            row["case"],
+            row["seed"],
+            row["method"],
+            row["layer"],
+        ): row
+        for row in representation
+        if row["sweep"] == "architecture"
+    }
+    joined = []
+    for row in updates:
+        representation_layer = UPDATE_TO_REPRESENTATION_LAYER[row["layer"]]
+        key = (
+            row["case"],
+            row["seed"],
+            row["method"],
+            representation_layer,
+        )
+        representation_row = representation_lookup[key]
+        joined.append(
+            {
+                "case": row["case"],
+                "seed": row["seed"],
+                "method": row["method"],
+                "layer": row["layer"],
+                "representation_layer": representation_layer,
+                "rule": row["rule"],
+                "alignment": row["alignment"],
+                "update_snr_linear": row["update_snr_linear"],
+                "winner_entropy": representation_row["winner_entropy"],
+                "winner_coverage_ratio": representation_row[
+                    "winner_coverage_ratio"
+                ],
+                "effective_rank": representation_row["effective_rank"],
+                "linear_probe_cv_accuracy": representation_row[
+                    "linear_probe_cv_accuracy"
+                ],
+            }
+        )
+    return joined
+
+
 def _plot_interactions(
     output_dir: Path,
     summary: list[dict[str, Any]],
@@ -658,6 +754,12 @@ def run(protocol_path: str | Path) -> Path:
         "classification_ce",
         "system_reconstruction_mse",
         "standardized_reconstruction_mse",
+        "system_training_samples_seen",
+        "system_training_wall_time_sec",
+        "standardized_decoder_samples_seen",
+        "standardized_decoder_wall_time_sec",
+        "total_training_samples_seen",
+        "total_training_wall_time_sec",
     )
     performance_summary = _summaries(
         performance, metrics=performance_metrics
@@ -785,39 +887,9 @@ def run(protocol_path: str | Path) -> Path:
 
     compensation = _compensation(representation)
     architecture_cka = _architecture_cka(directories)
-    representation_lookup = {
-        (
-            row["case"],
-            row["seed"],
-            row["method"],
-            row["layer"],
-        ): row
-        for row in representation
-        if row["sweep"] == "architecture"
-    }
-    update_representation_join = []
-    for row in updates:
-        key = (row["case"], row["seed"], row["method"], row["layer"])
-        representation_row = representation_lookup[key]
-        update_representation_join.append(
-            {
-                "case": row["case"],
-                "seed": row["seed"],
-                "method": row["method"],
-                "layer": row["layer"],
-                "rule": row["rule"],
-                "alignment": row["alignment"],
-                "update_snr_linear": row["update_snr_linear"],
-                "winner_entropy": representation_row["winner_entropy"],
-                "winner_coverage_ratio": representation_row[
-                    "winner_coverage_ratio"
-                ],
-                "effective_rank": representation_row["effective_rank"],
-                "linear_probe_cv_accuracy": representation_row[
-                    "linear_probe_cv_accuracy"
-                ],
-            }
-        )
+    update_representation_join = _join_updates_to_representations(
+        updates, representation
+    )
     _write_csv(output_dir / "performance_per_seed.csv", performance)
     _write_csv(output_dir / "performance_summary.csv", performance_summary)
     _write_csv(output_dir / "representation_per_seed_layer.csv", representation)

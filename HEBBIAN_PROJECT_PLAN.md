@@ -2,8 +2,8 @@
 
 > 项目：Comparing Backpropagation, Hebbian Learning, and Minimal Hybrid Credit Assignment in a Three-Layer Convolutional Autoencoder
 > 本文档范围：Full BP、Full Hebbian、Hybrid-HHB/Hybrid-HBB 与匹配随机控制的实现、训练、评估和机制分析
-> 当前状态：`Stage 3 formal core implemented — canonical source freeze ready`
-> 最后更新：2026-07-27
+> 当前状态：`Stage 3 Q1–Q6 formal MNIST program complete`
+> 最后更新：2026-08-09
 
 > 文档角色：本文件保存研究设计、公式、WBS ID 和验收条件。实时完成状态只在
 > `PROJECT_STATUS.md` 维护；本文件中的长 WBS checkbox 不再作为唯一状态源。
@@ -1004,6 +1004,16 @@ paired BBB 为 `1.5688×`，超过冻结上限 `1.25×`；seed 44 的比率为
 `COMPLETED — CONFIRMATION FAILED`，不追加第三个 seed，且不批准正式
 Phase 4/Stage 3。完整结果见 `docs/hybrid_hhb_confirmation_results.md`。
 
+> **Historical supersession note (2026-08-10):** 上述 Stage 2D 协议、阈值、
+> conjunctive decision rule 与 `CONFIRMATION FAILED` 结果保持原样，并继续作为
+> Stage 2D 的权威历史记录。2026-07-28 后续批准的
+> `docs/stage3_formal_protocol_v1.md` 是在该失败之后作出的独立、版本化 research
+> re-scoping：它把 standardized-decoder reconstruction 从 Stage 3 entry gate
+> 改为正式 outcome，并仅以“rank-repair candidate with unresolved reconstruction
+> stability”的窄化角色纳入 HHB。该决定不追溯性地把 Stage 2D 改为通过，也不修改
+> 原门禁、seed 或阈值；本计划中仍保留的 Stage 2D-pass 前置条目应按原始历史门禁
+> 阅读，后续 Stage 3 工作的授权则以该独立 v1 protocol amendment 为准。
+
 ### Phase 8 — Q5/Q6：维度与 architecture asymmetry
 
 #### 8.1 Latent dimension
@@ -1043,12 +1053,22 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 \frac{\max_a M(a)-\min_a M(a)}{|M(a_{balanced})|+\epsilon}
 ```
 
-- [ ] 比较 accuracy、robustness、separability 和 effective rank；
-- [ ] 检验 method × architecture interaction，并分别报告 Full 与 Hybrid；
-- [ ] 对每层画 representation 指标；
-- [ ] 用 CKA 或 centered geometry 比较结构变化前后的表示；
-- [ ] 结合 dead neuron、winner entropy、Hybrid compensation 和 update SNR
+- [x] 比较 accuracy、robustness、separability 和 effective rank；
+- [x] 检验 method × architecture interaction，并分别报告 Full 与 Hybrid；
+- [x] 对每层画 representation 指标；
+- [x] 用 CKA 或 centered geometry 比较结构变化前后的表示；
+- [x] 结合 dead neuron、winner entropy、Hybrid compensation 和 update SNR
   解释 HHH/HHB/HBB 的敏感性差异。
+
+截至 2026-08-09，本阶段已按冻结协议完成。L16/L32/L128 与
+early-heavy/late-heavy 五个新增 case 均通过 validation-only technical gate，
+随后各完成 20 个一次性 test evaluations、20 个 checkpoint 的 h1/h2/z
+分析和 260 行确定性噪声评估；balanced L64 复用已验收 core，未重复访问
+test。两种非对称架构还完成了五 seed、50 fixed-batch 的 frozen-snapshot Q4
+扩展。汇总包含 sensitivity、relative change、method × case interaction、CKA、
+Hybrid compensation、训练成本和正式图表，完整报告见
+`docs/stage3_q5q6_results.md`。匹配 RBB/RRB 控制只在预注册关键参考
+L64/balanced 上使用，因此 Hebbian-prefix 净价值的归因仍限定于该参考配置。
 
 ### Phase 9 — 扩展实验（主实验完成后）
 
@@ -1337,28 +1357,28 @@ AI=\log\frac{P_{encoder}}{P_{decoder}}
 
 - [x] `P8-DIM-01` 生成 `L=[16,32,64,128]` configs；
 - [x] `P8-DIM-02` 验证每个 config 的 bottleneck shape；
-- [ ] `P8-DIM-03` 运行 BBB/HHH/HHB/HBB dimension × seeds；
-- [ ] `P8-DIM-04` 在关键 dimensions 运行 RBB/RRB matched controls；
-- [ ] `P8-DIM-05` 汇总 clean/noisy/probe/separability/effective-rank；
+- [x] `P8-DIM-03` 运行 BBB/HHH/HHB/HBB dimension × seeds；
+- [x] `P8-DIM-04` 在预注册关键 reference L64 运行 RBB/RRB matched controls；
+- [x] `P8-DIM-05` 汇总 clean/noisy/probe/separability/effective-rank；
 - [x] `P8-ARCH-01` 创建 early-heavy config；
 - [x] `P8-ARCH-02` 创建 balanced config；
 - [x] `P8-ARCH-03` 创建 late-heavy config；
 - [x] `P8-ARCH-04` 自动计算 encoder/decoder/total parameter counts；
 - [x] `P8-ARCH-05` 断言 encoder parameter range/mean <1%；
-- [ ] `P8-ARCH-06` 运行 BBB/HHH/HHB/HBB architecture × seeds；
-- [ ] `P8-ARCH-07` 在关键 architectures 运行 RBB/RRB matched controls；
-- [ ] `P8-METRIC-01` 计算每个 metric 的 relative-to-balanced change；
-- [ ] `P8-METRIC-02` 计算 sensitivity score；
-- [ ] `P8-STAT-01` 检验 learning-rule × architecture interaction；
-- [ ] `P8-REP-01` 提取每个 architecture 的 h1/h2/z；
-- [ ] `P8-REP-02` 比较 layerwise geometry 与 CKA；
-- [ ] `P8-FIG-01` 绘制 latent-dimension interaction plots；
-- [ ] `P8-FIG-02` 绘制 architecture interaction plots；
-- [ ] `P8-NOTE-01` 分别写出 Q5 与 Q6 的结果和机制解释。
+- [x] `P8-ARCH-06` 运行 BBB/HHH/HHB/HBB architecture × seeds；
+- [x] `P8-ARCH-07` 在预注册关键 reference balanced 运行 RBB/RRB matched controls；
+- [x] `P8-METRIC-01` 计算每个 metric 的 relative-to-balanced change；
+- [x] `P8-METRIC-02` 计算 sensitivity score；
+- [x] `P8-STAT-01` 检验 learning-rule × architecture interaction；
+- [x] `P8-REP-01` 提取每个 architecture 的 h1/h2/z；
+- [x] `P8-REP-02` 比较 layerwise geometry 与 CKA；
+- [x] `P8-FIG-01` 绘制 latent-dimension interaction plots；
+- [x] `P8-FIG-02` 绘制 architecture interaction plots；
+- [x] `P8-NOTE-01` 分别写出 Q5 与 Q6 的结果和机制解释。
 
 #### P9 — 扩展实验门禁
 
-- [ ] `P9-GATE-01` 确认 Q1–Q6 主结果和必要图表已完成；
+- [x] `P9-GATE-01` 确认 Q1–Q6 主结果和必要图表已完成；
 - [ ] `P9-GATE-02` 记录剩余时间、GPU/CPU 预算和优先级；
 - [ ] `P9-PLAN-01` 为 CIFAR-10 建立独立 config/version，不修改 v1；
 - [ ] `P9-PLAN-02` 为 non-stationary classes 写出数据顺序和 forgetting metric；

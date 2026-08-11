@@ -1,18 +1,24 @@
 param(
     [int]$DimensionProcessId = 0,
-    [string]$TrainingRoot = (
-        "D:\Microlearning\results\worktrees\" +
-        "stage3-q5q6-a924932-resume"
-    )
+    [string]$TrainingRoot = $env:MICROLEARNING_TRAINING_ROOT
 )
 
 $ErrorActionPreference = "Stop"
-$python = "D:\Microlearning\.venv\Scripts\python.exe"
+$analysisRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
+if ([string]::IsNullOrWhiteSpace($TrainingRoot)) {
+    throw "Pass -TrainingRoot or set MICROLEARNING_TRAINING_ROOT to the historical training worktree."
+}
+$python = Join-Path $analysisRoot ".venv\Scripts\python.exe"
 $trainingRoot = $TrainingRoot
-$analysisRoot = "D:\Microlearning"
-$resultsRoot = "D:\Microlearning\results\formal\phase0_v1_1\stage3_q5q6_sweeps"
-$logRoot = "D:\Microlearning\results"
+$resultsRoot = Join-Path $analysisRoot "results\formal\phase0_v1_1\stage3_q5q6_sweeps"
+$logRoot = Join-Path $analysisRoot "results"
 $statusPath = Join-Path $logRoot "stage3_remaining_orchestrator_status.json"
+$analysisSourceCommit = (
+    & git `
+        -c "safe.directory=$($analysisRoot.Replace('\', '/'))" `
+        -C $analysisRoot `
+        rev-parse HEAD
+).Trim()
 
 function Write-Status {
     param(
@@ -26,7 +32,7 @@ function Write-Status {
         message = $Message
         updated_at = [DateTimeOffset]::UtcNow.ToString("o")
         training_source_commit = "a924932685fd634d0bd054c6171b66859c1c74a2"
-        analysis_source_commit = "f30574b217ed404ca073a644bdd22d55cd5a45f9"
+        analysis_source_commit = $analysisSourceCommit
     } | ConvertTo-Json | Set-Content -LiteralPath $statusPath -Encoding utf8
 }
 

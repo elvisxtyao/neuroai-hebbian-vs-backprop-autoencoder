@@ -83,6 +83,33 @@ No absolute samples-to-threshold value was preregistered before these formal
 runs. It is therefore recorded as `NA_NOT_PREREGISTERED`; selecting a threshold
 after inspecting the curves would be post-hoc.
 
+### Samples-seen-axis supplement
+
+The stored validation logs contain all ten system decoder/joint-training
+points for every method and seed. An artifact-only final audit therefore adds
+a samples-seen-axis curve with 350 points (`7 methods × 5 seeds × 10 epochs`)
+without loading data or checkpoints. The curve ranges are:
+
+| Method | First plotted sample count | Final sample count |
+|---|---:|---:|
+| BBB / Random / RBB / RRB | 50,000 | 500,000 |
+| HBB | 550,000 | 1,000,000 |
+| HHB | 1,050,000 | 1,500,000 |
+| HHH | 1,550,000 | 2,000,000 |
+
+The offsets expose the cumulative local-layer training cost rather than
+resetting every method's decoder curve to epoch one. The original
+reconstruction AULC remains the preregistered mean of the ten validation MSE
+values; it is not silently redefined after viewing the samples-seen plot.
+Wall-clock and AULC estimates in the tables above remain unchanged.
+
+Supplemental artifacts are in
+`results/formal/phase0_v1_1/stage3_final_audit_supplement/`:
+
+- `q1_samples_seen_curve_per_seed.csv`;
+- `q1_samples_seen_curve_summary.csv`;
+- `q1_samples_seen_curve.{png,pdf}`.
+
 ## Q1 conclusions
 
 1. Full Hebbian (`HHH`) is worse than `BBB` on classification and much worse on
@@ -122,6 +149,9 @@ Local immutable results:
 - `provenance.json`: confirms no dataset/checkpoint load and zero new test
   access.
 
+The later samples-seen supplement likewise records zero dataset/checkpoint
+loads, zero model evaluation, and zero test-access increment in
+`stage3_final_audit_supplement/integrity.json`.
+
 Implementation validation:
 `verification/phase0_v1_1/stage3_q1_analysis_junit.xml` (`101/101` tests).
-
