@@ -44,10 +44,11 @@ def test_release_workflow_verifies_determinism_without_publishing():
     _, workflow, text = _workflow("release-verification.yml")
     assert workflow["permissions"] == {"contents": "read"}
     assert "workflow_dispatch" in workflow["on"]
+    assert "pull_request" in workflow["on"]
     assert "tags" in workflow["on"]["push"]
     assert text.count("python scripts/build_release_archive.py") == 2
     assert "cmp dist/v1.0-final-evidence.zip" in text
-    assert "sha256sum --check" in text
+    assert "(cd dist && sha256sum --check v1.0-final-evidence.zip.sha256)" in text
     assert "actions/upload-artifact@v6" in text
     assert "verified-evidence-candidate-${{ github.sha }}" in text
     assert "persist-credentials: false" in text
