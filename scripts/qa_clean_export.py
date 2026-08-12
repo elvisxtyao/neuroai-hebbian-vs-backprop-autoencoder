@@ -21,6 +21,7 @@ SAFE_TESTS = [
     "tests/test_release_narrative.py",
     "tests/test_phase4_reproducibility.py",
     "tests/test_release_archive.py",
+    "tests/test_ci_workflows.py",
 ]
 TEXT_SUFFIXES = {
     ".csv",
