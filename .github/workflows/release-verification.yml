@@ -1,0 +1,81 @@
+name: Release Verification
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+    paths:
+      - ".github/workflows/release-verification.yml"
+      - "release/v1.0-final/**"
+      - "figures/final/**"
+      - "scripts/build_release_archive.py"
+      - "scripts/verify_final_release.py"
+      - "FINAL_REPORT.md"
+      - "RESULTS_SUMMARY.md"
+      - "REPRODUCIBILITY.md"
+      - "project_demo.ipynb"
+      - "LICENSE"
+      - "THIRD_PARTY_NOTICES.md"
+      - "requirements-release.txt"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-verification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deterministic-archive:
+    name: Deterministic compact archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONUTF8: "1"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-release.txt
+
+      - name: Install artifact-only dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-release.txt
+
+      - name: Verify frozen release evidence
+        run: python scripts/verify_final_release.py
+
+      - name: Build archive twice and compare bytes
+        shell: bash
+        run: |
+          mkdir -p dist
+          python scripts/build_release_archive.py \
+            --output dist/v1.0-final-evidence.zip \
+            --write-checksum
+          python scripts/build_release_archive.py \
+            --output dist/v1.0-final-evidence-repeat.zip \
+            --write-checksum
+          cmp dist/v1.0-final-evidence.zip dist/v1.0-final-evidence-repeat.zip
+          sha256sum --check dist/v1.0-final-evidence.zip.sha256
+          rm dist/v1.0-final-evidence-repeat.zip \
+            dist/v1.0-final-evidence-repeat.zip.sha256
+
+      - name: Upload verified archive
+        uses: actions/upload-artifact@v6
+        with:
+          name: verified-evidence-candidate-${{ github.sha }}
+          path: |
+            dist/v1.0-final-evidence.zip
+            dist/v1.0-final-evidence.zip.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30

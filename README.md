@@ -1,5 +1,12 @@
 # Where Does Hebbian Learning Help?
 
+[![CI](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/actions/workflows/ci.yml/badge.svg)](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/actions/workflows/ci.yml)
+[![Release verification](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/actions/workflows/release-verification.yml/badge.svg)](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/actions/workflows/release-verification.yml)
+![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![PyTorch 2.2–2.x](https://img.shields.io/badge/PyTorch-2.2%E2%80%932.x-EE4C2C?logo=pytorch&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-2EA44F.svg)](LICENSE)
+[![Release: v1.0-final](https://img.shields.io/badge/Release-v1.0--final-6f42c1.svg)](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/releases/tag/v1.0-final)
+
 [Final report](FINAL_REPORT.md) · [Results summary](RESULTS_SUMMARY.md) · [Reproduce the release](REPRODUCIBILITY.md) · [Documentation index](docs/README.md) · [GitHub release](https://github.com/elvisxtyao/neuroai-hebbian-vs-backprop-autoencoder/releases/tag/v1.0-final)
 
 This repository studies a focused credit-assignment question: **how far can local Hebbian learning be stacked into a hierarchical encoder before global backpropagation becomes necessary?** In a three-layer convolutional autoencoder on MNIST, it compares full BP, a competitive Oja/WTA Hebbian rule, and two hybrid allocations that introduce BP at different encoder depths. The formal release uses five paired seeds and separates classification, reconstruction, representation geometry, robustness, and update mechanism.
@@ -55,12 +62,14 @@ The repository separates three reproducibility tiers:
 2. **Figure regeneration:** `scripts/plot_final_figures.py --output figures/rebuilt-v1.0-final` rebuilds the final figures only from the compact frozen tables into a new directory. It does not train or evaluate a model.
 3. **Full research archive:** protocols, configurations, training/evaluation code, and frozen formal outputs retain the original research lineage. Large checkpoints and raw arrays are intentionally excluded from the compact release bundle.
 
+GitHub Actions continuously exercises the artifact-only boundary on Python 3.11. CI intentionally does not install PyTorch, download MNIST, load checkpoints, or run scientific training; the PyTorch badge describes the frozen full-research dependency range.
+
 See the [reproducibility guide](REPRODUCIBILITY.md) for exact commands and the executed [artifact-only project demo](project_demo.ipynb) for a 3–5 minute walkthrough.
 
 ## Repository Structure
 
 ```text
-ae/, learning_rules/, models/   Model and learning-rule implementation
+learning_rules/, models/        Learning rules and model implementation
 training/, evaluation/          Training and evaluation infrastructure
 configs/                        Frozen experiment configurations
 results/                        Ignored local full archive; not distributed in the compact GitHub release
