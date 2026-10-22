@@ -1,0 +1,262 @@
+"""Load, merge and validate Phase 0 experiment YAML files."""
+
+from __future__ import annotations
+
+from copy import deepcopy
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+
+class ConfigError(ValueError):
+    """Raised when an experiment config violates the shared contract."""
+
+
+SUPPORTED_VERSIONS = {"phase0-v1", "phase0-v1.1"}
+
+
+def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    merged = deepcopy(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = deepcopy(value)
+    return merged
+
+
+def _load_yaml(path: Path, seen: set[Path]) -> dict[str, Any]:
+    path = path.resolve()
+    if path in seen:
+        raise ConfigError(f"Circular config inheritance detected at {path}")
+    seen.add(path)
+    with path.open("r", encoding="utf-8") as handle:
+        config = yaml.safe_load(handle) or {}
+    if not isinstance(config, dict):
+        raise ConfigError(f"Top-level config must be a mapping: {path}")
+    parent = config.pop("extends", None)
+    if parent is None:
+        return config
+    parent_path = (path.parent / parent).resolve()
+    return _deep_merge(_load_yaml(parent_path, seen), config)
+
+
+def load_config(path: str | Path, *, validate: bool = True) -> dict[str, Any]:
+    """Load a YAML config, resolving a single or nested ``extends`` chain."""
+
+    config = _load_yaml(Path(path), set())
+    if validate:
+        validate_config(config)
+    return config
+
+
+def _require(config: dict[str, Any], dotted_key: str) -> Any:
+    value: Any = config
+    for part in dotted_key.split("."):
+        if not isinstance(value, dict) or part not in value:
+            raise ConfigError(f"Missing required config field: {dotted_key}")
+        value = value[part]
+    return value
+
+
+def validate_config(config: dict[str, Any]) -> None:
+    """Validate invariants that make BP and Hebbian runs comparable."""
+
+    required = [
+        "version",
+        "data.dataset",
+        "data.split_manifest",
+        "data.split_seed",
+        "data.train_size",
+        "data.validation_size",
+        "data.test_size",
+        "data.normalization",
+        "data.batch_size",
+        "model.architecture",
+        "model.encoder_channels",
+        "model.latent_dim",
+        "model.target_clamping",
+        "training.learning_rule",
+        "training.paired_seeds",
+        "training.batch_size",
+        "probe.type",
+        "probe.freeze_encoder",
+    ]
+    for key in required:
+        _require(config, key)
+
+    if config["version"] not in SUPPORTED_VERSIONS:
+        raise ConfigError(
+            f"Unsupported protocol version {config['version']!r}; "
+            f"expected one of {sorted(SUPPORTED_VERSIONS)}"
+        )
+    if config["data"]["dataset"] != "MNIST":
+        raise ConfigError("phase0-v1 requires MNIST")
+    if config["data"]["normalization"] != "none":
+        raise ConfigError("phase0-v1 requires [0,1] inputs without z-score")
+    if config["data"]["input_range"] != [0.0, 1.0]:
+        raise ConfigError("phase0-v1 input_range must be [0.0, 1.0]")
+    if (
+        config["data"]["train_size"],
+        config["data"]["validation_size"],
+        config["data"]["test_size"],
+    ) != (50_000, 10_000, 10_000):
+        raise ConfigError("phase0-v1 split sizes must be 50000/10000/10000")
+    if config["model"]["architecture"] != "conv3_ae_v1":
+        raise ConfigError("phase0-v1 architecture must be conv3_ae_v1")
+    encoder_channels = config["model"]["encoder_channels"]
+    if (
+        not isinstance(encoder_channels, list)
+        or len(encoder_channels) != 2
+        or any(
+            not isinstance(value, int) or isinstance(value, bool) or value <= 0
+            for value in encoder_channels
+        )
+    ):
+        raise ConfigError(
+            "model.encoder_channels must contain two positive integers"
+        )
+    if config["model"]["target_clamping"] is not False:
+        raise ConfigError("Target clamping is forbidden in the main experiment")
+    if config["training"]["learning_rule"] not in {"bp", "hebbian", "hybrid"}:
+        raise ConfigError(
+            "training.learning_rule must be 'bp', 'hebbian' or 'hybrid'"
+        )
+    if encoder_channels != [16, 32] and (
+        config["training"]["learning_rule"] != "hybrid"
+        or config.get("hybrid", {}).get("confirmation_stage") != "stage3_sweep"
+    ):
+        raise ConfigError(
+            "non-balanced encoder channels are reserved for "
+            "the frozen Stage 3 sweep"
+        )
+    if config["training"]["learning_rule"] == "hybrid":
+        hybrid = _require(config, "hybrid")
+        layer_rules = hybrid.get("encoder_layer_rules")
+        if not isinstance(layer_rules, dict) or set(layer_rules) != {
+            "enc1",
+            "enc2",
+            "enc3",
+        }:
+            raise ConfigError(
+                "hybrid.encoder_layer_rules must define enc1/enc2/enc3"
+            )
+        if not set(layer_rules.values()).issubset({"hebbian", "bp", "frozen"}):
+            raise ConfigError(
+                "hybrid layer rules must be hebbian, bp or frozen"
+            )
+        seen_bp = False
+        for layer in ("enc1", "enc2", "enc3"):
+            rule = layer_rules[layer]
+            if rule == "bp":
+                seen_bp = True
+            elif rule == "hebbian" and seen_bp:
+                raise ConfigError(
+                    "hybrid Hebbian layers must precede BP layers"
+                )
+        confirmation_stage = hybrid.get("confirmation_stage")
+        if confirmation_stage is not None:
+            if confirmation_stage not in {
+                "stage2d",
+                "stage3_core",
+                "stage3_sweep",
+            }:
+                raise ConfigError("Unsupported hybrid confirmation stage")
+            allowed_seeds = (
+                {43, 44}
+                if confirmation_stage == "stage2d"
+                else {0, 1, 2, 3, 4}
+            )
+            if config["training"].get("seed") not in allowed_seeds:
+                stage = (
+                    "Stage 2D"
+                    if confirmation_stage == "stage2d"
+                    else "Stage 3"
+                )
+                raise ConfigError(
+                    f"{stage} seed must be one of {sorted(allowed_seeds)}"
+                )
+            if (
+                encoder_channels != [16, 32]
+                and confirmation_stage != "stage3_sweep"
+            ):
+                raise ConfigError(
+                    "non-balanced encoder channels are reserved for "
+                    "the frozen Stage 3 sweep"
+                )
+            if config["backprop"]["lr"] != 0.003:
+                raise ConfigError("Formal Hybrid runs freeze BP learning rate at 0.003")
+            if config["hebbian"]["lr"] != 0.0005:
+                raise ConfigError("Formal Hybrid runs freeze Hebbian learning rate at 0.0005")
+            if config["hebbian"]["winner_fraction"] != 0.10:
+                raise ConfigError("Formal Hybrid runs freeze winner_fraction at 0.10")
+            standardized = _require(config, "standardized_decoder")
+            expected_standardized = {
+                "optimizer": "adam",
+                "lr": 0.003,
+                "betas": [0.9, 0.999],
+                "weight_decay": 0.0,
+                "epochs": 10,
+                "loss": "mse_pixel_mean",
+                "validation_selection": "min_reconstruction_mse",
+            }
+            if standardized != expected_standardized:
+                raise ConfigError("Formal standardized-decoder protocol changed")
+    if config["training"]["paired_seeds"] != [0, 1, 2, 3, 4]:
+        raise ConfigError("phase0-v1 paired seeds must be [0,1,2,3,4]")
+    if config["data"]["batch_size"] != config["training"]["batch_size"]:
+        raise ConfigError("data and training batch sizes must match")
+    if config["probe"]["type"] != "linear" or not config["probe"]["freeze_encoder"]:
+        raise ConfigError("phase0-v1 requires a frozen single-layer linear probe")
+    if config["hebbian"]["lr"] < 0:
+        raise ConfigError("hebbian.lr must be non-negative")
+    if not 0 < config["hebbian"]["winner_fraction"] <= 1:
+        raise ConfigError("hebbian.winner_fraction must be in (0,1]")
+    for key in ("collapse_min_active_ratio", "collapse_max_winner_share"):
+        value = config["hebbian"].get(key)
+        if value is None or not 0 <= value <= 1:
+            raise ConfigError(f"hebbian.{key} must be in [0,1]")
+    competition_mode = config["hebbian"].get("competition_mode", "raw")
+    if competition_mode not in {"raw", "channel_rms", "channel_standardized"}:
+        raise ConfigError("Unsupported hebbian.competition_mode")
+    if float(config["hebbian"].get("competition_power", 1.0)) <= 0:
+        raise ConfigError("hebbian.competition_power must be positive")
+    if float(config["hebbian"].get("competition_epsilon", 1e-6)) <= 0:
+        raise ConfigError("hebbian.competition_epsilon must be positive")
+    if not isinstance(config["hebbian"].get("center_inputs", False), bool):
+        raise ConfigError("hebbian.center_inputs must be boolean")
+    update_centering = config["hebbian"].get("update_centering", "none")
+    if update_centering not in {"none", "output_filters"}:
+        raise ConfigError(
+            "hebbian.update_centering must be none or output_filters"
+        )
+
+    if config["version"] == "phase0-v1.1":
+        protocol = _require(config, "protocol")
+        if protocol.get("release_id") != "phase0-v1.1":
+            raise ConfigError("phase0-v1.1 requires protocol.release_id=phase0-v1.1")
+        if protocol.get("canonical_source_ref") != "phase0-v1.1-formal":
+            raise ConfigError(
+                "phase0-v1.1 requires canonical_source_ref=phase0-v1.1-formal"
+            )
+        if protocol.get("formal_seeds") != [0, 1, 2, 3, 4]:
+            raise ConfigError("phase0-v1.1 formal seeds must be [0,1,2,3,4]")
+        if protocol.get("tuning_seed") != 42:
+            raise ConfigError("phase0-v1.1 tuning seed must be 42")
+        if (
+            protocol.get("test_access_policy")
+            != "validation_select_then_single_test_evaluation"
+        ):
+            raise ConfigError("phase0-v1.1 test-access policy is not frozen")
+        results_root = Path(config["results"]["root"]).as_posix()
+        if not results_root.startswith("results/formal/phase0_v1_1/"):
+            raise ConfigError(
+                "phase0-v1.1 formal results must be under "
+                "results/formal/phase0_v1_1/"
+            )
+        if (
+            config["training"]["learning_rule"] == "bp"
+            and config["backprop"]["lr"] != 0.003
+        ):
+            raise ConfigError("phase0-v1.1 freezes the BP learning rate at 0.003")

@@ -1,0 +1,76 @@
+{
+  "best_repair_candidate": "centered_rms_lr_0p0005",
+  "best_repair_gate_pass": false,
+  "best_repair_selection_rule": "maximum z normalized effective rank; validation accuracy as tie-break",
+  "figures": [
+    "preliminary_classification_accuracy",
+    "preliminary_reconstruction_mse",
+    "stage1b_tradeoff_effective_rank",
+    "stage1b_tradeoff_winner_coverage",
+    "representation_health_heatmap"
+  ],
+  "generated_by": "scripts\\plot_presentation_stage1b.py",
+  "paired_seeds": [
+    0,
+    1
+  ],
+  "schema_version": "presentation-stage1b-sources-v1",
+  "source_files": [
+    {
+      "path": "results\\formal\\phase0_v1_1\\stage1_representation_health\\gate_v1\\gate_decision.json",
+      "sha256": "c06d4fe97857299666a14446d854779198ed32f3a343c8d8d43746b1f096860d"
+    },
+    {
+      "path": "results\\q1_clean_v1\\q1_run_table.csv",
+      "sha256": "6c173ab719ac0d5793bac51f981981452e47cca79da3553147751ad701863ac2"
+    },
+    {
+      "path": "results\\q1_clean_v1\\q1_summary.json",
+      "sha256": "b8adbb06aefb8404565d9b8d33077a983ed6b9a384e891146b7777361b913381"
+    },
+    {
+      "path": "results\\tuning\\stage1b_centered_v2\\health\\centered_rms_lr_0p0005.json",
+      "sha256": "aac701be6e652854926843303c4d908e843fb5c2d2d283b2ed870dab77f1a04c"
+    },
+    {
+      "path": "results\\tuning\\stage1b_centered_v2\\health\\centered_rms_lr_0p001.json",
+      "sha256": "158b16591dc35ce1260656313bb3564832eaf9ea146a5c6f5afd309ce3cfff2a"
+    },
+    {
+      "path": "results\\tuning\\stage1b_centered_v2\\health\\centered_standardized_lr_0p0005.json",
+      "sha256": "120200c9a46f9654c2ad20ddd55cda4c5f56987abb26d00ad87f029e1142d55e"
+    },
+    {
+      "path": "results\\tuning\\stage1b_centered_v2\\health\\centered_standardized_lr_0p001.json",
+      "sha256": "0443703368af59b856fd812627ff34754a8e5502fa0beae7505a2251b02b8c13"
+    },
+    {
+      "path": "results\\tuning\\stage1b_centered_v2\\selection_decision.json",
+      "sha256": "59d9d8539d1d9632a1376ebc3e089ffbca023851d40500e9becbcf1d7f9ba5a5"
+    },
+    {
+      "path": "results\\tuning\\stage1b_homeostasis_v1\\health\\rms_power_0p5_wta_0p10.json",
+      "sha256": "52ff6f1e2365f8fb8735d2e1ea7ab0bcc1af18231dad1909b5070126c83993db"
+    },
+    {
+      "path": "results\\tuning\\stage1b_homeostasis_v1\\health\\rms_power_1p0_wta_0p10.json",
+      "sha256": "a4f3ddb625e984c9fa57aef52b86a5758a9dc590043af8d5a658787706018b9b"
+    },
+    {
+      "path": "results\\tuning\\stage1b_homeostasis_v1\\health\\standardized_wta_0p10.json",
+      "sha256": "e728482ce937aa0af1ac95bb1e7ba890764e108bda6075b9359025517ded2887"
+    },
+    {
+      "path": "results\\tuning\\stage1b_homeostasis_v1\\health\\standardized_wta_0p20.json",
+      "sha256": "3ed153b5473b6162bdf16f299a6051c08ac3b600037cea8a10b3a333227c1f34"
+    },
+    {
+      "path": "results\\tuning\\stage1b_homeostasis_v1\\selection_decision.json",
+      "sha256": "1e9b174ac20f65e0e78f7a70abd23dabf2507937fe2f112fe0b61ceafd22bec8"
+    },
+    {
+      "path": "results\\tuning\\validation_tuning_v1\\selection_decision.json",
+      "sha256": "d5ba8611747942c3e47786e3f194c62aeeb77003b08a6a75212e449b8cd6a31f"
+    }
+  ]
+}

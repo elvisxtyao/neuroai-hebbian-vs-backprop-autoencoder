@@ -1,0 +1,12 @@
+extends: common.yaml
+
+training:
+  seed: 43
+
+hybrid:
+  method_id: full_hebbian
+  display_name: Full Hebbian
+  encoder_layer_rules:
+    enc1: hebbian
+    enc2: hebbian
+    enc3: hebbian

@@ -1,0 +1,9 @@
+extends: common.yaml
+
+hybrid:
+  method_id: full_bp
+  display_name: Full BP (BBB)
+  encoder_layer_rules:
+    enc1: bp
+    enc2: bp
+    enc3: bp

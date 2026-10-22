@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.agents/
+ae/
+data/raw/
+/results/
+*.pt
+*.pth
+*.zip
+
+# Local-only experiment and completion reports
+*_REPORT.md
+docs/*_report.md

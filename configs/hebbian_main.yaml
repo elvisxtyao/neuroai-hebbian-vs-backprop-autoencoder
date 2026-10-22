@@ -1,0 +1,8 @@
+extends: common_mnist.yaml
+
+training:
+  learning_rule: hebbian
+
+hebbian:
+  lr: 0.0005
+  winner_fraction: 0.10

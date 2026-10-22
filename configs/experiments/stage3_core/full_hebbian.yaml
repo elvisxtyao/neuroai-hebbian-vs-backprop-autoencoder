@@ -1,0 +1,9 @@
+extends: common.yaml
+
+hybrid:
+  method_id: full_hebbian
+  display_name: Full Hebbian (HHH)
+  encoder_layer_rules:
+    enc1: hebbian
+    enc2: hebbian
+    enc3: hebbian

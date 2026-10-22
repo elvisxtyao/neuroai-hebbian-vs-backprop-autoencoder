@@ -1,0 +1,13 @@
+version: output-filter-centering-comparison-v1
+notebook_sha256: 7d4437af298a81b128106ef0236aa00d4d9a8108e6199799cfd90026b603eca3
+candidate_id: oja_wta_output_filter_centered
+performance_floor: 0.8863
+baseline:
+  validation_run: results/tuning/validation_tuning_v1/runs/20260723T071035Z_hebbian_seed42
+  health: results/formal/phase0_v1_1/stage1_representation_health/gate_v1/gate_decision.json
+  q4: results/formal/phase0_v1_1/stage2_q4_tooling/seed42_v1
+candidate:
+  selection: results/tuning/output_filter_centering_v1/selection_decision.json
+  health: results/tuning/output_filter_centering_v1/health/oja_wta_output_filter_centered.json
+  q4: results/tuning/output_filter_centering_v1/q4_seed42
+output_dir: results/tuning/output_filter_centering_v1/comparison

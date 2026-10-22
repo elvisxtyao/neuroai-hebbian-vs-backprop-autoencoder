@@ -1,0 +1,10 @@
+version: q1-clean-v1
+bp_config: ../bp_main.yaml
+hebbian_config: ../hebbian_main.yaml
+paired_seeds: [0, 1, 2, 3, 4]
+random_encoder_control: true
+classification_threshold: 0.85
+bootstrap_seed: 2026
+bootstrap_resamples: 10000
+test_policy: evaluate_once_after_config_freeze
+output_root: results/q1_clean_v1

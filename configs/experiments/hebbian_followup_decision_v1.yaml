@@ -1,0 +1,22 @@
+version: hebbian-followup-decision-v1
+output_dir: results/hebbian_followup_decision
+
+baseline:
+  id: original_oja_wta_seed42
+  run_dir: results/tuning/validation_tuning_v1/runs/20260723T071035Z_hebbian_seed42
+  health_metrics: results/formal/phase0_v1_1/stage1_representation_health/gate_v1/health_metrics.csv
+  health_checkpoint_id: hebbian_selected_seed42
+  health_gate: results/formal/phase0_v1_1/stage1_representation_health/gate_v1/gate_decision.json
+  q4: results/formal/phase0_v1_1/stage2_q4_tooling/seed42_v1
+
+candidate:
+  id: oja_wta_output_filter_centered
+  run_dir: results/tuning/output_filter_centering_v1/runs/20260725T062527Z_hebbian_seed42
+  selection: results/tuning/output_filter_centering_v1/selection_decision.json
+  health: results/tuning/output_filter_centering_v1/health/oja_wta_output_filter_centered.json
+  q4: results/tuning/output_filter_centering_v1/q4_seed42
+
+frozen_performance_floor: 0.8863
+synthetic_test_log: verification/phase0_v1_1/output_filter_centering_pytest.log
+current_test_log: verification/phase0_v1_1/hebbian_followup_decision_pytest.log
+failure_case_addendum: docs/hebbian_failure_case_protocol_addendum.md

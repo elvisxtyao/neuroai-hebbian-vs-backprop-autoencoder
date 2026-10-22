@@ -1,0 +1,12 @@
+extends: common.yaml
+
+training:
+  seed: 44
+
+hybrid:
+  method_id: hybrid_hhb
+  display_name: Hybrid-HHB
+  encoder_layer_rules:
+    enc1: hebbian
+    enc2: hebbian
+    enc3: bp

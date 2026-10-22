@@ -1,0 +1,34 @@
+version: stage3-formal-core-v1
+output_dir: results/formal/phase0_v1_1/stage3_core
+seeds: [0, 1, 2, 3, 4]
+methods: [full_bp, full_hebbian, hybrid_hhb, hybrid_hbb, full_random]
+pre_freeze_test_access_policy: validation_only
+post_freeze_test_access_policy: single_evaluation_per_checkpoint
+
+method_configs:
+  full_bp: configs/experiments/stage3_core/full_bp.yaml
+  full_hebbian: configs/experiments/stage3_core/full_hebbian.yaml
+  hybrid_hhb: configs/experiments/stage3_core/hybrid_hhb.yaml
+  hybrid_hbb: configs/experiments/stage3_core/hybrid_hbb.yaml
+  full_random: configs/experiments/stage3_core/full_random.yaml
+
+candidate_semantics:
+  hybrid_hhb: confirmed_rank_repair_candidate_with_unresolved_reconstruction_stability
+  standardized_reconstruction_role: formal_outcome_not_entry_gate
+  stage2d_history_preserved: true
+
+representation:
+  validation_subset_manifest: data/splits/mnist_validation_health_v1.npz
+  split_manifest: data/splits/mnist_split_v1.npz
+  data_root: data/raw
+  batch_size: 128
+  winner_fraction: 0.10
+  activation_epsilon: 1.0e-12
+  variance_epsilon: 1.0e-12
+
+statistics:
+  bootstrap_seed: 2026
+  bootstrap_resamples: 10000
+  confidence_level: 0.95
+
+protocol_document: docs/stage3_formal_protocol_v1.md

@@ -1,0 +1,25 @@
+version: effective-rank-audit-v1.1
+protocol_base_ref: phase0-v1.1-formal
+output_dir: results/formal/phase0_v1_1/stage1c_effective_rank_audit/audit_v1_1
+data_root: data/raw
+subset_manifest: data/splits/mnist_validation_health_v1.npz
+batch_size: 128
+winner_fraction: 0.10
+l2_epsilon: 1.0e-12
+stage1_variance_epsilon: 1.0e-12
+
+# These are method-audit grids, not tunable hyperparameters.
+relative_eigenvalue_cutoffs: [0.0, 1.0e-14, 1.0e-12, 1.0e-10, 1.0e-8, 1.0e-6]
+stage1_formula_epsilons: [0.0, 1.0e-15, 1.0e-12, 1.0e-10, 1.0e-8, 1.0e-6]
+
+interpretation:
+  near_one_effective_rank_max: 2.0
+  high_rank_ratio_min: 0.10
+
+checkpoint:
+  id: hebbian_selected_seed42
+  rule: hebbian
+  seed: 42
+  run_dir: results/tuning/validation_tuning_v1/runs/20260723T071035Z_hebbian_seed42
+  checkpoint: model_best.pt
+  probe: linear_probe.pt

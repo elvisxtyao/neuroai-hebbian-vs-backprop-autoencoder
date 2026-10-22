@@ -1,0 +1,43 @@
+extends: ../../selected/hebbian_validation_selected.yaml
+
+training:
+  learning_rule: hybrid
+  bp_epochs: 10
+  hebbian_epochs_per_layer: 10
+  decoder_epochs: 10
+
+backprop:
+  optimizer: adam
+  lr: 0.003
+  betas: [0.9, 0.999]
+  weight_decay: 0.0
+
+hebbian:
+  lr: 0.0005
+  winner_fraction: 0.10
+  update: oja
+  filter_l2_normalize: true
+  normalization_epsilon: 1.0e-08
+  competition_mode: raw
+  center_inputs: false
+  update_centering: none
+
+standardized_decoder:
+  optimizer: adam
+  lr: 0.003
+  betas: [0.9, 0.999]
+  weight_decay: 0.0
+  epochs: 10
+  loss: mse_pixel_mean
+  validation_selection: min_reconstruction_mse
+
+results:
+  root: results/hybrid_hhb_confirmation/runs
+
+hybrid:
+  confirmation_stage: stage2d
+  method_id: common_template
+  encoder_layer_rules:
+    enc1: bp
+    enc2: bp
+    enc3: bp

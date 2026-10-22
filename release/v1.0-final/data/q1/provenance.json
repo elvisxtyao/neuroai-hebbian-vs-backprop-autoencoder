@@ -1,0 +1,9 @@
+{
+  "checkpoints_loaded": false,
+  "controls_root": "results/formal/phase0_v1_1/stage3_matched_controls",
+  "core_root": "results/formal/phase0_v1_1/stage3_core",
+  "datasets_loaded": false,
+  "input_mode": "immutable artifacts only",
+  "schema_version": "stage3-q1-provenance-v1",
+  "test_access_increment": 0
+}

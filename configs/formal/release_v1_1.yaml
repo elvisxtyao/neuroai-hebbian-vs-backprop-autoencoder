@@ -1,0 +1,22 @@
+release_id: phase0-v1.1
+parent_protocol: phase0-v1
+addendum: PHASE0_STANDARD_V1_1_ADDENDUM.md
+canonical_source_ref: phase0-v1.1-formal
+parent_development_commit: 13848d4a27edff5b59c158acbf9455b672fcb1d7
+
+formal_configs:
+  bp: configs/formal/bp_phase0_v1_1.yaml
+  hebbian: configs/formal/hebbian_phase0_v1_1.yaml
+
+seeds:
+  tuning: 42
+  formal: [0, 1, 2, 3, 4]
+  representation_subset: 17
+  noise: 2026
+
+artifacts:
+  preliminary_root: results/preliminary
+  formal_root: results/formal/phase0_v1_1
+  verification_root: verification/phase0_v1_1
+
+test_access_policy: validation_select_then_single_test_evaluation

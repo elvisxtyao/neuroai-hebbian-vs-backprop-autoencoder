@@ -1,0 +1,31 @@
+{
+  "architecture_cases": [
+    "early_heavy",
+    "balanced",
+    "late_heavy"
+  ],
+  "completed_at_utc": "2026-08-09T15:14:46.108032+00:00",
+  "dimension_cases": [
+    "L16",
+    "L32",
+    "L64",
+    "L128"
+  ],
+  "methods": {
+    "full_bp": "BBB",
+    "full_hebbian": "HHH",
+    "hybrid_hbb": "HBB",
+    "hybrid_hhb": "HHB"
+  },
+  "protocol": "configs/experiments/stage3_q5q6_sweeps_v1.yaml",
+  "protocol_sha256": "49e1e8af85f5240cd5c609fe487be0c1e8ef1a5c7c1fb957b4ae7a19a117e356",
+  "schema_version": "stage3-q5q6-analysis-run-v1",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "training_performed": false
+}

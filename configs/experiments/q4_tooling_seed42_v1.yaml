@@ -1,0 +1,45 @@
+version: q4-tooling-seed42-v1
+protocol_base_ref: phase0-v1.1-formal
+output_dir: results/formal/phase0_v1_1/stage2_q4_tooling/seed42_v1
+
+data:
+  root: data/raw
+  split_manifest: data/splits/mnist_split_v1.npz
+  batch_manifest: data/splits/mnist_q4_update_batches_seed31415_v1.npz
+  batch_seed: 31415
+  batch_count: 50
+  batch_size: 128
+
+source:
+  run_dir: results/tuning/validation_tuning_v1/runs/20260723T071035Z_hebbian_seed42
+  seed: 42
+  target_clamping: false
+  snapshot_role: failure_case_mechanism
+
+snapshots:
+  - id: enc1_end
+    checkpoint: encoder_enc1_end.pt
+    active_layer: enc1
+  - id: enc2_end
+    checkpoint: encoder_enc2_end.pt
+    active_layer: enc2
+  - id: enc3_end
+    checkpoint: encoder_enc3_end.pt
+    active_layer: enc3
+
+reference_decoder:
+  initialization_seed: 42
+  loader_seed: 42
+  epochs: 10
+  optimizer: adam
+  lr: 0.003
+  betas: [0.9, 0.999]
+  weight_decay: 0.0
+  reconstruction_loss: mse_pixel_mean
+  validation_selection: minimum_mse
+
+analysis:
+  epsilon: 1.0e-12
+  save_update_tensors: true
+  optimizer_steps: 0
+  include_optimizer_state_in_bp_reference: false

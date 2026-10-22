@@ -1,0 +1,117 @@
+{
+  "candidate": "hybrid_hhb",
+  "completed_at_utc": "2026-07-27T11:22:34.827484+00:00",
+  "confirmation_seeds": [
+    43,
+    44
+  ],
+  "decision": "FAIL",
+  "integrity": {
+    "seed_43/full_bp": {
+      "checkpoint_sha256": "74fae7ff0f95a2b31e9f0253d2d3781651ed5977863d2119c203dd1f28cf4b5a",
+      "state_dict_sha256_after": "0f6bfdf4bb090c543ae4c09abc06af13a40bee317d18f864d0b670abdded209f",
+      "state_dict_sha256_before": "0f6bfdf4bb090c543ae4c09abc06af13a40bee317d18f864d0b670abdded209f",
+      "unchanged": true
+    },
+    "seed_43/full_hebbian": {
+      "checkpoint_sha256": "355b022f1e24ba3c30f44d58c4396f6ec1eda286cf0acacaef85fe71419e5c23",
+      "state_dict_sha256_after": "97b898ce066dcf212968a0a4f7f834cc43ac90c54f7196d744c31c1d4d2cc0ba",
+      "state_dict_sha256_before": "97b898ce066dcf212968a0a4f7f834cc43ac90c54f7196d744c31c1d4d2cc0ba",
+      "unchanged": true
+    },
+    "seed_43/hybrid_hhb": {
+      "checkpoint_sha256": "fa2445a841ada2dfe062227d0a0da5d18802f469f33dccf6c68aa26bc69346cc",
+      "state_dict_sha256_after": "ba5ed38b98bedb9413120071abb5364a964a03d5fb5f7ee821e69b65238427f9",
+      "state_dict_sha256_before": "ba5ed38b98bedb9413120071abb5364a964a03d5fb5f7ee821e69b65238427f9",
+      "unchanged": true
+    },
+    "seed_44/full_bp": {
+      "checkpoint_sha256": "10eedfa483615243e1d9fb7206454031fd5584731042a32f49c202430aeba3d8",
+      "state_dict_sha256_after": "aee1a686d4e3b94fdbc0000b52c359a2f0acbec93fcaf881caefe2affd72488f",
+      "state_dict_sha256_before": "aee1a686d4e3b94fdbc0000b52c359a2f0acbec93fcaf881caefe2affd72488f",
+      "unchanged": true
+    },
+    "seed_44/full_hebbian": {
+      "checkpoint_sha256": "c1b4700c5d32769cacf75004a98d79cbdf8a86a5b90a1a2db45c6bc01276577a",
+      "state_dict_sha256_after": "b03706aa052afd90ec721d4ccd3f8f08816de03ae40ea0cf9a238fa33de955e6",
+      "state_dict_sha256_before": "b03706aa052afd90ec721d4ccd3f8f08816de03ae40ea0cf9a238fa33de955e6",
+      "unchanged": true
+    },
+    "seed_44/hybrid_hhb": {
+      "checkpoint_sha256": "7732a448f89e6aff84a5fc80a4ae1a94b7b6412044467046af462a3e026f7dcc",
+      "state_dict_sha256_after": "b86e7c9a985d8c984b981a218b19384de955eb4446487231e03f5ae358dcce3d",
+      "state_dict_sha256_before": "b86e7c9a985d8c984b981a218b19384de955eb4446487231e03f5ae358dcce3d",
+      "unchanged": true
+    }
+  },
+  "no_third_confirmation_seed": true,
+  "pairing_gate": "PASS",
+  "per_seed": {
+    "43": {
+      "checks": {
+        "numerical_integrity": true,
+        "pairing_integrity": true,
+        "standardized_decoder_near_bp": false,
+        "validation_accuracy_floor": true,
+        "z_compensates_low_rank_h2": true,
+        "z_effective_rank_absolute": true,
+        "z_effective_rank_vs_full_hebbian": true,
+        "zero_test_access": true
+      },
+      "decision": "FAIL",
+      "observed": {
+        "full_hebbian_z_effective_rank": 1.0158174936433535,
+        "h2_effective_rank": 1.0500101287100965,
+        "paired_bp_standardized_decoder_reconstruction_mse": 0.0031157012175540536,
+        "standardized_decoder_mse_ratio_to_bp": 1.5688289535788613,
+        "standardized_decoder_reconstruction_mse": 0.00488800228079971,
+        "system_reconstruction_mse": 0.004829786374419927,
+        "validation_accuracy": 0.9163,
+        "z_effective_rank": 10.383531711752475,
+        "z_effective_rank_ratio_to_full_hebbian": 10.221847700712898,
+        "z_to_h2_effective_rank_ratio": 9.888982427720405
+      },
+      "seed": 43
+    },
+    "44": {
+      "checks": {
+        "numerical_integrity": true,
+        "pairing_integrity": true,
+        "standardized_decoder_near_bp": true,
+        "validation_accuracy_floor": true,
+        "z_compensates_low_rank_h2": true,
+        "z_effective_rank_absolute": true,
+        "z_effective_rank_vs_full_hebbian": true,
+        "zero_test_access": true
+      },
+      "decision": "PASS",
+      "observed": {
+        "full_hebbian_z_effective_rank": 1.0173674484257202,
+        "h2_effective_rank": 1.047092803419233,
+        "paired_bp_standardized_decoder_reconstruction_mse": 0.007573745633144768,
+        "standardized_decoder_mse_ratio_to_bp": 0.9111404904183137,
+        "standardized_decoder_reconstruction_mse": 0.006900746310487086,
+        "system_reconstruction_mse": 0.00696502730473876,
+        "validation_accuracy": 0.9118,
+        "z_effective_rank": 9.080920397740531,
+        "z_effective_rank_ratio_to_full_hebbian": 8.925900284880814,
+        "z_to_h2_effective_rank_ratio": 8.67250769757803
+      },
+      "seed": 44
+    }
+  },
+  "reliable_conclusion": "Hybrid-HHB did not reproduce every preregistered gate across both confirmation seeds.",
+  "schema_version": "hybrid-hhb-confirmation-decision-v1",
+  "source_commit": "b57082d764565bc3a6291428cc2592a79ab5c696",
+  "stage": "Stage 2D",
+  "stage3_readiness": "BLOCKED \u2014 CONFIRMATION FAILED",
+  "test_samples_accessed": 0,
+  "thresholds": {
+    "epsilon": 1e-12,
+    "standardized_decoder_mse_ratio_to_bp_max": 1.25,
+    "validation_accuracy_floor": 0.8863,
+    "z_effective_rank_min": 2.0,
+    "z_effective_rank_ratio_to_full_hebbian_min": 2.0,
+    "z_to_h2_effective_rank_ratio_min": 2.0
+  }
+}
